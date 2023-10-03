@@ -1,7 +1,7 @@
 from django import forms
 from django.core.validators import RegexValidator
 from django.core.exceptions import ValidationError
-from . models import User, Student
+from . models import User, Student, Teacher
 from django.contrib.auth.forms import UserCreationForm
 from datetime import date # used in birthday validation
 import datetime # used to prevent future date
@@ -83,8 +83,8 @@ class StudentRequestForm(forms.ModelForm):
     )
     class Meta:
         model = Student
-        fields = "__all__"
-        exclude = ["user"]
+        # fields = "__all__"
+        exclude = ["status","user"]
         
         
         GENDER = (
@@ -142,3 +142,67 @@ class StudentRequestForm(forms.ModelForm):
                 return image
         else:
             raise forms.ValidationError("Max. Upload: 2MB")
+        
+        
+
+class TeacherRequestForm(forms.ModelForm):
+    image = forms.FileField(
+        label="Your picture",        
+        required= True,
+        widget=forms.ClearableFileInput(
+            attrs={
+                "style": "font-size : 13px;",
+                "class": "form-control",
+                "accept": "image/png, image/jpeg"
+            }
+        )
+    )
+    class Meta:
+        model = Teacher
+        exclude = ["user", "status"]  
+        
+        GENDER = (
+            ("M","Male"),
+            ("F","Female")
+        )
+        
+        widgets ={
+            "phone" :forms.TextInput(
+                attrs={
+                    "style": "font-size:14px; ", #CSS
+                    "placeholder": "E.g: 0703-0000-000",
+                    "data-mask": "+(234) 0000-0000-000",
+                }
+            ),
+             "gender":forms.RadioSelect(choices=GENDER, attrs={"class":"btn-check",}),
+        }
+    
+    def __init__(self, request, *args, **kwargs):
+        self.request = request # Assign the request object to the form instance
+        super().__init__(*args, **kwargs) # Call the parent class constr
+        
+    def clean_image(self):
+        image = self.cleaned_data.get("image")
+        ext = str(image).split(".")[-1]
+        if image.size <= 2*1048576:
+            try:
+                new_name = (self.request.user.first_name+"_"+self.request.user.last_name+"."+ext).lower() 
+            except KeyError:
+                return image
+            else:
+                image.name = new_name
+                return image
+        else:
+            raise forms.ValidationError("Max. Upload: 2MB")
+    
+    def clean_phone(self):
+        phone = self.cleaned_data.get("phone")
+        if len(phone) != 20:
+            raise forms.ValidationError("Incomplete number: +(234) 0000-0000-000")
+        return phone
+    
+    def clean_email(self):
+        email = self.cleaned_data.get("email")
+        if Teacher.objects.filter(email=email).exists():
+            raise forms.ValidationError("Denied! " + email + " is already registered")
+        return email

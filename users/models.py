@@ -28,8 +28,19 @@ class Student(models.Model):
     birth = models.DateField(auto_now=False, auto_now_add=False, verbose_name="Birthday")
     gender = models.CharField(max_length=10)
     image = models.FileField(upload_to="photo", blank=True, verbose_name="Photo")
-    # status = models.CharField(max_length=50, null=True, choices=STATUS_CHOICE, default="Pending")
+    status = models.CharField(max_length=50, null=True, choices=STATUS_CHOICE, default="Pending")
     # grade=
+    
+    def __str__(self):
+        return self.user.username
+class Teacher(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    email = models.EmailField(max_length=50)
+    phone = models.CharField(max_length=20)
+    gender = models.CharField(max_length=10)
+    image = models.FileField(upload_to="photo", blank=True, verbose_name="Photo")
+    status = models.CharField(max_length=50, null=True, choices=STATUS_CHOICE, default="Pending")
+    #course
     
     def __str__(self):
         return self.user.username
