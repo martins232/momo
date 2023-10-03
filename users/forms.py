@@ -1,7 +1,7 @@
 from django import forms
 from django.core.validators import RegexValidator
 from django.core.exceptions import ValidationError
-from . models import User, StudentRequest
+from . models import User, Student
 from django.contrib.auth.forms import UserCreationForm
 from datetime import date # used in birthday validation
 import datetime # used to prevent future date
@@ -82,7 +82,7 @@ class StudentRequestForm(forms.ModelForm):
         )
     )
     class Meta:
-        model = StudentRequest
+        model = Student
         fields = "__all__"
         exclude = ["user"]
         

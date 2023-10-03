@@ -23,7 +23,7 @@ class User(AbstractUser):
         self.first_name = self.first_name.capitalize()
         self.last_name = self.last_name.capitalize()
         
-class StudentRequest(models.Model):
+class Student(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     birth = models.DateField(auto_now=False, auto_now_add=False, verbose_name="Birthday")
     gender = models.CharField(max_length=10)
