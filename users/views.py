@@ -26,30 +26,47 @@ def loginPage(request):
 
 @login_required(login_url="login")
 def lobby(request):
-    p_form = StudentRequestForm(request, data=request.POST or None, files=request.FILES or None)
+    if request.user.is_student:
+        form = StudentRequestForm(request, data=request.POST or None, files=request.FILES or None)
+        if request.method =="POST":
+            form = StudentRequestForm(request, request.POST, request.FILES)
+            if form.is_valid():
+                birth = form.cleaned_data["birth"]
+                gender = form.cleaned_data["gender"]
+                image = form.cleaned_data["image"]
+                
+                try:
+                    student = Student.objects.create(user = request.user,birth = birth,gender = gender)
+                except IntegrityError:
+                    messages.info(request, "Profile already submitted, which is now pending admin verification")  
+                else:
+                    student.image=image
+                    student.save()  
+                    messages.success(request, "Created succesful") 
+                return redirect("lobby")
+    else:
+        form = TeacherRequestForm(request, data=request.POST or None, files=request.FILES or None)
+        if request.method =="POST":
+            form = TeacherRequestForm(request, request.POST, request.FILES)
+            if form.is_valid():
+                phone = form.cleaned_data["phone"]
+                gender = form.cleaned_data["gender"]
+                email = form.cleaned_data["email"]
+                image = form.cleaned_data["image"]
+                
+                try:
+                    teacher = Teacher.objects.create(user = request.user,phone = phone,gender = gender, email=email)
+                except IntegrityError:
+                    messages.info(request, "Profile already submitted, which is now pending admin verification")  
+                else:
+                    teacher.image=image
+                    teacher.save()  
+                    messages.success(request, "Created succesful") 
+                return redirect("lobby")
     
-    if request.method =="POST":
-        form = StudentRequestForm(request, request.POST, request.FILES)
-        if form.is_valid():
-            birth = form.cleaned_data["birth"]
-            gender = form.cleaned_data["gender"]
-            image = form.cleaned_data["image"]
-            
-            try:
-                student = Student.objects.create(
-                    user = request.user,
-                    birth = birth,
-                    gender = gender,
-                )
-            except IntegrityError:
-                messages.info(request, "Profile already submitted, which is now pending admin verification")  
-            else:
-                student.image=image
-                student.save()  
-                messages.success(request, "Created succesful") 
-            return redirect("lobby")
+    
     context ={
-        "form": p_form
+        "form": form,
     }
     return render(request, "lobby.html", context)
 
