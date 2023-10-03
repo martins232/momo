@@ -1,4 +1,6 @@
 {% load static %}
+{% load crispy_forms_tags %}
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -22,28 +24,48 @@
 
     </nav>
 
-
-
-
     <div id="layoutSidenav">
         
-        <div id="layoutSidenav_content">
+        <div id="layoutSidenav_content" >
             <main>
-                <div class="container-fluid px-4">
-                    <h1 class="mt-4">Static Navigation</h1>
-                    <ol class="breadcrumb mb-4">
-                        <li class="breadcrumb-item"><a href="index.html">Dashboard</a></li>
-                        <li class="breadcrumb-item active">Static Navigation</li>
-                    </ol>
-                    <div class="card mb-4">
+                <div class="container px-4">
+                    {% if messages %}
+                            {% for message in messages %}
+                            <div class="alert alert-{{message.tags}} alert-dismissible fade show mt-2" role="alert">
+                                {{message}}.
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                            {% endfor %}
+                    {% endif %}
+                    <div class="card mb-4 mt-3">
+                        <div class="btn btn-warning text-center" style="cursor: default;">
+                            Welcome <strong>{{request.user.first_name}}</strong>! Please update your profile and await approval from the admin to access the system.
+                        </div>
+                        <div class="card-header">
+                            <h2 class="text-center">Profile</h2>
+                        </div>
                         <div class="card-body">
-                            <p class="mb-0">
-                                This page is an example of using static navigation. By removing the
-                                <code>.sb-nav-fixed</code>
-                                class from the
-                                <code>body</code>
-                                , the top navigation and side navigation will become static on scroll. Scroll down this page to see an example.
-                            </p>
+                            <!-- profile form -->
+                            <form action="" method="post" novalidate autocomplete="off" enctype="multipart/form-data">
+                                {% csrf_token %}
+                                <!-- {{form | crispy}} -->
+                                <div class="row mb-3">
+                                    <div class="col-md-6">
+                                        <div class="form-floating mb-3 mb-md-0">
+                                            {{form.birth | as_crispy_field}}
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-floating mb-3 mb-md-0">
+                                            {{form.gender | as_crispy_field}}
+                                        </div>
+                                    </div>
+                                </div>
+                                {{form.image | as_crispy_field}}
+                                <div class="mt-4 mb-0 mx-auto">
+                                    <div class="small"><button type="submit" class="btn btn-outline-primary">Update</button></div>
+                                </div>
+                            </form>
                         </div>
                     </div>
                 </div>
