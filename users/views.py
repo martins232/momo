@@ -1,8 +1,10 @@
 from django.shortcuts import render, redirect
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
 from . forms import *
-from . models import User
+from . models import User, StudentRequest
 from django.contrib.auth import authenticate, login
+from django.db import IntegrityError
 
 # Create your views here.
 def loginPage(request):
@@ -22,9 +24,33 @@ def loginPage(request):
     }
     return render(request, "login_registration.html", context)
 
-
+@login_required(login_url="login")
 def lobby(request):
-    context ={}
+    p_form = StudentRequestForm(request, data=request.POST or None, files=request.FILES or None)
+    
+    if request.method =="POST":
+        form = StudentRequestForm(request, request.POST, request.FILES)
+        if form.is_valid():
+            birth = form.cleaned_data["birth"]
+            gender = form.cleaned_data["gender"]
+            image = form.cleaned_data["image"]
+            
+            try:
+                student = StudentRequest.objects.create(
+                    user = request.user,
+                    birth = birth,
+                    gender = gender,
+                )
+            except IntegrityError:
+                messages.info(request, "Profile already submitted, which is now pending admin verification")  
+            else:
+                student.image=image
+                student.save()  
+                messages.success(request, "Created succesful") 
+            return redirect("lobby")
+    context ={
+        "form": p_form
+    }
     return render(request, "lobby.html", context)
 
 def home(request):
@@ -46,7 +72,7 @@ def register(request):
             
             user.save()
             messages.add_message(request, messages.INFO, "User created")
-            return redirect("home")
+            return redirect("login")
     context = {
         "form": form
     }
