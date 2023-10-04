@@ -19,7 +19,7 @@
 <body class="sb-nav-fixed">
     <nav class="sb-topnav navbar navbar-expand navbar-dark bg-dark">
         <!-- Navbar Brand-->
-        <a class="navbar-brand ps-3" href="index.html"><img src="{% static "images/logo.svg" %}" alt="Logo"
+        <a class="navbar-brand ps-3" href="{% url "home" %}"><img src="{% static "images/logo.svg" %}" alt="Logo"
                 style="width:65%;"></a>
 
     </nav>
@@ -41,7 +41,7 @@
                     {% if request.user.is_student %}
                     <div class="card mb-4 mt-3">
                         <div class="btn btn-warning text-center" style="cursor: default;">
-                            Welcome <strong>{{request.user.username}}</strong>! Please update your profile and await approval from the admin to access the system.
+                            Welcome <strong>{{request.user.username}}</strong>! Please update your profile while you await approval from the admin to access the system.
                         </div>
                         <div class="card-header">
                             <h2 class="text-center">Profile</h2>
@@ -76,7 +76,7 @@
                     <!-- Teacher form -->
                     <div class="card mb-4 mt-3">
                         <div class="btn btn-warning text-center" style="cursor: default;">
-                            Welcome <strong>{{request.user.username}}</strong>! Please update your profile and await approval from the admin to access the system.
+                            Welcome <strong>{{request.user.username}}</strong>! Please update your profile while you await approval from the admin to access the system.
                         </div>
                         <div class="card-header">
                             <h2 class="text-center">Teacher Profile</h2>
@@ -112,6 +112,7 @@
                                 </div>
                                 
                                 <div class="mt-4 mb-0 mx-auto">
+                                    
                                     <div class="small"><button type="submit" class="btn btn-outline-primary">Update</button></div>
                                 </div>
                             </form>

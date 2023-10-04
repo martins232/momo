@@ -88,7 +88,7 @@ def register(request):
                 user.is_teacher = True
             
             user.save()
-            messages.add_message(request, messages.INFO, "User created")
+            messages.add_message(request, messages.success, "User created")
             return redirect("login")
     context = {
         "form": form

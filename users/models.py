@@ -17,7 +17,7 @@ class User(AbstractUser):
     
     
     def __str__(self):
-        return self.username
+        return self.first_name + " " + self.last_name
     
     def clean(self):
         self.first_name = self.first_name.capitalize()
