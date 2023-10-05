@@ -5,6 +5,7 @@ from . forms import *
 from . models import User, Student
 from django.contrib.auth import authenticate, login
 from django.db import IntegrityError
+from django.core.exceptions import ObjectDoesNotExist
 
 # Create your views here.
 def loginPage(request):
@@ -26,6 +27,15 @@ def loginPage(request):
 
 @login_required(login_url="login")
 def lobby(request):
+    try:
+        if request.user.teacher.status == "Approved":
+            return redirect("home")
+        elif request.user.student.status == "Approved":
+            pass
+    except ObjectDoesNotExist:
+        pass
+    
+        
     if request.user.is_student:
         form = StudentRequestForm(request, data=request.POST or None, files=request.FILES or None)
         if request.method =="POST":
@@ -88,7 +98,7 @@ def register(request):
                 user.is_teacher = True
             
             user.save()
-            messages.add_message(request, messages.success, "User created")
+            messages.add_message(request, messages.SUCCESS, "User created")
             return redirect("login")
     context = {
         "form": form

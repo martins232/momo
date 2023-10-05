@@ -67,6 +67,7 @@ class UserRegistrationForm(UserCreationForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['username'].widget.attrs.update({'autofocus': False})
+        self.fields["username"].error_messages.update({"unique": "Denied! User already exist. You may want to login?"})
 
 
 class StudentRequestForm(forms.ModelForm):
@@ -109,6 +110,7 @@ class StudentRequestForm(forms.ModelForm):
     def __init__(self, request, *args, **kwargs):
         self.request = request # Assign the request object to the form instance
         super().__init__(*args, **kwargs) # Call the parent class constructor    
+
         
     
     def clean_birth(self):
@@ -144,8 +146,24 @@ class StudentRequestForm(forms.ModelForm):
             raise forms.ValidationError("Max. Upload: 2MB")
         
         
-
+class LowerCase(forms.CharField):
+    def to_python(self, value):
+        return value.lower()
 class TeacherRequestForm(forms.ModelForm):
+    email = LowerCase(
+        label="Email",
+        min_length=10,
+        max_length=50,
+        # required=False,
+        validators=[RegexValidator(r"^[a-zA-Z0-9.+-_]+@[a-zA-Z0-9.+-_]+\.[a-zA-Z]*$", message="Enter a valid email address")], 
+        widget=forms.TextInput(attrs={
+            "placeholder":"Email Address",
+            "style": "font-size : 13px; text-transform: lowercase;",
+            # "autocomplete": "off" -----already done in supr func
+            }
+        )
+    )
+    
     image = forms.FileField(
         label="Your picture",        
         required= True,
