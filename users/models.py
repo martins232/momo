@@ -14,7 +14,7 @@ class User(AbstractUser):
     is_teacher = models.BooleanField(null=True)
     is_superteacher = models.BooleanField(null=True)
     
-    
+    REQUIRED_FIELDS =["first_name", "last_name"]
     
     def __str__(self):
         return self.first_name + " " + self.last_name
@@ -32,7 +32,7 @@ class Student(models.Model):
     # grade=
     
     def __str__(self):
-        return self.user.username
+        return self.user.first_name + " " + self.user.last_name
 class Teacher(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     email = models.EmailField(max_length=50)

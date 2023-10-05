@@ -76,7 +76,12 @@
                     <!-- Teacher form -->
                     <div class="card mb-4 mt-3">
                         <div class="btn btn-warning text-center" style="cursor: default;">
-                            Welcome <strong>{{request.user.username}}</strong>! Please update your profile while you await approval from the admin to access the system.
+                            {% if user.teacher.status == "Pending" %}
+                            <strong>{{request.user.username | title}}</strong>! we have received your profile and it is under review by the admin.
+                            {% else %}
+                            <strong>{{request.user.username | title}}</strong>! Please create a profile to access the system.
+                            {% endif %}
+                           
                         </div>
                         <div class="card-header">
                             <h2 class="text-center">Teacher Profile</h2>
@@ -111,9 +116,8 @@
                                     </div>
                                 </div>
                                 
-                                <div class="mt-4 mb-0 mx-auto">
-                                    
-                                    <div class="small"><button type="submit" class="btn btn-outline-primary">Update</button></div>
+                                <div class="mt-4 mb-0 mx-auto"> 
+                                    <div class="small"><button type="submit" class="btn btn-outline-primary" {% if request.user.teacher.status == "Pending" %}disabled{% endif %}>Update</button></div>
                                 </div>
                             </form>
                         </div>
