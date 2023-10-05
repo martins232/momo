@@ -149,6 +149,7 @@ class StudentRequestForm(forms.ModelForm):
 class LowerCase(forms.CharField):
     def to_python(self, value):
         return value.lower()
+    
 class TeacherRequestForm(forms.ModelForm):
     email = LowerCase(
         label="Email",

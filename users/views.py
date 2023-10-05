@@ -3,7 +3,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from . forms import *
 from . models import User, Student
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import authenticate, login, logout
 from django.db import IntegrityError
 from django.core.exceptions import ObjectDoesNotExist
 
@@ -25,8 +25,33 @@ def loginPage(request):
     }
     return render(request, "login_registration.html", context)
 
+def logoutUser(request):
+    logout(request)
+    return redirect("login")
+
 @login_required(login_url="login")
 def lobby(request):
+    """
+    Handles requests from both students and teachers.
+    
+    If the user is a teacher and their status is "Approved", they are redirected to the "home" page.
+    If the user is a student and their status is "Approved", nothing happens.
+    If the user is neither a teacher nor a student, nothing happens.
+    
+    If the user is a student, the function creates a form for student requests and handles the form submission.
+    If the form is valid, a new `Student` object is created and saved to the database.
+    
+    If the user is a teacher, the function creates a form for teacher requests and handles the form submission.
+    If the form is valid, a new `Teacher` object is created and saved to the database.
+    
+    Finally, the function renders the "lobby.html" template with the appropriate form.
+    
+    Args:
+        request (HttpRequest): The HTTP request object containing information about the current request.
+        
+    Returns:
+        None
+    """
     try:
         if request.user.teacher.status == "Approved":
             return redirect("home")
@@ -52,7 +77,7 @@ def lobby(request):
                 else:
                     student.image=image
                     student.save()  
-                    messages.success(request, "Created succesful") 
+                    messages.success(request, "Created successfully") 
                 return redirect("lobby")
     else:
         form = TeacherRequestForm(request, data=request.POST or None, files=request.FILES or None)
