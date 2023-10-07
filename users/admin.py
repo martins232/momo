@@ -60,7 +60,7 @@ class TeacherAdmin(admin.ModelAdmin):
     actions = ["mark_pending", "mark_approved", "mark_rejected", "remove_rejected"] 
     list_filter = ["status"]
     list_display = ('name', 'email',"phone", 'gender', 'image', "action", "_") #Tables you will see
-    fields =['email',"phone", 'gender', 'image', "status"] # forms that could be filled in the admin
+    fields =['email',"phone", 'gender', 'image', "status", ] # forms that could be filled in the admin
     search_fields = ["first_name", "last_name","email", "status"]
     def name(self, obj):
         return obj.user.first_name + " " + obj.user.last_name
@@ -118,6 +118,7 @@ class TeacherAdmin(admin.ModelAdmin):
                     delete = obj.delete()
                     self.message_user(request,ngettext("%d teacher role was succesfully declined. Teacher deleted",
                                    "%d teacher role were successfully declined. Objects deleted", delete) % delete[0], level=messages.SUCCESS)
-admin.site.register(User)
+
 admin.site.register(Student, StudentAdmin)
 admin.site.register(Teacher, TeacherAdmin)
+admin.site.register(User)
