@@ -181,8 +181,8 @@ class TeacherRequestForm(forms.ModelForm):
         exclude = ["user", "status"]  
         
         GENDER = (
-            ("M","Male"),
-            ("F","Female")
+            ("Male","Male"),
+            ("Female","Female")
         )
         
         widgets ={
