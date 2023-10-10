@@ -85,7 +85,7 @@ class TeacherUpdateForm(forms.ModelForm):
     
     def clean_phone(self):
         phone = self.cleaned_data.get("phone")
-        if len(phone) == 11:
+        if len(phone) != 11:
             raise forms.ValidationError("Incomplete number: 08100124724")
         return phone
     

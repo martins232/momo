@@ -1,0 +1,23 @@
+{% extends "main.html" %}
+
+
+{% block content %}
+
+<div class="container-fluid pt-3">
+    <div class="card mx-auto w-75 mt-5">
+        <div class="card-body text-justify">
+          <h3 class="card-title text-danger">DELETE</h3>
+          <h6 class="card-subtitle mb-2 text-body-secondary">Are you sure?</h6>
+          <p class="card-text">Are you sure you want to delete {{obj_name}} <span class="text-danger">"{{obj}}" </span> . All of the following related items associated to it would be delete too</p>
+          <div class="d-grid gap-4 w-75 mx-auto">
+            <a class="btn btn-primary"href="{{request.META.HTTP_REFERER}}">Cancel</a>
+            <button class="btn btn-danger" type="button">Button</button>
+          </div>
+        </div>
+      </div>
+  
+
+</div>
+
+
+{% endblock content %}
