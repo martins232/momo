@@ -6,4 +6,5 @@ urlpatterns = [
     path("edit-profile/<str:pk>/", views.editProfile, name="edit-profile"),
     path("exam/", views.createExam, name="exam"),
     path("exam/<str:pk>/delete", views.deleteExam, name="delete-exam"),
+    path("exam/<str:pk>/edit", views.editExam, name="edit-exam"),
 ]

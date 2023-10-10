@@ -66,12 +66,29 @@ def deleteExam(request, pk):
     if request.user != exam.teacher:
         return redirect("home")
     if request.method== "POST":
+        exam = get_object_or_404(Exam, id=request.POST["obj"])
         exam.delete()
         messages.add_message(request, messages.SUCCESS, "Exam deleted")
         return redirect("exam")
     context = {
         "obj": exam,
-        "obj_name":"Exam"}
-    
-    
+        "obj_name":"Exam"}    
     return render(request, "teachers/delete.html", context)
+
+
+def editExam(request, pk):
+    exam = get_object_or_404(Exam, id=pk)
+    if request.user != exam.teacher:
+        return redirect("home")
+    form = ExamForm(request, instance=exam) 
+    if request.method == "POST":
+        form = ExamForm(request, request.POST, instance=exam) 
+        if form.is_valid():
+            form.save()
+            messages.add_message(request, messages.SUCCESS, "Exam saved")
+            return redirect("exam")
+        
+    context = {
+        "form": form
+    }  
+    return render(request, "teachers/edit_exam.html", context) 
