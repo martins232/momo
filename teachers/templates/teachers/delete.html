@@ -8,11 +8,15 @@
         <div class="card-body text-justify">
           <h3 class="card-title text-danger">DELETE</h3>
           <h6 class="card-subtitle mb-2 text-body-secondary">Are you sure?</h6>
-          <p class="card-text">Are you sure you want to delete {{obj_name}} <span class="text-danger">"{{obj}}" </span> . All of the following related items associated to it would be delete too</p>
+          <p class="card-text">Are you sure you want to delete {{obj_name}} <span class="text-danger">"{{obj}}" </span> . All of the items associated to it would be delete too</p>
+          <form action="" method="post">
           <div class="d-grid gap-4 w-75 mx-auto">
-            <a class="btn btn-primary"href="{{request.META.HTTP_REFERER}}">Cancel</a>
-            <button class="btn btn-danger" type="button">Button</button>
-          </div>
+                {% csrf_token %}
+                <input type="hidden", name={{obj.id}} value={{obj.id}}>
+                <a class="btn btn-primary"href="{{request.META.HTTP_REFERER}}">Cancel</a>
+                <button class="btn btn-danger" type="submit">Delete</button>
+            </div>
+        </form>
         </div>
       </div>
   

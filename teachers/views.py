@@ -62,10 +62,16 @@ def createExam(request):
 
 
 def deleteExam(request, pk):
-    
     exam = get_object_or_404(Exam, id=pk)
+    if request.user != exam.teacher:
+        return redirect("home")
+    if request.method== "POST":
+        exam.delete()
+        messages.add_message(request, messages.SUCCESS, "Exam deleted")
+        return redirect("exam")
     context = {
         "obj": exam,
         "obj_name":"Exam"}
+    
     
     return render(request, "teachers/delete.html", context)
