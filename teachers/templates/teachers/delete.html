@@ -12,7 +12,7 @@
           <form action="" method="post">
           <div class="d-grid gap-4 w-75 mx-auto">
                 {% csrf_token %}
-                <input type="hidden", name={{obj.id}} value={{obj.id}}>
+                <input type="hidden", name="obj" value={{obj.id}}>
                 <a class="btn btn-primary"href="{{request.META.HTTP_REFERER}}">Cancel</a>
                 <button class="btn btn-danger" type="submit">Delete</button>
             </div>

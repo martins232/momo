@@ -5,9 +5,6 @@ from datetime import date
 
 class ExamForm(forms.ModelForm):
     
-    
-    
-    
     def __init__(self, request, *args, **kwargs):
         super(ExamForm, self).__init__(*args, **kwargs)
         self.fields['subject'].queryset = request.user.subject_set.all()
@@ -16,11 +13,13 @@ class ExamForm(forms.ModelForm):
         # self.fields['teacher'].initial = request.user
         # self.fields['teacher'].widget.attrs['readonly'] = True
         
-
     class Meta:
         model = Exam
         exclude = ["teacher"]
         
+        labels={
+            "duration": "Duration (H-M-S)"
+        }
         
         widgets ={
             # Birth date
