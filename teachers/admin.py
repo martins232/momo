@@ -2,6 +2,7 @@ from django.contrib import admin
 from . models import Subject
 from django.utils.html import format_html
 
+
 # Register your models here.
 
 class SubjectAdmin(admin.ModelAdmin):
@@ -11,6 +12,7 @@ class SubjectAdmin(admin.ModelAdmin):
     
     @admin.display(description="Status")
     def assign_teacher(self, obj):
+
         if obj.teacher != None and obj.assigned==True:
             obj.code = "Assigned"
             color = "#28a745"

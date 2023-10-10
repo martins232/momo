@@ -10,9 +10,14 @@ class Subject(models.Model):
     def __str__(self):
         return self.name
     
-    
-    def clean(self):
+    def clean_name(self):
         self.name = self.name.capitalize()
+    
+    def save(self, *args, **kwargs):
+        self.clean_name
+        if self.teacher is not None:
+            self.assigned = True
+        super(Subject, self).save(*args, **kwargs)
        
     
     
