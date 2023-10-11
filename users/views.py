@@ -1,4 +1,5 @@
 from django.shortcuts import render, redirect
+from main.decorators import teacher
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from . forms import *
@@ -105,8 +106,9 @@ def lobby(request):
     }
     return render(request, "lobby.html", context)
 
+@teacher
+@login_required(login_url="login")
 def home(request):
-    
     return render(request, "index.html")
 
 
@@ -129,3 +131,9 @@ def register(request):
         "form": form
     }
     return render(request, "login_registration.html", context)
+
+def accessDenied(request):
+    return render(request, "403.html")
+
+def pageNotFound(request):
+    return render(request, "404.html")

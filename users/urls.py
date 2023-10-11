@@ -7,4 +7,6 @@ urlpatterns = [
     path("logout/", views.logoutUser, name ="logout"),
     path("register/", views.register, name ="register"),
     path("lobby/", views.lobby, name ="lobby"),
+    path("access-denied/", views.accessDenied, name ="access-denied"),
+    path("404/", views.pageNotFound, name ="404"),
 ]

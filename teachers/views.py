@@ -2,9 +2,10 @@ from django.shortcuts import render, redirect, get_object_or_404
 from users.models import User, Teacher
 from . forms import TeacherUpdateForm
 from django.contrib.auth.decorators import login_required
-from exam.forms import ExamForm
+from exam.forms import ExamForm, QuestionForm
 from django.contrib import messages
 from exam .models import Exam
+from django.core.exceptions import ObjectDoesNotExist
 
 
 
@@ -37,7 +38,7 @@ def editProfile(request, pk):
     }
     return render(request, "teachers/edit_profile.html", context)
 
-
+@login_required(login_url="login")
 def createExam(request):
     #form to create exam
     form = ExamForm(request, request.POST or None)
@@ -60,7 +61,7 @@ def createExam(request):
     }
     return render(request, "teachers/exam.html", context)
 
-
+@login_required(login_url="login")
 def deleteExam(request, pk):
     exam = get_object_or_404(Exam, id=pk)
     if request.user != exam.teacher:
@@ -75,7 +76,7 @@ def deleteExam(request, pk):
         "obj_name":"Exam"}    
     return render(request, "teachers/delete.html", context)
 
-
+@login_required(login_url="login")
 def editExam(request, pk):
     exam = get_object_or_404(Exam, id=pk)
     if request.user != exam.teacher:
@@ -92,3 +93,18 @@ def editExam(request, pk):
         "form": form
     }  
     return render(request, "teachers/edit_exam.html", context) 
+
+
+def viewExam(request, pk):
+    try:
+        exam = Exam.objects.get(id=pk)
+    except ObjectDoesNotExist:
+        return redirect("404")
+    
+    form = QuestionForm()
+    context = {
+        "exam": exam,
+        "form": form
+    }
+    return render(request, "teachers/view_exam.html", context)
+    

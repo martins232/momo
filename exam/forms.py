@@ -1,10 +1,9 @@
 from django import forms
-from .models import Exam
+from .models import Exam, Question
 from datetime import date
 
 
 class ExamForm(forms.ModelForm):
-    
     def __init__(self, request, *args, **kwargs):
         super(ExamForm, self).__init__(*args, **kwargs)
         self.fields['subject'].queryset = request.user.subject_set.all()
@@ -17,9 +16,7 @@ class ExamForm(forms.ModelForm):
         model = Exam
         exclude = ["teacher"]
         
-        labels={
-            "duration": "Duration (H-M-S)"
-        }
+        labels={"duration": "Duration (H:M:S)"}
         
         widgets ={
             # Birth date
@@ -31,5 +28,12 @@ class ExamForm(forms.ModelForm):
                      "min": str(date.today())
                 }
             ),
-            }
+        }
     
+
+class QuestionForm(forms.ModelForm):
+    
+    
+    class Meta:
+        model = Question
+        exclude = ('teacher', 'updated', 'created')
