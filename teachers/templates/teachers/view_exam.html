@@ -13,11 +13,13 @@
     </nav>
 
     <!-- Button trigger modal -->
-    <div class="d-grid gap-2">
+
+    <div class="d-grid gap-2 d-md-block">
+        <a href="{% url "exam" %}" class="btn btn-secondary"  ><i class="fas fa-angle-left"></i> Back</a>
         <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#staticBackdrop">
-            <i class="fas fa-plus fa-lg"></i> Create Exam
+            <i class="fas fa-plus fa-lg"></i> Create Question
         </button>
-    </div>
+      </div>
 
     <!-- Modal -->
     <div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
@@ -47,12 +49,16 @@
         </div>
 
     </div>
+    <h2 class="mt-2">{{exam.subject.name}} | <code>{{exam.name}}</code></h2>
+    <hr>
     <div class="card my-3 mx-auto">
         <!-- <div class="card-body">
           <h5 class="card-title">Card title</h5>
           <p class="card-text">With supporting text below as a natural lead-in to additional content.</p>
           <a href="#" class="btn btn-primary">Button</a>
         </div> -->
+
+        
         <div class="table-responsive">
             <table class="table">
                 <thead >
@@ -76,7 +82,7 @@
                         <td>{{exam.duration }}</td>
                         <td>{{exam.start_date | date:"D d M Y"}}</td>
                         <td>{{exam.created | date:"D d M Y"}}</td>
-                        <td><a href="{% url "view-exam" exam.id %}" class="btn btn-warning btn-sm" ><i class="fas fa-eye"></i></a></td>
+                        <td><a href="{% url "edit-exam" exam.id %}" class="btn btn-warning btn-sm" ><i class="fas fa-eye"></i></a></td>
                         <td><a href="{% url "edit-exam" exam.id %}" class="btn btn-success btn-sm" ><i class="fas fa-pencil-alt"></i></a></td>
                         <td><a href="{% url "delete-exam" exam.id %}" class="btn btn-danger btn-sm"><i class="fas fa-trash-alt"></i></a></td>
                       </tr>
