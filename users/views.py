@@ -106,7 +106,7 @@ def lobby(request):
     }
     return render(request, "lobby.html", context)
 
-@teacher
+# @teacher
 @login_required(login_url="login")
 def home(request):
     return render(request, "index.html")
