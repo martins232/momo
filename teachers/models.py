@@ -17,11 +17,10 @@ class Subject(models.Model):
         self.clean_name
         if self.teacher is not None:
             self.assigned = True
+        else:
+            self.assigned= False
         super(Subject, self).save(*args, **kwargs)
        
-    
-    
-    
     class Meta:
         ordering = ["name"]
     

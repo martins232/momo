@@ -9,6 +9,8 @@ class SubjectAdmin(admin.ModelAdmin):
     list_display = ("name", "teacher", "assign_teacher")
     list_filter   = ["assigned", "teacher"]
     
+    ordering = ["assigned"]
+    
     
     @admin.display(description="Status")
     def assign_teacher(self, obj):
