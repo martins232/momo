@@ -1,5 +1,4 @@
-{% extends "main.html" %}
-
+{% extends "students/main_student.html" %}
 
 {% block content %}
     <div class="container-fluid pt-3">
@@ -20,15 +19,17 @@
                         
                             <!-- <img src="https://bootdey.com/img/Content/avatar/avatar7.png" alt="Admin"
                                  class="rounded-circle" width="150"> -->
-                                 <img src="{{request.user.teacher.image.url}}" alt="Admin"
+                                 <img src="{{request.user.student.image.url}}" alt="Admin"
                                  class="rounded-circle" width="200" height="200">
                              <div class="mt-3">
                                  <h4>{{request.user}}</h4>
-                                 <p class="text-danger mb-1"><strong>Staff</strong></p>
+                                 <p class="text-danger mb-1"><strong>Student</strong></p>
                                  <p class="text-muted font-size-sm">Skodaji</p>
+                                 
+                                 
                              </div>
                          </div>
-                         <div class="row">
+                         {% comment %} <div class="row">
                             <div class="col-6"><p class="text-secondary"><b>No of assigned subjects:</b></p></div>
                             <div class="col-6"><p>{{count_course}}</p></div>
                          </div>
@@ -40,7 +41,7 @@
                             <div class="col-6">{% for sub in subjects %}<li class="list-unstyled">{{sub.name}}</li>{% endfor %}</div>
                             
                             
-                         </div>
+                         </div> {% endcomment %}
 
                     </div>
                 </div>
@@ -60,19 +61,10 @@
                         <hr>
                         <div class="row">
                             <div class="col-sm-3">
-                                <h6 class="mb-0">Email</h6>
+                                <h6 class="mb-0">Date of Birth</h6>
                             </div>
                             <div class="col-sm-9 text-secondary">
-                                {{user.teacher.email}}
-                            </div>
-                        </div>
-                        <hr>
-                        <div class="row">
-                            <div class="col-sm-3">
-                                <h6 class="mb-0">Phone</h6>
-                            </div>
-                            <div class="col-sm-9 text-secondary">
-                                {{user.teacher.phone}}
+                                {{user.student.birth}}
                             </div>
                         </div>
                         <hr>
@@ -81,7 +73,7 @@
                                 <h6 class="mb-0">Gender</h6>
                             </div>
                             <div class="col-sm-9 text-secondary">
-                                {{user.teacher.gender}}
+                                {{user.student.gender}}
                             </div>
                         </div>
                         <hr>
@@ -97,7 +89,7 @@
                         <div class="row">
                             <div class="col-sm-12">
                                 <a class="btn btn-md btn-secondary" 
-                                    href="{% url "edit-profile" user.id %}"><i class="fas fa-pen"></i> Edit</a>
+                                    href="{% url "edit-student-profile" user.id %}"><i class="fas fa-pen"></i> Edit</a>
                             </div>
                            <!--target="__blank"-->
                         </div>

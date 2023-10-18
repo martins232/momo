@@ -1,7 +1,8 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from users.models import User, Teacher
 from main . decorators import teacher
-from . forms import TeacherUpdateForm
+from teachers. forms import UserUpdateForm,TeacherUpdateForm, ChangeProfilePicture
+from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
 from exam.forms import ExamForm, QuestionForm
 from django.contrib import messages
@@ -29,19 +30,43 @@ def userProfile(request):
 
 @login_required(login_url="login")
 def editProfile(request, pk):
-    teacher = Teacher.objects.get(user=pk)
-    # print(type(teacher))
-    t_form = TeacherUpdateForm(request, instance= teacher)
+    user = User.objects.get(id =pk)
+    p_form = UserUpdateForm(request, instance = user,)
+    t_form = TeacherUpdateForm(request, instance= user.teacher)
+    
     if request.method == "POST":
-        t_form = TeacherUpdateForm(request,data=request.POST, files=request.FILES,  instance= teacher)
+        p_form = UserUpdateForm(request, request.POST, instance = user)
+        t_form = TeacherUpdateForm(request, request.POST, instance= user.teacher)
         if t_form.is_valid():
+            p_form.save()
             t_form.save()
-            return redirect("edit-profile", pk = teacher.user.id)
-        
+            messages.success(request, "Profile updated")
+            return redirect("edit-profile", pk =user.id)
+        else:
+            print("Nio")
+            print(p_form.errors)
+            print("Teacher: ",t_form.errors)       
     context = {
-        "t_form" : t_form
+        "p_form": p_form,
+        "t_form" : t_form,
+        
     }
+    # print(pic_form)
     return render(request, "teachers/edit_profile.html", context)
+
+def editProfileImage(request, pk):
+    
+    teacher = Teacher.objects.get(id=pk)
+    form = ChangeProfilePicture(instance=teacher)
+    if request.method == "POST":
+        form = ChangeProfilePicture(request.POST, request.FILES, instance=teacher)
+        if form.is_valid():
+            form.save()
+            return redirect("edit-profile", pk=request.user.id)
+    context ={
+        "form":form
+    }
+    return render(request, "teachers/image.html", context)
 
 @login_required(login_url="login")
 def createExam(request):

@@ -4,7 +4,7 @@ from django.core.exceptions import ValidationError
 from . models import User, Student, Teacher
 from django.contrib.auth.forms import UserCreationForm
 from datetime import date # used in birthday validation
-import datetime # used to prevent future date
+# import datetime # used to prevent future date
 
 
 
@@ -25,6 +25,7 @@ class UserRegistrationForm(UserCreationForm):
         )
     first_name = forms.CharField(
         label="First name",
+        help_text="<p>Space and numbers are not acceptable</p>",
         min_length=3,
         max_length=50,
         # required=False,
@@ -37,6 +38,7 @@ class UserRegistrationForm(UserCreationForm):
         ) 
     last_name = forms.CharField(
         label="Last name",
+        help_text="<p>Space and numbers are not acceptable</p>",
         min_length=3,
         max_length=50,
         # required=False,
@@ -55,25 +57,69 @@ class UserRegistrationForm(UserCreationForm):
         fields = ["first_name", "last_name","username", "role", "password1", "password2"]
         
         
-        labels ={
-            "password2":"Started",
-        }
-        
         widgets ={
             "username": forms.TextInput(attrs={"class": "form-control","autofocus": False,}),
         }
 
     
-    def __init__(self, *args, **kwargs):
+    def __init__(self,request,*args, **kwargs):
+        self.request = request
         super().__init__(*args, **kwargs)
         self.fields['username'].widget.attrs.update({'autofocus': False})
         self.fields["username"].error_messages.update({"unique": "Denied! User already exist. You may want to login?"})
+        
+        if request.user:
+            if request.user.pk:
+                # If yes, remove the role field
+                self.fields.pop('role')
+                
+                
+    def clean_username(self):
+        """This is to make sure a user can updaate his/her **username** without getting an error"""
+        username = self.cleaned_data.get('username')
+        current_user = self.request.user
 
+        if User.objects.filter(username=username).exclude(pk=current_user.pk).exists():
+            raise forms.ValidationError("Denied! User already exists. You may want to login?")
+
+        return username    
+    
+    # def clean(self):
+    #     # call the parent class's clean method
+    #     cleaned_data = super().clean()
+    #     # get the values from the cleaned_data dictionary
+    #     role = cleaned_data.get("role")
+    #     username = cleaned_data.get("username")
+    #     # check if the user already exists and wants to update their profile
+    #     if self.request.user and self.request.user.pk:
+    #         # remove the role field from the cleaned_data
+    #         cleaned_data.pop("role")
+    #     else:
+    #         # check if the role field is empty
+    #         if not role:
+    #             # raise a validation error
+    #             raise forms.ValidationError("Please select a role")
+    #     # check if the username field is unique
+    #     if User.objects.filter(username=username).exists():
+    #         # raise a validation error
+    #         raise forms.ValidationError("Denied! User already exist. You may want to login?")
+    #     # return the cleaned_data dictionary
+    #     return cleaned_data
+    
+    
+    # # def clean_email(self, request):
+    # #     username = self.cleaned_data.get("username")
+    # #     if User.objects.filter(username=username).exists():
+    # #         if request.user.username == username:
+    # #             return username
+    # #         else:
+    # #             raise forms.ValidationError("Denied! " + username + " is already registered")
+    # #     return username
 
 class StudentRequestForm(forms.ModelForm):
     image = forms.FileField(
-        label="Your picture",        
-        required= True,
+        label="Your picture",     
+        required= False, # bring out the checkbox
         widget=forms.ClearableFileInput(
             attrs={
                 "style": "font-size : 13px;",
@@ -89,8 +135,8 @@ class StudentRequestForm(forms.ModelForm):
         
         
         GENDER = (
-            ("M","Male"),
-            ("F","Female")
+            ("Male","Male"),
+            ("Female","Female")
         )
         
         widgets ={
@@ -110,7 +156,11 @@ class StudentRequestForm(forms.ModelForm):
     def __init__(self, request, *args, **kwargs):
         self.request = request # Assign the request object to the form instance
         super().__init__(*args, **kwargs) # Call the parent class constructor    
-
+        # if request.user:
+        #     if request.user.pk:
+        #         # If yes, remove the role field
+        #         # self.fields["gender"].disabled=True
+        #         pass
         
     
     def clean_birth(self):
@@ -129,21 +179,32 @@ class StudentRequestForm(forms.ModelForm):
             raise forms.ValidationError("Age must be between 18 and 65")
         
         return birth
-
+    # def clean_image(self):
+    #     image = self.cleaned_data.get("image")
+    #     if image.size <= 2*1048576:
+    #         return image
+    #     else:
+    #         raise forms.ValidationError("Max. Upload: 2MB")
 
     def clean_image(self):
         image = self.cleaned_data.get("image")
         ext = str(image).split(".")[-1]
-        if image.size <= 2*1048576:
-            try:
-                new_name = (self.request.user.first_name+"_"+self.request.user.last_name+"."+ext).lower() 
-            except KeyError:
-                return image
+        
+        if image:
+            if "photo/" in image.name:
+                raise forms.ValidationError("Please select an image")
+            if image.size <= 2*1048576:
+                try:
+                    new_name = (self.request.user.first_name+"_"+self.request.user.last_name+"."+ext).lower() 
+                except KeyError:
+                    return image
+                else:
+                    image.name = new_name
+                    return image
             else:
-                image.name = new_name
-                return image
+                raise forms.ValidationError("Max. Upload: 2MB")
         else:
-            raise forms.ValidationError("Max. Upload: 2MB")
+            print("No image")
         
         
 class LowerCase(forms.CharField):
@@ -190,7 +251,7 @@ class TeacherRequestForm(forms.ModelForm):
                 attrs={
                     "style": "font-size:14px; ", #CSS
                     "placeholder": "E.g: 0703-0000-000",
-                    "data-mask": "+(234) 0000-0000-000",
+                    
                 }
             ),
              "gender":forms.RadioSelect(choices=GENDER, attrs={"class":"btn-check",}),
@@ -199,29 +260,46 @@ class TeacherRequestForm(forms.ModelForm):
     def __init__(self, request, *args, **kwargs):
         self.request = request # Assign the request object to the form instance
         super().__init__(*args, **kwargs) # Call the parent class constr
-        
+        # if request.user:
+        #     if request.user.pk:
+        #         self.fields["gender"].disabled=True
+        #         # self.fields.pop("image")
     def clean_image(self):
         image = self.cleaned_data.get("image")
         ext = str(image).split(".")[-1]
-        if image.size <= 2*1048576:
-            try:
-                new_name = (self.request.user.first_name+"_"+self.request.user.last_name+"."+ext).lower() 
-            except KeyError:
-                return image
+        
+        if image:
+            if "photo/" in image.name:
+                raise forms.ValidationError("Please select an image")
+            if image.size <= 2*1048576:
+                try:
+                    new_name = (self.request.user.first_name+"_"+self.request.user.last_name+"."+ext).lower() 
+                except KeyError:
+                    return image
+                else:
+                    image.name = new_name
+                    return image
             else:
-                image.name = new_name
-                return image
+                raise forms.ValidationError("Max. Upload: 2MB")
         else:
-            raise forms.ValidationError("Max. Upload: 2MB")
+            print("No image")
     
     def clean_phone(self):
         phone = self.cleaned_data.get("phone")
-        if len(phone) != 20:
-            raise forms.ValidationError("Incomplete number: +(234) 0000-0000-000")
+        if len(phone) != 11:
+            raise forms.ValidationError("Invalid number")
         return phone
     
     def clean_email(self):
         email = self.cleaned_data.get("email")
         if Teacher.objects.filter(email=email).exists():
-            raise forms.ValidationError("Denied! " + email + " is already registered")
+            if email == self.request.user.teacher.email:
+                return email
+            else:
+                raise forms.ValidationError("Denied! " + email + " is already registered")
         return email
+    
+    
+
+        
+    

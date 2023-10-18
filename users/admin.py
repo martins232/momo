@@ -7,7 +7,7 @@ from django.contrib import messages
 # Register your models here.
 
 class StudentAdmin(admin.ModelAdmin):
-    actions = ["mark_pending", "mark_approved", "mark_rejected"] 
+    actions = ["mark_pending", "mark_approved", "mark_rejected", "remove_rejected"] 
     list_filter = ["status"]
     list_display = ('name', 'birth', 'gender', 'image', "action", "_") #Tables you will see
     fields =['birth', 'gender', 'image', "status"] # forms that could be filled in the admin
@@ -53,6 +53,22 @@ class StudentAdmin(admin.ModelAdmin):
         queryset.update(status="Rejected")
         self.message_user(request, "Student(s) rejected", level=messages.SUCCESS)
         
+    @admin.action(description="Remove rejected students")
+    def remove_rejected(self, request, queryset):
+    # Loop over the queryset
+        for obj in queryset:
+            if obj.status != "Rejected":
+                self.message_user(request, "Make sure selected Student has status as rejected", level=messages.INFO)
+                break
+            else:
+                obj.user.delete()
+                # Check if the id is not None
+                if obj.id is not None:
+                    # Delete the object and store the result
+                    delete = obj.delete()
+                    self.message_user(request,ngettext("%d Student role was succesfully declined. Student deleted",
+                                   "%d Student role were successfully declined. Objects deleted", delete) % delete[0], level=messages.SUCCESS)
+        
         
 
 
@@ -87,17 +103,17 @@ class TeacherAdmin(admin.ModelAdmin):
     action.allow_tags = True
     
     
-    @admin.action(description="Mark selected student as pending")
+    @admin.action(description="Mark selected teacher as pending")
     def mark_pending(self, request, queryset):
         queryset.update(status="Pending")
         self.message_user(request, "Teacher(s) made pending", level=messages.SUCCESS)
         
-    @admin.action(description="Mark selected student as approved")
+    @admin.action(description="Mark selected teacher as approved")
     def mark_approved(self, request, queryset):
         queryset.update(status="Approved")
         self.message_user(request, "Teacher(s) approved", level=messages.SUCCESS)
         
-    @admin.action(description="Mark selected student as rejected")
+    @admin.action(description="Mark selected teacher as rejected")
     def mark_rejected(self, request, queryset):
         queryset.update(status="Rejected")
         self.message_user(request, "Teacher(s) rejected", level=messages.SUCCESS)
@@ -106,7 +122,7 @@ class TeacherAdmin(admin.ModelAdmin):
     # Loop over the queryset
         for obj in queryset:
             if obj.status != "Rejected":
-                self.message_user(request, "Make sure selected Teacher has status as rejected", level=messages.INFO)
+                self.message_user(request, "Make sure selected teacher has status as rejected", level=messages.INFO)
                 break
             else:
                 obj.user.is_teacher=False
