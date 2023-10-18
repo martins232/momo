@@ -53,7 +53,7 @@ def editProfile(request, pk):
     }
     # print(pic_form)
     return render(request, "teachers/edit_profile.html", context)
-
+@login_required(login_url="login")
 def editProfileImage(request, pk):
     
     teacher = Teacher.objects.get(id=pk)
@@ -143,7 +143,7 @@ def editExam(request, pk):
     }  
     return render(request, "teachers/edit.html", context) 
 
-
+@login_required(login_url="login")
 def viewExam(request, pk):
     try:
         exam = Exam.objects.get(id=pk)
@@ -169,7 +169,7 @@ def viewExam(request, pk):
         "questions":questions
     }
     return render(request, "teachers/view_exam.html", context)
-
+@login_required(login_url="login")
 def editQuestion(request, pk):
     try:
         question= Question.objects.get(id=pk)
@@ -209,6 +209,7 @@ def deleteQuestion(request, pk):
     return render(request, "teachers/delete.html", context)
 
 @teacher
+@login_required(login_url="login")
 def viewAllQuestions(request):
     teacher = User.objects.get(username=request.user.username)
     questions = teacher.question_set.all()

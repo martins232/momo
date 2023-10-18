@@ -25,7 +25,12 @@ class StudentUpdateForm(forms.ModelForm):
                 }
             ),
             "gender":forms.RadioSelect(choices=GENDER, attrs={"class":"btn-check",}),
+            
         }
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["grade"].disabled = True
+        
     def clean_birth(self):
         birth = self.cleaned_data.get("birth")
         # variables

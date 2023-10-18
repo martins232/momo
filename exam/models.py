@@ -1,10 +1,13 @@
 from django.db import models
-from users. models import User
+from users. models import User, Grade
 from teachers. models import Subject
-
+  
+    
+    
 # Create your models here.
 class Exam(models.Model):
     name = models.CharField(max_length=100)
+    grade = models.ForeignKey(Grade, on_delete=models.SET_NULL, null=True)
     teacher = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, limit_choices_to={"is_teacher":True})
     subject = models.ForeignKey(Subject, on_delete=models.SET_NULL, null=True)
     duration = models.DurationField()

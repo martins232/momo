@@ -1,14 +1,25 @@
-from collections.abc import Mapping
-from typing import Any
+
 from django import forms
-from django.core.files.base import File
-from django.db.models.base import Model
-from django.forms.utils import ErrorList
 from .models import Exam, Question
+from users.models import Grade
 from datetime import date
 
 
 class ExamForm(forms.ModelForm):
+    
+    grade = forms.ModelChoiceField(
+        label = "Grader",
+        empty_label="Select a grade",
+        required=True,
+        queryset= Grade.objects.all(),
+        widget=forms.Select(
+            attrs={
+                "style": "font-size : 13px;",
+                "class": "form-control",
+                
+            }
+        )
+        )
     
     def __init__(self, request, *args, **kwargs):
         super(ExamForm, self).__init__(*args, **kwargs)

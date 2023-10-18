@@ -71,12 +71,13 @@ def lobby(request):
         if request.method =="POST":
             form = StudentRequestForm(request, request.POST, request.FILES)
             if form.is_valid():
+                grade = form.cleaned_data["grade"]
                 birth = form.cleaned_data["birth"]
                 gender = form.cleaned_data["gender"]
                 image = form.cleaned_data["image"]
                 
                 try:
-                    student = Student.objects.create(user = request.user,birth = birth,gender = gender)
+                    student = Student.objects.create(user = request.user,birth = birth,gender = gender, grade=grade)
                 except IntegrityError:
                     messages.info(request, "Profile already submitted, which is now pending admin verification")  
                 else:

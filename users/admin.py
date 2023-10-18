@@ -1,5 +1,6 @@
 from django.contrib import admin
-from . models import User, Student, Teacher
+from . models import User, Student, Teacher, Grade
+from . forms import StudentRequestForm
 from django.utils.html import format_html
 from django.utils.translation import ngettext
 from django.contrib import messages
@@ -10,7 +11,8 @@ class StudentAdmin(admin.ModelAdmin):
     actions = ["mark_pending", "mark_approved", "mark_rejected", "remove_rejected"] 
     list_filter = ["status"]
     list_display = ('name', 'birth', 'gender', 'image', "action", "_") #Tables you will see
-    fields =['birth', 'gender', 'image', "status"] # forms that could be filled in the admin
+    fields =['birth',"grade", 'gender', 'image', "status"] # forms that could be filled in the admin
+    
     
     
     def name(self, obj):
@@ -138,3 +140,4 @@ class TeacherAdmin(admin.ModelAdmin):
 admin.site.register(Student, StudentAdmin)
 admin.site.register(Teacher, TeacherAdmin)
 admin.site.register(User)
+admin.site.register(Grade)
