@@ -1,3 +1,8 @@
+{% extends "main.html" %}
+
+
+
+{% block sidebar %}
 <nav class="sb-sidenav accordion sb-sidenav-dark" id="sidenavAccordion">
     <div class="sb-sidenav-menu">
         <div class="nav">
@@ -8,8 +13,12 @@
 
             <!--Normal sidebar-->
             <a class="nav-link" href="{% url "home" %}"><div class="sb-nav-link-icon"><i class="fas fa-tachometer-alt"></i></div>Dashboard</a>
-            <a class="nav-link" href="{% url "profile" %}"><div class="sb-nav-link-icon"><i class="fas fa-user-tie"></i></div>Profile</a>
+            <a class="nav-link" href="{% url "student-profile" %}"><div class="sb-nav-link-icon"><i class="fas fa-user-tie"></i></div>Student Profile</a>
             <a class="nav-link" href="{% url "exam" %}"><div class="sb-nav-link-icon"><i class="fas fa-book-open"></i></div>Exam</a>
+            <a class="nav-link" href="{% url "exam" %}"><div class="sb-nav-link-icon"><i class="fas fa-book-open"></i></div>Exam
+            <span class="badge text-bg-danger ms-2">4</span></a>
+
+            
              <!--end of Normal sidebar-->
 
             <div class="sb-sidenav-menu-heading">EXAM</div>
@@ -88,3 +97,6 @@
         Start Bootstrap
     </div>
 </nav>
+{% endblock sidebar %}
+
+

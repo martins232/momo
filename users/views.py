@@ -55,9 +55,13 @@ def lobby(request):
     """
     try:
         if request.user.teacher.status == "Approved":
-            return redirect("home")
-        elif request.user.student.status == "Approved":
-            pass
+            return redirect("home")                            
+    except ObjectDoesNotExist:
+        pass
+    
+    try:
+        if request.user.student.status == "Approved":
+            return redirect("student-profile")                            
     except ObjectDoesNotExist:
         pass
     
@@ -113,9 +117,14 @@ def home(request):
 
 
 def register(request):
-    form = UserRegistrationForm(request.POST or None)
+    
+    if request.user.is_authenticated:
+        # messages.info(request, "OOPS!! Something went wrong... Login to continue") #to prevent crispy error from role if the user trys to access this page through url whilst still registered
+        logout(request)
+        
+    form = UserRegistrationForm(request, request.POST or None)
     if request.method == "POST":
-        form = UserRegistrationForm(request.POST)
+        form = UserRegistrationForm(request, request.POST)
         if form.is_valid():   
             role = form.cleaned_data.get("role")
             user = form.save(commit=False)

@@ -1,0 +1,36 @@
+{% extends "main.html" %}
+{% load crispy_forms_tags %}
+{% block content %}
+<div class="container-fluid pt-3">
+<div class="card col-md-7 mx-auto">
+    <div class="card-body text-bg-secondary">
+        <div class="d-flex flex-column align-items-center text-center">
+            
+           <!-- <img src="https://bootdey.com/img/Content/avatar/avatar7.png" alt="Admin"
+                class="rounded-circle" width="150"> -->
+                {% if request.user.is_teacher %}
+                <img src="{{request.user.teacher.image.url}}" alt="Admin"
+                class="rounded-circle" width="200" height="200">
+                {% else %} 
+                <img src="{{request.user.student.image.url}}" alt="Admin"
+                class="rounded-circle" width="200" height="200">
+                {% endif %}
+                
+            
+        </div>
+        <form action="" method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+        
+            {{form.image | as_crispy_field}}
+            
+    </div>
+    <div class="card-footer text-end">
+        
+            <button type="submit" class="btn btn-success">Change</button>
+        
+    </form>
+    </div>
+</div>
+</div>
+
+{% endblock content %}

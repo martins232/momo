@@ -5,10 +5,11 @@
 
         <div id="layoutSidenav">
             <div id="layoutSidenav_nav">
-                
-                    <!--sidebar-->
-                    {% include "sidebar.html" %}
-                    <!--end of sidebar-->
+                    {% block sidebar %}
+                        <!--sidebar-->
+                        {% include "sidebar.html" %}
+                        <!--end of sidebar-->
+                    {% endblock sidebar %}
             
             </div>
 
