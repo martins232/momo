@@ -2,13 +2,19 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 
 
+
+
 # Create your models here.
 STATUS_CHOICE = (
     ("Pending", "Pending"),
     ("Approved", "Approved"),
     ("Rejected", "Rejected")
 )
-
+class Grade(models.Model):
+    grade = models.IntegerField()
+    
+    def __str__(self):
+        return f"Grade {str(self.grade)}"
 
 class User(AbstractUser):
     is_student = models.BooleanField(null=True)
@@ -26,6 +32,7 @@ class User(AbstractUser):
         
 class Student(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
+    grade = models.ForeignKey(Grade, on_delete=models.SET_NULL, null=True)
     birth = models.DateField(auto_now=False, auto_now_add=False, verbose_name="Birthday")
     gender = models.CharField(max_length=10)
     image = models.FileField(upload_to="photo", verbose_name="Photo", default="/media/photo/avatar.jpg")

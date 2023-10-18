@@ -1,7 +1,7 @@
 from django import forms
 from django.core.validators import RegexValidator
 from django.core.exceptions import ValidationError
-from . models import User, Student, Teacher
+from . models import User, Student, Teacher, Grade
 from django.contrib.auth.forms import UserCreationForm
 from datetime import date # used in birthday validation
 # import datetime # used to prevent future date
@@ -117,6 +117,21 @@ class UserRegistrationForm(UserCreationForm):
     # #     return username
 
 class StudentRequestForm(forms.ModelForm):
+    grade = forms.ModelChoiceField(
+        label = "Grader",
+        empty_label="Select a grade",
+        required=True,
+        queryset= Grade.objects.all(),
+        widget=forms.Select(
+            attrs={
+                "style": "font-size : 13px;",
+                "class": "form-control",
+                
+            }
+        )
+        )
+    
+    
     image = forms.FileField(
         label="Your picture",     
         required= False, # bring out the checkbox

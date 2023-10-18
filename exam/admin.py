@@ -11,5 +11,8 @@ class ExamAdmin(admin.ModelAdmin):
     #     return super().formfield_for_foreignkey(db_field, request, **kwargs)
 class QuestionAdmin(admin.ModelAdmin):
     pass
+
+
+
 admin.site.register(Exam, ExamAdmin)
 admin.site.register(Question, QuestionAdmin)
