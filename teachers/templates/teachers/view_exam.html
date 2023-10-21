@@ -60,7 +60,7 @@
 
         
         <div class="table-responsive">
-            <table class="table">
+            <table class="table table-sm table-hover table-bordered">
                 <thead class="table-light" >
                   <tr>
                     <th scope="col">#</th>
@@ -69,7 +69,8 @@
                     <th scope="col">B</th>
                     <th  scope="col">C</th>
                     <th  scope="col">D</th>
-                    <th  scope="col">Answer</th>
+                    <th  scope="col" class="table-warning">Answer</th>
+                    <th  scope="col" colspan="2" class="table-dark text-center align-middle">ACTION</th>
                     {% comment %} <th colspan="2" scope="col">Action</th> {% endcomment %}
                   </tr>
                 </thead>
@@ -78,11 +79,11 @@
                     
                     <tr>
                         <th scope="row">{{forloop.counter}}</th>
-                        <td class="w-50">{{question.question}}</td>
-                        <td>{{question.option_A }}</td>
-                        <td>{{question.option_B }}</td>
-                        <td>{{question.option_C }}</td>
-                        <td>{{question.option_D }}</td>
+                        <td data-bs-toggle="tooltip" data-bs-placement="top" title="{{question.question}}">{{question.question | truncatewords:5}}</td>
+                        <td>{{question.option_A  | truncatechars:5}}</td>
+                        <td>{{question.option_B  | truncatechars:5}}</td>
+                        <td>{{question.option_C  | truncatechars:5}}</td>
+                        <td>{{question.option_D  | truncatechars:5}}</td>
                         <td>{{question.answer }}</td>
                         {% comment %} <td>{{question.option_A | date:"D d M Y"}}</td>
                         <td>{{exam.created | date:"D d M Y"}}</td> {% endcomment %}

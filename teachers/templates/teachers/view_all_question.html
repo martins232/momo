@@ -4,6 +4,7 @@
 {% block content %}
 
 <div class="container-fluid pt-3">
+
     <nav aria-label="breadcrumb" class="main-breadcrumb">
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a href="javascript:void(0)">Home</a></li>
@@ -11,97 +12,109 @@
             <li class="breadcrumb-item active" aria-current="page">All Questions</li>
         </ol>
     </nav>
-
-    <!-- Button trigger modal -->
-
     <div class="d-grid gap-2 d-md-block">
         <a href="{% url "exam" %}" class="btn btn-secondary"  ><i class="fas fa-angle-left"></i> Back</a>
-        {% comment %} <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#staticBackdrop">
-            <i class="fas fa-plus fa-lg"></i> Create Question
-        </button> {% endcomment %}
-      </div>
-
-    <!-- Modal -->
-    {% comment %} <div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
-        aria-labelledby="staticBackdropLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h1 class="modal-title fs-5" id="staticBackdropLabel">Create Question</h1>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <form method="POST" >
-                        {% csrf_token %}
-                        <div class="mb-3">
-                            {{form | crispy}}
-                        </div>
+    </div>
+   <div class="row">
+    <div class="col-md-2">
+        <div class="mb-3">
+            <h2 class="mt-2">FILTER</h2>
+            <hr>
+            <form action="{% url "all-questions" %}" method="get" autocomplete="off">
+                <label for="question" class="form-label"><b>Question</b></label>
+                <input type="text" class="form-control" id="question" name="question">
+                
+                <label for="subject" class="form-label"><b>Subject</b></label>
+                <input type="text" class="form-control" id="subject" list="subject-name" name="subject">
+                <datalist id="subject-name">
+                    {% for subject in subjects  %}
+                    <option value="{{subject}}">
+                    {% endfor %}
                     
-                        <div class="modal-footer">
-                            
-                            <button type="submit" class="btn btn-success"><i class="fas fa-save"></i> Submit</button>
-                            <!-- <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button> -->
+                </datalist>
+                
+                <label for="grade" class="form-label"><b>Grade</b></label>
+                <select class="form-select" id="grade" name="grade">
+                    <option class="text-center" value=0>----SELECT---- </option>
+                    {% for grade in grades %}
+                    <option value={{grade.grade}}>{{grade}}</option>
+                    {% endfor %}
+                    
+                  </select>
 
-                        </div>
-                    </form>
+                <div class="d-grid gap-2 mt-2" >
+                    <button class="btn btn-dark " type="submit"><i class="fas fa-search"></i> Search</button>
+                    <a href="{% url "all-questions" %}" class="btn btn-secondary" type="reset">Reset</a>
+                </div>
+            </form>
+        </div>
+    </div>
+    <div class="col-md-10">
+        <h2 class="mt-2">All questions by  | <code>{{request.user}}</code></h2>
+        <hr>
+        <div class="card my-3 mx-auto">
+            <!-- <div class="card-body">
+              <h5 class="card-title">Card title</h5>
+              <p class="card-text">With supporting text below as a natural lead-in to additional content.</p>
+              <a href="#" class="btn btn-primary">Button</a>
+            </div> -->
+    
+            
+            <div class="table-responsive">
+                <table class="table table-sm table-hover mt-3" id="myTable">
+                    <thead class="table-light" >
+                      <tr>
+                        <th scope="col">#</th>
+                        <th scope="col">Question</th>
+                        <th scope="col">Subject</th>
+                        <th scope="col">A</th>
+                        <th scope="col">B</th>
+                        <th  scope="col">C</th>
+                        <th  scope="col">D</th>
+                        <th  scope="col">Answer</th>
+                        <th  scope="col" colspan="2" class="table-dark text-center align-middle">ACTION</th>
+                        
+                        {% comment %} <th colspan="2" scope="col">Action</th> {% endcomment %}
+                      </tr>
+                    </thead>
+                    <tbody >
+                        {% for question in questions %}
+                        
+                        <tr>
+                            <th scope="row">{{forloop.counter}}</th>
+                            <td data-bs-toggle="tooltip" data-bs-placement="top" title="{{question.question}}" >{{question.question | truncatechars:30}}</td>
+                            <td >{{question.exam.subject }}</td>
+                            <td data-bs-toggle="tooltip" data-bs-placement="top" title="{{question.option_A }}">{{question.option_A | truncatechars:10}}</td>
+                            <td data-bs-toggle="tooltip" data-bs-placement="top" title="{{question.option_B }}">{{question.option_B | truncatechars:10}}</td>
+                            <td data-bs-toggle="tooltip" data-bs-placement="top" title="{{question.option_C }}">{{question.option_C | truncatechars:10}}</td>
+                            <td data-bs-toggle="tooltip" data-bs-placement="top" title="{{question.option_D }}">{{question.option_D | truncatechars:10}}</td>
+                            <td class="text-center">{{question.answer }}</td>
+                            
+                            <td><a href="{% url "view-question" question.id %}" class="btn btn-success btn-sm" ><i class="fas fa-pencil-alt"></i></a></td>
+                            <td><a href="{% url "delete-question" question.id %}" class="btn btn-danger btn-sm"><i class="fas fa-trash-alt"></i></a></td>
+                          </tr>
+                        {% empty %}
+                        <tfoot>
+                            <tr><td colspan="10"><p class="text-center"><b>Please use the filter to see your questions</b></p></td></tr>
+                        </tfoot>
+                        {% endfor %}
+                    </tbody>
+                  </table>
                 </div>
             </div>
         </div>
-
-    </div> {% endcomment %}
-    <h2 class="mt-2">All questions by  | <code>{{request.user}}</code></h2>
-    <hr>
-    <div class="card my-3 mx-auto">
-        <!-- <div class="card-body">
-          <h5 class="card-title">Card title</h5>
-          <p class="card-text">With supporting text below as a natural lead-in to additional content.</p>
-          <a href="#" class="btn btn-primary">Button</a>
-        </div> -->
-
-        
-        <div class="table-responsive">
-            <table class="table">
-                <thead class="table-light" >
-                  <tr>
-                    <th scope="col">#</th>
-                    <th scope="col">Question</th>
-                    <th scope="col">Subject</th>
-                    <th scope="col">A</th>
-                    <th scope="col">B</th>
-                    <th  scope="col">C</th>
-                    <th  scope="col">D</th>
-                    <th  scope="col">Answer</th>
-                    {% comment %} <th colspan="2" scope="col">Action</th> {% endcomment %}
-                  </tr>
-                </thead>
-                <tbody >
-                    {% for question in questions %}
-                    
-                    <tr>
-                        <th scope="row">{{forloop.counter}}</th>
-                        <td>{{question.question}}</td>
-                        <td>{{question.exam.subject }}</td>
-                        <td>{{question.option_A }}</td>
-                        <td>{{question.option_B }}</td>
-                        <td>{{question.option_C }}</td>
-                        <td>{{question.option_D }}</td>
-                        <td>{{question.answer }}</td>
-                        
-                        <td><a href="{% url "view-question" question.id %}" class="btn btn-success btn-sm" ><i class="fas fa-pencil-alt"></i></a></td>
-                        <td><a href="{% url "delete-question" question.id %}" class="btn btn-danger btn-sm"><i class="fas fa-trash-alt"></i></a></td>
-                      </tr>
-                    {% empty %}
-                    <tr><td colspan="7"><p class="text-center"><b>No Questions Yet!</b></p></td></tr>
-                    {% endfor %}
-                </tbody>
-              </table>
-        </div>
     </div>
     
-   
+    <p id="demo"></p>
+    
       
 </div>
+
+
+
 {% endblock content %}
+
+
 
 
 
