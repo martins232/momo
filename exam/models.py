@@ -20,12 +20,12 @@ class Exam(models.Model):
         return self.name
     
     class Meta:
-        ordering = ["-updated", "created"]
+        ordering = ["start_date", "created"]
     
     
 class Question(models.Model):
     teacher = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, limit_choices_to={"is_teacher":True})
-    exam = models.ForeignKey(Exam, on_delete=models.SET_NULL, null=True)
+    exam = models.ForeignKey(Exam, on_delete=models.RESTRICT)
     question = models.TextField()
     option_A = models.TextField()
     option_B = models.TextField()

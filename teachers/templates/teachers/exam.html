@@ -29,7 +29,7 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <form method="POST" >
+                    <form method="POST" autocomplete="OFF">
                         {% csrf_token %}
                         <div class="mb-3">
                             {{form | crispy}}
@@ -54,29 +54,31 @@
           <a href="#" class="btn btn-primary">Button</a>
         </div> -->
         <div class="table-responsive">
-            <table class="table">
-                <thead >
+            <table class="table table-sm table-hover">
+                <thead class="table-secondary">
                   <tr>
                     <th scope="col">#</th>
                     <th scope="col">Name of exam</th>
                     <th scope="col">Grade</th>
                     <th scope="col">Subject</th>
                     <th scope="col">Duration</th>
-                    <th  scope="col">Start Date</th>
+                    <th scope="col" class="text-center">Questions</th>
+                    <th  scope="col" >Start Date</th>
                     <th  scope="col">Date Created</th>
                     <th  scope="col" class="table-dark text-center align-middle" colspan="3">ACTION</th>
                     {% comment %} <th colspan="2" scope="col">Action</th> {% endcomment %}
                   </tr>
                 </thead>
-                <tbody >
+                <tbody>
                     {% for exam in exams %}
                     
                     <tr>
                         <th scope="row">{{forloop.counter}}</th>
-                        <td>{{exam.name}}</td>
+                        <td class="user-select-all">{{exam.name}}</td>
                         <td>{{exam.grade.grade}}</td>
                         <td>{{exam.subject}}</td>
                         <td>{{exam.duration }}</td>
+                        <td class= "text-center">{{exam.question_set.count }}</td>
                         <td>{{exam.start_date | date:"d/m/y"}}</td>
                         <td>{{exam.created | date:"d/m/y"}}</td>
                         <td><a href="{% url "view-exam" exam.id %}" class="btn btn-warning btn-sm" ><i class="fas fa-eye"></i></a></td>

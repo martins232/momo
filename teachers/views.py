@@ -1,18 +1,17 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from users.models import User, Teacher
+from users.models import User, Teacher, Grade
 from main . decorators import teacher
 from teachers. forms import UserUpdateForm,TeacherUpdateForm, ChangeProfilePicture
-from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
 from exam.forms import ExamForm, QuestionForm
 from django.contrib import messages
 from exam .models import Exam, Question
 from teachers.models import Subject
 from django.core.exceptions import ObjectDoesNotExist
-
+from django.db.models import Q
 from django.db.models.signals import post_save
 from django.dispatch import receiver
-
+from django.core.paginator import Paginator, EmptyPage
 
 
 
@@ -84,7 +83,8 @@ def createExam(request):
             exam.save()
             messages.add_message(request, messages.SUCCESS, "Exam created")
             return redirect("exam")
-            
+        else:
+            messages.add_message(request, messages.ERROR, form.errors.as_ul())   
     context = {
         "form": form,
         "exams": exams,
@@ -211,9 +211,43 @@ def deleteQuestion(request, pk):
 @teacher
 @login_required(login_url="login")
 def viewAllQuestions(request):
+    #filtering
+    # filt_subject= request.GET.get("subject") if request.GET.get("subject") != None else ""
+    # filt_question= request.GET.get("question") if request.GET.get("question") != None else ""
+    # filt_grade= request.GET.get("grade") if request.GET.get("grade") != None else 0
+    filt_subject= request.GET.get("subject", "") 
+    filt_question= request.GET.get("question", "") 
+    filt_grade= request.GET.get("grade", 0) 
+    #########
+   
     teacher = User.objects.get(username=request.user.username)
-    questions = teacher.question_set.all()
+    questions = teacher.question_set.filter(
+            Q(exam__subject__name__exact=filt_subject) | 
+            Q(exam__grade__grade__exact=filt_grade) |
+            Q(question__exact=filt_question)
+            )
+    
+    # if filt_subject or int(filt_grade):  #for some reasons i don't know why, if i remove the int the logic becomes true 
+    #     questions = teacher.question_set.filter(
+    #         Q(exam__subject__name__exact=filt_subject) | 
+    #         Q(exam__grade__grade__exact=filt_grade) 
+    #         )
+
+    # else:
+    #     questions = teacher.question_set.filter(Q(question__contains=filt_question))
+        
+    
+    #for drop down in search box
+    subjects = teacher.subject_set.all()
+    grades = Grade.objects.all()
+    
+
+    
+  
     context ={
-        "questions":questions
+        "questions":questions,
+        "subjects": subjects,
+        "grades": grades
     }
     return render(request, "teachers/view_all_question.html", context)
+
