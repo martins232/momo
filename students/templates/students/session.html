@@ -1,0 +1,51 @@
+{% extends "students/main_student.html" %}
+
+{% block content %}
+    
+
+    <div class="card">
+        <div class="card-header">
+            <h1>Student Exam</h1>
+        </div>
+        <form action="" method="post">{% csrf_token %}
+        <div class="card-body">
+            {% for question in questions %}
+                
+            <h4>Q.{{questions.number}}) {{question.question}}</h4>
+            <br>
+
+            
+                {% comment %} 
+                <label for="option_A"><input type="radio" name="answer" id="option_A" value="A"> {{question.option_A}}</label><br>
+                <label for="option_B"><input type="radio" name="answer" id="option_B" value="B"> {{question.option_B}}</label><br>
+                <label for="option_C"><input type="radio" name="answer" id="option_C" value="C"> {{question.option_C}}</label><br>            
+                <label for="option_D"><input type="radio" name="answer" id="option_D" value="D"> {{question.option_D}}</label> {% endcomment %}
+
+            <label for="option_A"><input type="radio" name="answer" id="option_A" value="A" {% if request.session.answers.question.id == "A" %}checked{% endif %}> {{question.option_A}}</label><br>
+            <label for="option_B"><input type="radio" name="answer" id="option_B" value="B" {% if request.session.answers.question.id == "B" %}checked{% endif %}> {{question.option_B}}</label><br>
+            <label for="option_C"><input type="radio" name="answer" id="option_C" value="C" {% if request.session.answers.question.id == "C" %}checked{% endif %}> {{question.option_C}}</label><br>            
+            <label for="option_D"><input type="radio" name="answer" id="option_D" value="D" {% if request.session.answers.question.id == "D" %}checked{% endif %}> {{question.option_D}}</label>
+                
+            
+
+            
+            
+            {% endfor %}
+          <hr>
+            {% if questions.has_previous %}
+            <a href="?page={{questions.previous_page_number}}" class="btn btn-primary">Previous</a>            
+            {% endif %}
+            
+            {% if questions.has_next %}
+            <a href="?page={{questions.next_page_number}}" class="btn btn-primary">Next</a>            
+            {% endif %}
+            
+        </div>
+        <button type="submit">Submit</button>
+        </form>
+    </div>
+
+{% endblock content %}
+
+
+
