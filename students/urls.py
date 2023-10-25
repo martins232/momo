@@ -5,4 +5,5 @@ urlpatterns = [
     path("student-profile/", views.profile, name="student-profile"),
     path("edit-profile/<str:pk>/", views.editProfile, name="edit-student-profile"),
     path("image/<str:pk>/", views.editStudentProfileImage, name="edit-student-profile-image"),
+    path("session/<str:pk>/", views.session, name="exam-session")
 ]
