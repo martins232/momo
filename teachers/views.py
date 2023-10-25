@@ -26,7 +26,7 @@ def userProfile(request):
         "count_course" : len(user.subject_set.all())
     }
     return render(request, "teachers/profile.html", context)
-
+@teacher
 @login_required(login_url="login")
 def editProfile(request, pk):
     user = User.objects.get(id =pk)
@@ -52,6 +52,7 @@ def editProfile(request, pk):
     }
     # print(pic_form)
     return render(request, "teachers/edit_profile.html", context)
+@teacher
 @login_required(login_url="login")
 def editProfileImage(request, pk):
     
@@ -66,7 +67,7 @@ def editProfileImage(request, pk):
         "form":form
     }
     return render(request, "teachers/image.html", context)
-
+@teacher
 @login_required(login_url="login")
 def createExam(request):
     #form to create exam
@@ -90,7 +91,7 @@ def createExam(request):
         "exams": exams,
     }
     return render(request, "teachers/exam.html", context)
-
+@teacher
 @receiver(post_save, sender=Subject)
 def set_exam_teacher_null(sender, instance, **kwargs):
     """
@@ -108,27 +109,22 @@ def set_exam_teacher_null(sender, instance, **kwargs):
             question.teacher = instance.teacher
             question.save()
         
-
+@teacher
 @login_required(login_url="login")
 def deleteExam(request, pk):
     exam = get_object_or_404(Exam, id=pk)
     if request.user != exam.teacher:
-        return redirect("home")
-    if request.method== "POST":
-        exam = get_object_or_404(Exam, id=request.POST["obj"])
-        exam.delete()
-        messages.add_message(request, messages.SUCCESS, "Exam deleted")
-        return redirect("exam")
-    context = {
-        "obj": exam,
-        "obj_name":"Exam"}    
-    return render(request, "teachers/delete.html", context)
-
+        return redirect("404")
+    exam.delete()
+    messages.add_message(request, messages.SUCCESS, "Exam deleted")
+    return redirect("exam")
+    
+@teacher
 @login_required(login_url="login")
 def editExam(request, pk):
     exam = get_object_or_404(Exam, id=pk)
     if request.user != exam.teacher:
-        return redirect("home")
+        return redirect("404")
     form = ExamForm(request, instance=exam) 
     if request.method == "POST":
         form = ExamForm(request, request.POST, instance=exam) 
@@ -142,13 +138,16 @@ def editExam(request, pk):
         "obj_name": "EXAM"
     }  
     return render(request, "teachers/edit.html", context) 
-
+@teacher
 @login_required(login_url="login")
 def viewExam(request, pk):
     try:
         exam = Exam.objects.get(id=pk)
         questions= exam.question_set.all()
     except ObjectDoesNotExist:
+        return redirect("404")
+    
+    if request.user != exam.teacher:
         return redirect("404")
     
     form = QuestionForm(request.POST or None)
@@ -169,6 +168,7 @@ def viewExam(request, pk):
         "questions":questions
     }
     return render(request, "teachers/view_exam.html", context)
+@teacher
 @login_required(login_url="login")
 def editQuestion(request, pk):
     try:
@@ -192,21 +192,19 @@ def editQuestion(request, pk):
     return render(request, "teachers/edit.html", context) 
     
     
-    
+@teacher 
 @login_required(login_url="login")
 def deleteQuestion(request, pk):
     question = get_object_or_404(Question, id=pk)
     if request.user != question.exam.teacher:
         return redirect("404")
-    if request.method== "POST":
-        exam = get_object_or_404(Question, id=pk)
-        exam.delete()
-        messages.add_message(request, messages.SUCCESS, "Question deleted")
-        return redirect("exam")
-    context = {
-        "obj": question,
-        "obj_name":"Question"}    
-    return render(request, "teachers/delete.html", context)
+    
+    exam = get_object_or_404(Question, id=pk)
+    exam.delete()
+    messages.add_message(request, messages.SUCCESS, "Question deleted")
+    return redirect("all-questions")
+      
+    
 
 @teacher
 @login_required(login_url="login")
@@ -219,7 +217,7 @@ def viewAllQuestions(request):
     filt_question= request.GET.get("question", "") 
     filt_grade= request.GET.get("grade", 0) 
     #########
-   
+    
     teacher = User.objects.get(username=request.user.username)
     questions = teacher.question_set.filter(
             Q(exam__subject__name__exact=filt_subject) | 
@@ -240,10 +238,7 @@ def viewAllQuestions(request):
     #for drop down in search box
     subjects = teacher.subject_set.all()
     grades = Grade.objects.all()
-    
-
-    
-  
+    print(teacher.id) 
     context ={
         "questions":questions,
         "subjects": subjects,

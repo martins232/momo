@@ -1,9 +1,11 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from users . models import User, Student
 from teachers. forms import UserUpdateForm, ChangeProfilePicture
 from students.forms import StudentUpdateForm
 from django.contrib import messages
 from django.contrib.auth import authenticate, login
+from exam . models import Exam
+from django.core.paginator import Paginator
 
 # Create your views here.
 
@@ -50,3 +52,34 @@ def editStudentProfileImage(request, pk):
     }
     
     return render(request, "teachers/image.html", context)
+
+def session(request, pk):
+    exam = get_object_or_404(Exam, pk=pk)
+    questions = exam.question_set.all()
+    
+    p = Paginator(questions, 1)
+    page_number = request.GET.get("page", 1)
+    page = p.page(page_number)
+    
+    if not request.session.get("answers"):
+        # Create an empty dictionary and assign it to request.session["answers"]
+        request.session["answers"] = {}
+    
+    if request.method == "POST":
+        # Get the name and value of the radio input from request.POST
+        # name = request.POST.get("p")
+        # value = request.POST.get("value")
+        print(request.POST["answer"])
+        # print(name, value)
+        # Update the request.session["answers"] dictionary with the question id and answer
+        # request.session["answers"][name] = value
+        # # Redirect to the same URL with the page number as a query parameter
+        # return redirect(f"{request.path}?page={page_number}")
+
+    context = {
+        
+        "pk":exam.id,
+        "questions": page,
+        
+    }
+    return render(request, "students/session.html", context)
