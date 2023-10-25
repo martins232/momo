@@ -91,7 +91,8 @@
                             <td class="text-center">{{question.answer }}</td>
                             
                             <td><a href="{% url "view-question" question.id %}" class="btn btn-success btn-sm" ><i class="fas fa-pencil-alt"></i></a></td>
-                            <td><a href="{% url "delete-question" question.id %}" class="btn btn-danger btn-sm"><i class="fas fa-trash-alt"></i></a></td>
+                            <td><a href="#" class="btn btn-danger btn-sm delete" data-id="{{question.id}}" data-name="{{question.question}}" data-url="{% url "delete-question" question.id %}" data-bs-toggle="modal" data-bs-target="#delete_modal"><i class="fas fa-trash-alt"></i>
+                            </a></td>
                           </tr>
                         {% empty %}
                         <tfoot>
@@ -111,7 +112,7 @@
 </div>
 
 
-
+{% include "modal.html" %}
 {% endblock content %}
 
 
