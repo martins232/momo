@@ -88,7 +88,8 @@
                         {% comment %} <td>{{question.option_A | date:"D d M Y"}}</td>
                         <td>{{exam.created | date:"D d M Y"}}</td> {% endcomment %}
                         <td><a href="{% url "view-question" question.id %}" class="btn btn-success btn-sm" ><i class="fas fa-pencil-alt"></i></a></td>
-                        <td><a href="{% url "delete-question" question.id %}" class="btn btn-danger btn-sm"><i class="fas fa-trash-alt"></i></a></td>
+                        <td><a href="#" class="btn btn-danger btn-sm delete" data-id="{{question.id}}" data-name="{{question.question}}" data-url="{% url "delete-question" question.id %}" data-bs-toggle="modal" data-bs-target="#delete_modal"><i class="fas fa-trash-alt"></i>
+                            </a></td>
                       </tr>
                     {% empty %}
                     <tr><td colspan="7"><p class="text-center"><b>No Questions Yet!</b></p></td></tr>
@@ -101,6 +102,7 @@
    
       
 </div>
+{% include "modal.html" %}
 {% endblock content %}
 
 

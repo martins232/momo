@@ -6,6 +6,10 @@ from django.contrib import messages
 from django.contrib.auth import authenticate, login
 from exam . models import Exam
 from django.core.paginator import Paginator
+from django.http import JsonResponse
+from random import shuffle
+from exam . models import Question, Session
+
 
 # Create your views here.
 
@@ -55,31 +59,69 @@ def editStudentProfileImage(request, pk):
 
 def session(request, pk):
     exam = get_object_or_404(Exam, pk=pk)
-    questions = exam.question_set.all()
+    # questions = exam.question_set.all().values()
     
-    p = Paginator(questions, 1)
-    page_number = request.GET.get("page", 1)
-    page = p.page(page_number)
+    return render(request, "students/session.html")
+def session_data(request, pk):
+    exam = get_object_or_404(Exam, pk=pk)
+    questions = exam.question_set.all().values()
     
-    if not request.session.get("answers"):
-        # Create an empty dictionary and assign it to request.session["answers"]
-        request.session["answers"] = {}
+    data_ =[]
     
-    if request.method == "POST":
-        # Get the name and value of the radio input from request.POST
-        # name = request.POST.get("p")
-        # value = request.POST.get("value")
-        print(request.POST["answer"])
-        # print(name, value)
-        # Update the request.session["answers"] dictionary with the question id and answer
-        # request.session["answers"][name] = value
-        # # Redirect to the same URL with the page number as a query parameter
-        # return redirect(f"{request.path}?page={page_number}")
+    for question in questions:
+        options = [ question["option_A"], question["option_B"], question["option_C"], question["option_D"], ]
+        # shuffle(options)
+        data_.append({question["question"]:options})
+    shuffle(data_)
+    data ={"data":data_, "time":exam.duration}
+    return JsonResponse(data)
 
-    context = {
+def is_ajax(request): #check if a call is an ajax call
+    return request.META.get('HTTP_X_REQUESTED_WITH') == 'XMLHttpRequest'
+ 
+def session_save(request, pk):
+    if is_ajax(request=request):
+        questions = []
+        data =  request.POST
+        data_ =dict(data.lists()) #lists() is only available for request.POST method-->, The lists method returns a list of tuples containing the names and values of the input fields.
+        data_.pop("csrfmiddlewaretoken") #remove the csrf_token from the dictionary for us to manipulate the question
+        for k in data_.keys():
+            question = Question.objects.get(question = k)
+            questions.append(question) # appending question object in a list
+        user = request.user
+        exam = Exam.objects.get(id=pk)
         
-        "pk":exam.id,
-        "questions": page,
+        score = 0
+        multiplier = 100 / exam.question_set.all().count()
+        results = []
+        correct_answer = None
         
-    }
-    return render(request, "students/session.html", context)
+        for q in questions:  # q is the question instance
+            a_selected = request.POST.get(q.question) #from the question instance get the question key from the request.POST method
+            answer  = {"A" :q.option_A, "B":q.option_B, "C":q.option_C, "D":q.option_D} # represent the options as "A", "B", "C", "D" to correspond to the correct answer from the db
+            
+            if a_selected != "": # if what the user selected is not empty
+                for option, value in answer.items(): # from the answers in the db as dictionary
+                    if a_selected in value: # if the student_answer in list of answers (value)
+                        if option == q.answer: # if the option is == the teacher answer
+                            score += 1  # add a mark
+                            correct_answer = value # the student was correct
+                        else:
+                            correct_answer = answer[q.answer] #the student answer was not correct
+                results.append({str(q):{"correct_answer": correct_answer, "answered": a_selected}}) # create dictionary of correct and not correct answer
+            else:
+                results.append({str(q): "not answered"}) # if the question was not answered create a not answered dictionary
+                
+        score_ = score * multiplier # convert to 100% scale
+        Session.objects.create(user=user, exam = exam, score=score_) # create and instance of this user session
+        
+        if score_>=exam.pass_mark:
+            return JsonResponse({"pass": True, "score": score_, "result":results}) # create a json response for this user to display data
+        else:
+            return JsonResponse({"pass": False, "score": score_, "result":results}) # create a json response for this user to display data
+
+                
+            
+                
+        
+    

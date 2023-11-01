@@ -15,6 +15,8 @@ from django.core.paginator import Paginator, EmptyPage
 
 
 
+
+
 # Create your views here.
 @login_required(login_url="login")
 def userProfile(request):
@@ -42,15 +44,13 @@ def editProfile(request, pk):
             messages.success(request, "Profile updated")
             return redirect("edit-profile", pk =user.id)
         else:
-            print("Nio")
-            print(p_form.errors)
-            print("Teacher: ",t_form.errors)       
+           messages.add_message(request, messages.ERROR, p_form.errors.as_ul())      
+           messages.add_message(request, messages.ERROR, t_form.errors.as_ul())      
     context = {
         "p_form": p_form,
         "t_form" : t_form,
         
     }
-    # print(pic_form)
     return render(request, "teachers/edit_profile.html", context)
 @teacher
 @login_required(login_url="login")
@@ -183,7 +183,8 @@ def editQuestion(request, pk):
         if form.is_valid():
             form.save()
             messages.add_message(request, messages.SUCCESS, "Exam saved")
-            return redirect("view-exam", pk = question.exam.id)
+            return redirect(request.META.get('HTTP_REFERER', '/'))
+            # return redirect("view-exam", pk = question.exam.id)
         
     context = {
         "form": form,
@@ -191,7 +192,7 @@ def editQuestion(request, pk):
     }  
     return render(request, "teachers/edit.html", context) 
     
-    
+
 @teacher 
 @login_required(login_url="login")
 def deleteQuestion(request, pk):
@@ -202,7 +203,8 @@ def deleteQuestion(request, pk):
     exam = get_object_or_404(Question, id=pk)
     exam.delete()
     messages.add_message(request, messages.SUCCESS, "Question deleted")
-    return redirect("all-questions")
+    return redirect(request.META.get('HTTP_REFERER', '/'))
+    # return redirect("all-questions")
       
     
 
@@ -238,7 +240,6 @@ def viewAllQuestions(request):
     #for drop down in search box
     subjects = teacher.subject_set.all()
     grades = Grade.objects.all()
-    print(teacher.id) 
     context ={
         "questions":questions,
         "subjects": subjects,

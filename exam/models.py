@@ -11,6 +11,7 @@ class Exam(models.Model):
     teacher = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, limit_choices_to={"is_teacher":True})
     subject = models.ForeignKey(Subject, on_delete=models.SET_NULL, null=True)
     duration = models.DurationField()
+    pass_mark = models.FloatField(verbose_name="Pass make", default=60)
     start_date = models.DateTimeField()
     updated = models.DateTimeField(auto_now=True)
     created = models.DateTimeField(auto_now_add=True)
@@ -20,7 +21,7 @@ class Exam(models.Model):
         return self.name
     
     class Meta:
-        ordering = ["start_date", "created"]
+        ordering = [ "created"]
     
     
 class Question(models.Model):
@@ -39,6 +40,13 @@ class Question(models.Model):
         return self.question
     
     
+class Session(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    exam = models.ForeignKey(Exam, on_delete=models.SET_NULL, null=True)
+    score = models.FloatField()
+    
+    def __str__(self):
+        return str(self.pk)
     
     
     
