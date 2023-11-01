@@ -1,5 +1,5 @@
 from django.contrib import admin
-from . models import Exam, Question
+from . models import Exam, Question, Session
 from users.models import User
 # Register your models here.
 class ExamAdmin(admin.ModelAdmin):
@@ -13,6 +13,6 @@ class QuestionAdmin(admin.ModelAdmin):
     pass
 
 
-
+admin.site.register(Session)
 admin.site.register(Exam, ExamAdmin)
 admin.site.register(Question, QuestionAdmin)

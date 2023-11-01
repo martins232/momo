@@ -1,0 +1,40 @@
+<nav class="sb-sidenav accordion sb-sidenav-dark" id="sidenavAccordion">
+    <div class="sb-sidenav-menu">
+        <div class="nav">
+            
+             <!--Sidebar link header-->
+            <div class="sb-sidenav-menu-heading">Core</div>
+            <!--Sidebar link header-->
+
+            <!--Normal sidebar-->
+            <!--<a class="nav-link" href="{% url "home" %}"><div class="sb-nav-link-icon"><i class="fas fa-tachometer-alt"></i></div>Dashboard</a> -->
+            <a class="nav-link" href="{% url "student-profile" %}"><div class="sb-nav-link-icon"><i class="fas fa-user-tie"></i></div>Student Profile</a>
+            <a class="nav-link" href="#"><div class="sb-nav-link-icon"><i class="fas fa-book-open"></i></div>Exam</a>
+            <a class="nav-link" href="#"><div class="sb-nav-link-icon"><i class="fas fa-book-open"></i></div>Exam
+            <span class="badge text-bg-danger ms-2">4</span></a>
+
+            
+             <!--end of Normal sidebar-->
+
+            <div class="sb-sidenav-menu-heading">EXAM</div>
+             <!--section breaker-->
+            
+             <!--Normal sidebar-->
+            <a class="nav-link" href="{% url "all-questions" %}"><div class="sb-nav-link-icon"><i class="fas fa-folder-open"></i></div>Questions</a>
+              <!--end of Normal sidebar-->
+
+
+
+            
+          
+
+
+
+            
+        </div>
+    </div>
+    <div class="sb-sidenav-footer">
+        <div class="small">Logged in as:</div>
+        {{request.user.get_full_name}}
+    </div>
+</nav>
