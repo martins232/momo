@@ -1,0 +1,56 @@
+{% extends "students/main_student.html" %}
+{% load static %}
+{% block content %}
+
+<div class="card">
+    <div class="pb-2 sticky-top"
+        style="background:#d1e7dd;transform:skewX(20deg);min-height:60px;margin-left:10px;margin-right:10px;border-left:20px double white;border-right:20px double white; top:60px">
+        
+        <div class="container-fluid " style="transform:skewX(-20deg);">
+            <!--space for logo-->
+          
+                <div class="float-end w-50" id="timer">
+                    <h3 class="text-center">Time remaining:</h3>
+                    <div class="progress mt-2 fs-4" style="height: 30px;" >
+                        <div class="progress-bar progress-bar-striped py-2" id="bar" style="width:100%;">
+                            <span id="timer">1 : 00 : 00</span>
+                        </div>
+                    </div>
+                </div>
+        
+        </div>
+    </div>
+    <div class="card-body vh-100">
+        <div class="row">
+            <div class="col-md-8 ">
+                <div class="card">
+                    <div class="card-header">
+                        <h1 id="head">Student Exam</h1>
+                    </div>
+                    <div class="card-body" id="jaden"></div>
+                    <form action="" method="post" id="quiz-form">
+                        {% csrf_token %}
+                    <div class="card-body" id="quiz_box"></div>
+                    <button type="submit" class="btn btn-primary">Submit</button>
+                    </form>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Odio tempora cum fuga sunt incidunt aliquid labore, quasi natus dicta temporibus sequi sapiente vero modi totam, nesciunt repudiandae, numquam esse asperiores.</p>
+                <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Odio tempora cum fuga sunt incidunt aliquid labore, quasi natus dicta temporibus sequi sapiente vero modi totam, nesciunt repudiandae, numquam esse asperiores.</p>
+                
+            </div>
+        </div>        
+
+    </div>
+
+</div>
+{% endblock content %}
+
+{% block js_student %}
+<script>
+    const examDataUrl = "{% url "exam-data" pk=request.session.value %}";
+    const examSubmit = "{% url "exam-save" pk=request.session.value %}" 
+  </script>
+<script src="{% static "js/exam1.js" %}"></script>
+{% endblock js_student %}

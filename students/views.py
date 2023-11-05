@@ -9,6 +9,8 @@ from django.core.paginator import Paginator
 from django.http import JsonResponse
 from random import shuffle
 from exam . models import Question, Session
+from django.core.exceptions import PermissionDenied
+
 
 
 # Create your views here.
@@ -57,11 +59,27 @@ def editStudentProfileImage(request, pk):
     
     return render(request, "teachers/image.html", context)
 
-def session(request, pk):
-    exam = get_object_or_404(Exam, pk=pk)
-    # questions = exam.question_set.all().values()
+def exams(request):
+    exams = Exam.objects.filter(grade=request.user.student.grade)
+     
+    context ={
+        "exams": exams
+    }
+    return render(request, "students/available_exam.html", context)
+
+def session(request):
+    if request.method == "POST":
+        print(request.POST)
+        print(request.POST.get("exam"))
+        value = request.POST.get("exam")
+        request.session['value'] = value
+    else:
+        value = request.session.get('value')
+        print("Value from GET: ",value)
+        if not value:
+            raise PermissionDenied
     
-    return render(request, "students/session.html")
+    return render(request, "students/exam_page.html")
 def session_data(request, pk):
     exam = get_object_or_404(Exam, pk=pk)
     questions = exam.question_set.all().values()
