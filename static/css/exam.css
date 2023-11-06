@@ -46,10 +46,7 @@ label.box {
     margin-bottom: 20px;
 }
 
-#selected{
-    background-color:#0d6efd;
-    color: white;
-}
+
 
 .form-check-label:hover{
     background-color:#0d6efd;
@@ -68,6 +65,9 @@ input[type="radio"] {
 }
 
 
+.answered{
+    background-color: red;
+}
 
 
 

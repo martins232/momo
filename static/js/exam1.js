@@ -1,8 +1,8 @@
 
 const url_data = location.origin+examDataUrl
 const usrl_submit = location.origin+examSubmit
-let ajax_data
-let question_data
+let ajax_data	//questions gotten from ajax call
+let selectedAnswers = {}
 
 //Get the data
 $.ajax({
@@ -54,28 +54,53 @@ var counter;
     }, 1000);
 
 const jumperBtns = () =>{
-	let btns = ""
+	btns = ""
+	let answeredQuestion = false
+	
+	currentOptions =document.getElementsByName("ans")
 	for (let i = 0; i < ajax_data.length; i++) {
-		btns += `<li class="page-item"><a class="page-link ${i==index ? `active`:""}" href="#" onclick="displayExam(${i})">${i + 1}</a></li>`
+		btns += `<li class="page-item"><button class="page-link  ${i==index ? `active`:""}"  onclick="displayExam(${i})">${i + 1}</button></li>`
 	}
+	currentOptions.forEach(currentOption =>{
+		if (currentOption.checked == true){
+			answeredQuestion = true
+		}
+	})
+	console.log(answeredQuestion)
 	return btns
 }
 
 const getOptions = () =>{
+	document.getElementsByName("ans")
 	let options = ""
 	for (let i= 0; i < Object.values(question_data)[0].length; i++){
 		let option = Object.values(question_data)[0][i]
+		let selected = false
+		if (selectedAnswers[`${Object.keys(question_data)}`] == option){
+			selected = true
+		}
 		options += `
 		
 		<div class="form-check">
-			<input type="radio" class="form-check-input" name="ans" id="${option}">
+			<input type="radio" class="form-check-input" name="ans" id="${option}" value="${option}" onclick="addAnswer()" ${selected ? `checked=true` : ""}>
 			<label class="form-check-label" for="${option}">${option}</label>
 	  	</div>
 		`
 	}
-
 	return options
 
+}
+
+
+const addAnswer = ()=>{
+    let currentOptions = document.getElementsByName("ans")
+    currentOptions.forEach(currentOption =>{
+        if (currentOption.checked == true){
+			
+            selectedAnswers[`${question}`] = currentOption.value
+        }
+    })
+	
 }
 
 let questionContainer = document.getElementById("quiz-container")
