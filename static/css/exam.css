@@ -66,8 +66,12 @@ input[type="radio"] {
 
 
 .answered{
-    background-color: red;
+    background-color: rgb(170, 160, 160);
+    color: white;
+    
 }
+
+
 
 
 
