@@ -54,19 +54,20 @@ var counter;
     }, 1000);
 
 const jumperBtns = () =>{
-	btns = ""
-	let answeredQuestion = false
 	
-	currentOptions =document.getElementsByName("ans")
+	btns = ""
 	for (let i = 0; i < ajax_data.length; i++) {
-		btns += `<li class="page-item"><button class="page-link  ${i==index ? `active`:""}"  onclick="displayExam(${i})">${i + 1}</button></li>`
-	}
-	currentOptions.forEach(currentOption =>{
-		if (currentOption.checked == true){
-			answeredQuestion = true
+		let answeredBtns = false
+		let min = Object.keys(ajax_data[i])
+		if (selectedAnswers[`${min[0]}`]) {
+			answeredBtns = true
 		}
-	})
-	console.log(answeredQuestion)
+		
+		btns += `<li class="page-item"><button class="page-link ${answeredBtns ? `answered`:""}  ${i==index ? `active`:""}"  onclick="displayExam(${i})">${i + 1}</button></li>`
+	}
+	
+	
+	
 	return btns
 }
 
