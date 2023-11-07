@@ -1,7 +1,7 @@
 
 const url_data = location.origin+examDataUrl
-const usrl_submit = location.origin+examSubmit
-let ajax_data	//questions gotten from ajax call
+const url_submit = location.origin+examSubmit
+let ajax_data	//questions gotten from ajax call --> [ {…}, {…}, {…}, {…} ]
 let selectedAnswers = {}
 
 //Get the data
@@ -36,11 +36,12 @@ var counter;
     var seconds = Math.floor((distance % (1000 * 60)) / 1000);
 
     // Display the result in the element with id="demo"
-    document.getElementById("timer").innerHTML = `<h3 class="text-center">Time remaining:</h3>
+    document.getElementById("timer").innerHTML = 
+		`<h3 class="text-center">Time remaining:</h3>
 
-            <div class="progress mt-2 fs-4" style="height: 30px; border:2px solid black" >
-                <div class="progress-bar progress-bar-striped py-2" id="bar" style="width:${percentremain}%;">
-                    <span id="timer">${hours} : ${minutes} : ${seconds}</span>
+            <div class="progress mt-2 fs-4" style="height: 30px; border: 2px solid #d3d9df; background-color: white;">
+                <div class="progress-bar progress-bar-animated progress-bar-striped py-2" id="bar" style="overflow: visible; width:${percentremain}%;">
+                    <span class="fw-bold" style="color: #bfbfbf">${hours} : ${minutes} : ${seconds}</span>
                 </div>
             </div> `;
 
@@ -71,6 +72,7 @@ const jumperBtns = () =>{
 	return btns
 }
 
+
 const getOptions = () =>{
 	document.getElementsByName("ans")
 	let options = ""
@@ -81,7 +83,6 @@ const getOptions = () =>{
 			selected = true
 		}
 		options += `
-		
 		<div class="form-check">
 			<input type="radio" class="form-check-input" name="ans" id="${option}" value="${option}" onclick="addAnswer()" ${selected ? `checked=true` : ""}>
 			<label class="form-check-label" for="${option}">${option}</label>
@@ -91,6 +92,56 @@ const getOptions = () =>{
 	return options
 
 }
+
+let promptSubmit = () => {
+	let modalBody = document.getElementById("modal-body")
+	
+	let message = ""
+	let answeredQuestions = Object.keys(selectedAnswers).length
+	let totalQuestion = Object.keys(ajax_data).length
+	if (answeredQuestions < totalQuestion){
+		message += `<p>You have ${totalQuestion - answeredQuestions}  unanswered question</p>`
+	}
+	message += "Once you click the Yes button, this process cannot be reversed"
+	modalBody.innerHTML = message
+
+
+
+}
+let csrf = document.getElementsByName("csrfmiddlewaretoken")
+let submit = ()=>{
+	
+	for (let i = 0; i < ajax_data.length; i++) {
+		let allQuestions = ajax_data[i]
+		if (selectedAnswers[`${Object.keys(allQuestions)[0]}`] == undefined) {
+			selectedAnswers[`${Object.keys(allQuestions)[0]}`] = null
+		}
+	}
+	selectedAnswers["csrfmiddlewaretoken"] = csrf[0].value 
+	$.ajax({
+		method: "POST",
+		url: url_submit,
+		data: selectedAnswers,
+		success: function (success) {
+			console.log(success)
+		},
+		else: function(error){
+			console.log(error)
+		}
+
+	})
+}
+
+document.forms[0].addEventListener("click", e =>{
+	e.preventDefault(),
+
+	submit()
+})
+
+// let subBtn = document.getElementById("confirmSubmit")
+// subBtn.addEventListener("click",
+
+// )
 
 
 const addAnswer = ()=>{
@@ -125,14 +176,15 @@ const displayExam = (i)=>{
 		<div class="col-12 mb-2">
 			<div class="d-flex justify-content-between flex-wrap" id="all_btns"> 
 				<div>
-					<button class="btn btn-dark px-4 py-2 fw-bold">Bookmark</button>
+					<button type="reset" class="btn btn-dark px-4 py-2 fw-bold">Reset</button>
 				</div>
 				<div>
 					<button class="btn btn-primary px-4 py-2 fw-bold me-2" onclick="displayExam(${index - 1})" ${index < 1 ? "disabled" : ""}> Previous</button> 
 					<button class="btn btn-primary px-4 py-2 fw-bold" onclick="displayExam(${index + 1})" ${index == ajax_data.length -1 ? "disabled" : ""}> Next</button> 
 				</div>
 				<div>
-					<button type="submit" class="btn btn-success px-4 py-2 fw-bold">Submit</button>
+				<button type="button" class="btn btn-success px-4 py-2 fw-bold" data-bs-toggle="modal" data-bs-target="#myModal" onclick="promptSubmit()">Submit</button>
+					
 				</div>
 				
 			</div>
@@ -146,6 +198,8 @@ const displayExam = (i)=>{
 			</nav>
 		</div>
 			
+
+
 			`
 	}else{
 		alert("No question")
