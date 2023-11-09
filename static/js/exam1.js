@@ -2,57 +2,75 @@
 const url_data = location.origin+examDataUrl
 const url_submit = location.origin+examSubmit
 let ajax_data	//questions gotten from ajax call --> [ {…}, {…}, {…}, {…} ]
+let time
 let selectedAnswers = {}
 
 //Get the data
 $.ajax({
 	type: "GET",
 	url: url_data,
-	async: false,
+	async: false,  //to make sure i can save the variable ajax_data
 	success: function (response) {
 		ajax_data = response.data
+		time = response.time
 	},
 	error: function (error){
 		console.log(error)
 	}
 })
 
-var counter;
+
     //code for timer
 
     // Update the count down every 1 second
-    var percentremain=0;
-    var distance = 3600000;
-    var fixed=new Date().getTime();
-    fixed+=distance;
-    var x = setInterval(function() {
+let percentremain=0;
+let distance = time * 1000;
+let fixed=new Date().getTime(); //gets the current time in milliseconds
+fixed +=distance;
 
-    //Test time in milliseconds
-    distance=fixed-(new Date().getTime());
-    percentremain=(distance/36000.0);
-    // Time calculations for days, hours, minutes and seconds
-    var hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-    var minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-    var seconds = Math.floor((distance % (1000 * 60)) / 1000);
+let x = setInterval(function() {
 
-    // Display the result in the element with id="demo"
-    document.getElementById("timer").innerHTML = 
+	//Test time in milliseconds
+	distance=fixed-(new Date().getTime());
+	percentremain=(distance * 100/(time * 1000));
+
+	// Time calculations for days, hours, minutes and seconds
+	let hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+	let minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+	let seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+		
+	if (seconds< 1 && minutes> 0)	{
+		seconds =59 //to prevent the seconds count down to zero
+		minutes = minutes - 1
+	}
+
+
+
+		// Display the result in the element with id="demo"
+	document.getElementById("timer").innerHTML = 
 		`<h3 class="text-center">Time remaining:</h3>
 
-            <div class="progress mt-2 fs-4" style="height: 30px; border: 2px solid #d3d9df; background-color: white;">
-                <div class="progress-bar progress-bar-animated progress-bar-striped py-2" id="bar" style="overflow: visible; width:${percentremain}%;">
-                    <span class="fw-bold" style="color: #bfbfbf">${hours} : ${minutes} : ${seconds}</span>
-                </div>
-            </div> `;
-
-    // If the count down is finished, write some text 
-    if (distance < 0) {
-    clearInterval(x);
-    document.getElementById("timer").innerHTML = "EXPIRED";
-    counter=61;
-    submitgreen();
-    }
-    }, 1000);
+			<div class="progress mt-2 fs-4" style="height: 30px; border: 2px solid #d3d9df; background-color: white;">
+				<div class="progress-bar progress-bar-animated progress-bar-striped py-2" id="bar" style="overflow: visible; width:${percentremain}%;">
+					<span class="fw-bold" style="color: #bfbfbf">${hours>0 ? hours + " : ": ""} ${minutes<10 ? "0"+minutes: minutes} : ${seconds<10 ? "0"+seconds : seconds}</span>
+				</div>
+			</div> `;
+	if (minutes<1){
+		let ChangeColor = document.getElementById("bar")
+		ChangeColor.classList.add("bg-danger")
+	}
+		// If the count down is finished, write some text 
+	if (distance < 1) {
+		setTimeout(()=>{
+			document.getElementById("timer").innerHTML = ``;
+			clearInterval(x)
+			alert("Your session has ended")
+			submit();
+		}, 500)
+	
+	}
+}, 1000);
 
 const jumperBtns = () =>{
 	
@@ -134,7 +152,8 @@ let submit = ()=>{
 
 document.forms[0].addEventListener("click", e =>{
 	e.preventDefault(),
-
+	clearInterval(x)
+	document.getElementById("timer").innerHTML = `<h3 class="text-center">Exam ended</h3>`;;
 	submit()
 })
 

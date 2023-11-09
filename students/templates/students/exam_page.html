@@ -20,12 +20,12 @@
                     <!--space for logo-->
 
                     <div class="float-end" id="timer">
-                        <h3 class="text-center">Time remaining:</h3>
+                        {% comment %} <h3 class="text-center">Time remaining:</h3>
                         <div class="progress mt-2 fs-4" style="height: 30px; border: 2px solid #d3d9df; background-color: white;">
                             <div class="progress-bar progress-bar-striped py-2" id="bar" style="width:100%; overflow: visible">
                                 <span class="fw-bold" style="color: #bfbfbf">1 : 00 : 00</span>
                             </div>
-                        </div>
+                        </div> {% endcomment %}
                     </div>
 
                 </div>
@@ -64,7 +64,7 @@
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">No</button>
                         <form action="" method="post">
                             {% csrf_token %}
-                            <button type="submit" class="btn btn-success" id="confirmSubmit">Yes</button>
+                            <button type="submit" class="btn btn-success" id="confirmSubmit" data-bs-dismiss="modal">Yes</button>
                         </form>
                     </div>
               
