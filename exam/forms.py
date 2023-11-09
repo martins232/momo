@@ -52,7 +52,7 @@ class ExamForm(forms.ModelForm):
         duration = self.cleaned_data.get("duration")
         if duration > timedelta(hours=6, minutes=00, seconds=00):
             raise ValidationError("Duration can't be greater than 6hours")
-        elif duration < timedelta(minutes=5):
+        elif duration < timedelta(minutes=1):
             raise ValidationError("Duration can't be less than 5minutes")
         else:
             return duration

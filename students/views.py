@@ -61,6 +61,7 @@ def editStudentProfileImage(request, pk):
 
 def exams(request):
     exams = Exam.objects.filter(grade=request.user.student.grade)
+    
      
     context ={
         "exams": exams
@@ -91,7 +92,7 @@ def session_data(request, pk):
         # shuffle(options)
         data_.append({question["question"]:options})
     shuffle(data_)
-    data ={"data":data_, "time":exam.duration}
+    data ={"data":data_, "time":exam.duration.total_seconds(), "user": request.user.username}
     return JsonResponse(data)
 
 def is_ajax(request): #check if a call is an ajax call
@@ -126,17 +127,19 @@ def session_save(request, pk):
                             correct_answer = value # the student was correct
                         else:
                             correct_answer = answer[q.answer] #the student answer was not correct
-                results.append({str(q):{"correct_answer": correct_answer, "answered": a_selected}}) # create dictionary of correct and not correct answer
-            else:
-                results.append({str(q): "not answered"}) # if the question was not answered create a not answered dictionary
+            #     results.append({str(q):{"correct_answer": correct_answer, "answered": a_selected}}) # create dictionary of correct and not correct answer
+            # else:
+            #     results.append({str(q): "not answered"}) # if the question was not answered create a not answered dictionary
                 
         score_ = score * multiplier # convert to 100% scale
         Session.objects.create(user=user, exam = exam, score=score_) # create and instance of this user session
         
         if score_>=exam.pass_mark:
-            return JsonResponse({"pass": True, "score": score_, "result":results}) # create a json response for this user to display data
+            return JsonResponse({"pass": True, "score": score_})
+            # return JsonResponse({"pass": True, "score": score_, "result":results}) # create a json response for this user to display data
         else:
-            return JsonResponse({"pass": False, "score": score_, "result":results}) # create a json response for this user to display data
+            return JsonResponse({"pass": False, "score": score_})
+            # return JsonResponse({"pass": False, "score": score_, "result":results}) # create a json response for this user to display data
 
                 
             
