@@ -82,19 +82,26 @@ def session(request):
     
     return render(request, "students/exam_page.html")
 def session_data(request, pk):
-    exam = get_object_or_404(Exam, pk=pk)
-    questions = exam.question_set.all().values()
+    if is_ajax(request=request):
+        # if Session.objects.filter(user = request.user).exists():
+        #     print("Yes")
+        # else:
+        #     print("Mo")
+        exam = get_object_or_404(Exam, pk=pk)
+        questions = exam.question_set.all().values()
+        
+        data_ =[]
+        
+        for question in questions:
+            options = [ question["option_A"], question["option_B"], question["option_C"], question["option_D"], ]
+            # shuffle(options)
+            data_.append({question["question"]:options})
+        shuffle(data_)
+        data ={"data":data_, "time":exam.duration.total_seconds(), "user": request.user.username}
+        return JsonResponse(data)
+    else:
+        raise PermissionDenied
     
-    data_ =[]
-    
-    for question in questions:
-        options = [ question["option_A"], question["option_B"], question["option_C"], question["option_D"], ]
-        # shuffle(options)
-        data_.append({question["question"]:options})
-    shuffle(data_)
-    data ={"data":data_, "time":exam.duration.total_seconds(), "user": request.user.username}
-    return JsonResponse(data)
-
 def is_ajax(request): #check if a call is an ajax call
     return request.META.get('HTTP_X_REQUESTED_WITH') == 'XMLHttpRequest'
  
@@ -104,6 +111,8 @@ def session_save(request, pk):
         data =  request.POST
         data_ =dict(data.lists()) #lists() is only available for request.POST method-->, The lists method returns a list of tuples containing the names and values of the input fields.
         data_.pop("csrfmiddlewaretoken") #remove the csrf_token from the dictionary for us to manipulate the question
+        elapsed = data_.pop("elapsedTime")[0]
+        print(elapsed)
         for k in data_.keys():
             question = Question.objects.get(question = k)
             questions.append(question) # appending question object in a list
@@ -135,12 +144,13 @@ def session_save(request, pk):
         Session.objects.create(user=user, exam = exam, score=score_) # create and instance of this user session
         
         if score_>=exam.pass_mark:
-            return JsonResponse({"pass": True, "score": score_})
+            return JsonResponse({"pass": True, "score": score_, "elapsed time": elapsed})
             # return JsonResponse({"pass": True, "score": score_, "result":results}) # create a json response for this user to display data
         else:
-            return JsonResponse({"pass": False, "score": score_})
-            # return JsonResponse({"pass": False, "score": score_, "result":results}) # create a json response for this user to display data
-
+            return JsonResponse({"pass": False, "score": score_, "elapsed time": elapsed})
+           # return JsonResponse({"pass": False, "score": score_, "result":results}) # create a json response for this user to display data
+    else:
+        raise PermissionDenied
                 
             
                 
