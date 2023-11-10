@@ -12,7 +12,10 @@ class ExamAdmin(admin.ModelAdmin):
 class QuestionAdmin(admin.ModelAdmin):
     pass
 
-
-admin.site.register(Session)
+class SessionAdmin(admin.ModelAdmin):
+    list_display = ('user', 'exam', 'score', 'time_started', "time_ended")
+    
+    
+admin.site.register(Session, SessionAdmin)
 admin.site.register(Exam, ExamAdmin)
 admin.site.register(Question, QuestionAdmin)

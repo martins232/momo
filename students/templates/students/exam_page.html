@@ -8,7 +8,9 @@
         <title>Document</title>
         <link href="{% static "css/styles.css" %}" rel="stylesheet" />
         <link rel="stylesheet" href="{% static "css/exam.css" %}">
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js" integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"
+            integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g=="
+            crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     </head>
 
     <body>
@@ -19,65 +21,64 @@
                 <div class="container-fluid " style="transform:skewX(-20deg);">
                     <!--space for logo-->
 
+                    {% comment %} <div class="float-start mt-4" id="exam-name">
+                        <h3 class="text-center">REL 30</h3>
+                    </div> {% endcomment %}
                     <div class="float-end" id="timer">
-                        {% comment %} <h3 class="text-center">Time remaining:</h3>
-                        <div class="progress mt-2 fs-4" style="height: 30px; border: 2px solid #d3d9df; background-color: white;">
-                            <div class="progress-bar progress-bar-striped py-2" id="bar" style="width:100%; overflow: visible">
-                                <span class="fw-bold" style="color: #bfbfbf">1 : 00 : 00</span>
-                            </div>
-                        </div> {% endcomment %}
+                        
                     </div>
-
+                    
                 </div>
             </div>
-            <div class="card-body">
-                <div class="row">
-                    <div class="col-md-9 mx-auto">
-                        <div class="card">
-                            <div class="container mb-5">
-                                <div class="row" id="quiz-container">
-                                </div>
+            <div class="row">
+                <div class="col-md-9 mx-auto">
+
+                        <div class="container ">
+                            <div class="row" id="quiz-container">
+
                             </div>
+
+                        </div>
+        
+
+
+                </div>
+
+
+                <div class="modal" id="myModal">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+
+                            <!-- Modal Header -->
+                            <div class="modal-header" style="margin: 0 auto;">
+                                <h4 class="modal-title text-center">Are you sure you want to Submit?</h4>
+                            </div>
+
+                            <!-- Modal body -->
+                            <div class="modal-body" id="modal-body">
+
+                            </div>
+                            <!-- Modal footer -->
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">No</button>
+                                <form action="" method="post">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-success" id="confirmSubmit"
+                                        data-bs-dismiss="modal">Yes</button>
+                                </form>
+                            </div>
+
                         </div>
                     </div>
-
                 </div>
-
             </div>
-
-
-            <div class="modal" id="myModal">
-                <div class="modal-dialog">
-                  <div class="modal-content">
-              
-                    <!-- Modal Header -->
-                    <div class="modal-header" style="margin: 0 auto;">
-                      <h4 class="modal-title text-center">Are you sure you want to Submit?</h4>
-                    </div> 
-              
-                    <!-- Modal body -->
-                    <div class="modal-body" id="modal-body">
-                      
-                    </div>
-                    <!-- Modal footer -->
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">No</button>
-                        <form action="" method="post">
-                            {% csrf_token %}
-                            <button type="submit" class="btn btn-success" id="confirmSubmit" data-bs-dismiss="modal">Yes</button>
-                        </form>
-                    </div>
-              
-                  </div>
-                </div>
-              </div>                
-        </div>
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
-        <script>
-            const examDataUrl = "{% url "exam-data" pk=request.session.value %}";
-            const examSubmit = "{% url "exam-save" pk=request.session.value %}" 
-        </script>
-        <script src="{% static "js/exam1.js" %}"></script>
+            <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"
+                crossorigin="anonymous"></script>
+            <script>
+                const examDataUrl = "{% url "exam-data" pk=request.session.value %}";
+                const examSubmit = "{% url "exam-save" pk=request.session.value %}" 
+            </script>
+            <script src="{% static "js/exam1.js" %}"></script>
     </body>
 
 </html>

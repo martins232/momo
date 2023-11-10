@@ -28,7 +28,7 @@ let distance = time * 1000;
 let fixed=new Date().getTime(); //gets the current time in milliseconds
 fixed +=distance;
 
-let x = setInterval(function() {
+let timer = setInterval(function() {
 
 	//Test time in milliseconds
 	distance=fixed-(new Date().getTime());
@@ -44,32 +44,34 @@ let x = setInterval(function() {
 		seconds =59 //to prevent the seconds count down to zero
 		minutes = minutes - 1
 	}
-
-
-
-		// Display the result in the element with id="demo"
+	// If the count down is finished, write some text 
+	if (hours == 0 && minutes ==0 && seconds <1) {
+		setTimeout(()=>{
+			document.getElementById("timer").innerHTML = ``;
+			clearInterval(timer)
+			no_AnsweredQuestions = Object.keys(selectedAnswers).length
+			no_totalQuestion = Object.keys(ajax_data).length
+			selectedAnswers["elapsedTime"] = time
+			submit();
+			alert("Your session has ended")
+		}, 500)
+	
+	}
+	// Display the result in the element with id="demo"
 	document.getElementById("timer").innerHTML = 
-		`<h3 class="text-center">Time remaining:</h3>
+	`<h3 class="text-center">Time remaining:</h3>
 
-			<div class="progress mt-2 fs-4" style="height: 30px; border: 2px solid #d3d9df; background-color: white;">
-				<div class="progress-bar progress-bar-animated progress-bar-striped py-2" id="bar" style="overflow: visible; width:${percentremain}%;">
-					<span class="fw-bold" style="color: #bfbfbf">${hours>0 ? hours + " : ": ""} ${minutes<10 ? "0"+minutes: minutes} : ${seconds<10 ? "0"+seconds : seconds}</span>
-				</div>
-			</div> `;
+		<div class="progress mt-2 fs-4" style="height: 30px; border: 2px solid #d3d9df; background-color: white;">
+			<div class="progress-bar progress-bar-animated progress-bar-striped py-2" id="bar" style="overflow: visible; width:${percentremain}%;">
+				<span class="fw-bold" style="color: #bfbfbf">${hours>0 ? hours + " : ": ""} ${minutes<10 ? "0"+minutes: minutes} : ${seconds<10 ? "0"+seconds : seconds}</span>
+			</div>
+		</div> `;
+
 	if (minutes<1){
 		let ChangeColor = document.getElementById("bar")
 		ChangeColor.classList.add("bg-danger")
 	}
-		// If the count down is finished, write some text 
-	if (distance < 1) {
-		setTimeout(()=>{
-			document.getElementById("timer").innerHTML = ``;
-			clearInterval(x)
-			alert("Your session has ended")
-			submit();
-		}, 500)
 	
-	}
 }, 1000);
 
 const jumperBtns = () =>{
@@ -115,10 +117,10 @@ let promptSubmit = () => {
 	let modalBody = document.getElementById("modal-body")
 	
 	let message = ""
-	let answeredQuestions = Object.keys(selectedAnswers).length
-	let totalQuestion = Object.keys(ajax_data).length
-	if (answeredQuestions < totalQuestion){
-		message += `<p>You have ${totalQuestion - answeredQuestions}  unanswered question</p>`
+	no_AnsweredQuestions = Object.keys(selectedAnswers).length
+	no_totalQuestion = Object.keys(ajax_data).length
+	if (no_AnsweredQuestions < no_totalQuestion){
+		message += `<p>You have ${no_totalQuestion - no_AnsweredQuestions}  unanswered question</p>`
 	}
 	message += "Once you click the Yes button, this process cannot be reversed"
 	modalBody.innerHTML = message
@@ -135,6 +137,7 @@ let submit = ()=>{
 			selectedAnswers[`${Object.keys(allQuestions)[0]}`] = null
 		}
 	}
+
 	selectedAnswers["csrfmiddlewaretoken"] = csrf[0].value 
 	$.ajax({
 		method: "POST",
@@ -144,23 +147,12 @@ let submit = ()=>{
 			console.log(success)
 		},
 		else: function(error){
-			console.log(error)
+			alert("Something went wrong")
 		}
 
 	})
+	result()
 }
-
-document.forms[0].addEventListener("click", e =>{
-	e.preventDefault(),
-	clearInterval(x)
-	document.getElementById("timer").innerHTML = `<h3 class="text-center">Exam ended</h3>`;;
-	submit()
-})
-
-// let subBtn = document.getElementById("confirmSubmit")
-// subBtn.addEventListener("click",
-
-// )
 
 
 const addAnswer = ()=>{
@@ -194,14 +186,14 @@ const displayExam = (i)=>{
 
 		<div class="col-12 mb-2">
 			<div class="d-flex justify-content-between flex-wrap" id="all_btns"> 
-				<div>
+				<div class="align-self-center mx-auto">
 					<button type="reset" class="btn btn-dark px-4 py-2 fw-bold">Reset</button>
 				</div>
-				<div>
+				<div class="align-self-center mx-auto">
 					<button class="btn btn-primary px-4 py-2 fw-bold me-2" onclick="displayExam(${index - 1})" ${index < 1 ? "disabled" : ""}> Previous</button> 
 					<button class="btn btn-primary px-4 py-2 fw-bold" onclick="displayExam(${index + 1})" ${index == ajax_data.length -1 ? "disabled" : ""}> Next</button> 
 				</div>
-				<div>
+				<div class="align-self-center mx-auto">
 				<button type="button" class="btn btn-success px-4 py-2 fw-bold" data-bs-toggle="modal" data-bs-target="#myModal" onclick="promptSubmit()">Submit</button>
 					
 				</div>
@@ -227,8 +219,65 @@ const displayExam = (i)=>{
 }
 
 displayExam(0)
+document.forms[0].addEventListener("click", e =>{
+	e.preventDefault();
+	
+	let elapsedTime = Math.ceil(time - (distance/1000)) //no. of seconds used to answer the question
+	selectedAnswers["elapsedTime"] = elapsedTime
+	clearInterval(timer)
+	document.getElementById("timer").innerHTML = `<h3 class="text-center">Exam ended</h3>`;
+	alert("Your session has ended")
+	submit();
 
+})
 
+let result = ()=>{
+	let elapsedTime = selectedAnswers.elapsedTime
+	delete selectedAnswers.csrfmiddlewaretoken;
+	delete selectedAnswers.elapsedTime
+	console.log(elapsedTime)
+	questionContainer.innerHTML = `
+			<div class="col-10 mx-auto" style="border: 2px solid black">
+			<div class="table-responsive mx-auto">
+				<table class="table table-hover table-bordered caption-top">
+					<caption><h1>Exam result</h1></caption>
+					<tbody>
+						<tr>
+							<th scope="row">Total number of answered Questions</th>
+							<td class="text-center">${no_AnsweredQuestions} / ${no_totalQuestion}</td>
+						</tr>
+						<tr>
+							<th scope="row">Total number of unanswered Questions</th>
+							<td class="text-center">${no_totalQuestion - no_AnsweredQuestions} / ${no_totalQuestion}</td>
+						</tr>
+						<tr>
+							<th scope="row">Time spent </th>
+							<td class="text-center">${elapsedTime < 60 ? elapsedTime + " sec(s)" : (elapsedTime / 60) + " min(s)"}</td>
+						</tr>
+						<tr>
+							<th scope="row">Donuts</th>
+							<td class="text-center">3,000</td>
+						</tr>
+						<tr>
+							<th scope="row">Donuts</th>
+							<td class="text-center">3,000</td>
+						</tr>
+						<tr>
+							<th scope="row">Donuts</th>
+							<td class="text-center">3,000</td>
+						</tr>
+						<tr>
+							<th scope="row">Donuts</th>
+							<td class="text-center">3,000</td>
+						</tr>
+
+					</tbody>
+				</table>
+			</div>
+			<div class="text-center"><button class="btn btn-primary mb-3 ">See Correction</button></div>
+		</div>
+	`
+}
 
 // $.ajax({
 //     type: "GET", 

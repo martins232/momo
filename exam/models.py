@@ -44,6 +44,8 @@ class Session(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     exam = models.ForeignKey(Exam, on_delete=models.SET_NULL, null=True)
     score = models.FloatField()
+    time_started = models.TimeField(auto_now_add=True)
+    time_ended = models.TimeField(auto_now_add=True)
     
     def __str__(self):
         return str(self.pk)
