@@ -112,7 +112,6 @@ def session_save(request, pk):
         data_ =dict(data.lists()) #lists() is only available for request.POST method-->, The lists method returns a list of tuples containing the names and values of the input fields.
         data_.pop("csrfmiddlewaretoken") #remove the csrf_token from the dictionary for us to manipulate the question
         elapsed = data_.pop("elapsedTime")[0]
-        print(elapsed)
         for k in data_.keys():
             question = Question.objects.get(question = k)
             questions.append(question) # appending question object in a list
@@ -122,7 +121,7 @@ def session_save(request, pk):
         score = 0
         multiplier = 100 / exam.question_set.all().count()
         results = []
-        correct_answer = None
+        correct_answer = []
         
         for q in questions:  # q is the question instance
             a_selected = request.POST.get(q.question) #from the question instance get the question key from the request.POST method
@@ -133,9 +132,11 @@ def session_save(request, pk):
                     if a_selected in value: # if the student_answer in list of answers (value)
                         if option == q.answer: # if the option is == the teacher answer
                             score += 1  # add a mark
-                            correct_answer = value # the student was correct
+                            correct_answer.append(value) # the student was correct
                         else:
-                            correct_answer = answer[q.answer] #the student answer was not correct
+                            correct_answer.append(answer[str(q.answer)]) #the student answer was not correct. Put the correct answer
+            else:
+                correct_answer.append(answer[str(q.answer)])
             #     results.append({str(q):{"correct_answer": correct_answer, "answered": a_selected}}) # create dictionary of correct and not correct answer
             # else:
             #     results.append({str(q): "not answered"}) # if the question was not answered create a not answered dictionary
@@ -144,10 +145,10 @@ def session_save(request, pk):
         Session.objects.create(user=user, exam = exam, score=score_) # create and instance of this user session
         
         if score_>=exam.pass_mark:
-            return JsonResponse({"pass": True, "score": score_, "elapsed time": elapsed})
+            return JsonResponse({"pass": True, "score": score_, "no_of_correct_answer":score, "correctAnswers": correct_answer})
             # return JsonResponse({"pass": True, "score": score_, "result":results}) # create a json response for this user to display data
         else:
-            return JsonResponse({"pass": False, "score": score_, "elapsed time": elapsed})
+            return JsonResponse({"pass": False, "score": score_, "no_of_correct_answer":score, "correctAnswers": correct_answer})
            # return JsonResponse({"pass": False, "score": score_, "result":results}) # create a json response for this user to display data
     else:
         raise PermissionDenied

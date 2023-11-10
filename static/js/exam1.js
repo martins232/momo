@@ -4,6 +4,7 @@ const url_submit = location.origin+examSubmit
 let ajax_data	//questions gotten from ajax call --> [ {…}, {…}, {…}, {…} ]
 let time
 let selectedAnswers = {}
+let no_of_correct_answer
 
 //Get the data
 $.ajax({
@@ -52,8 +53,9 @@ let timer = setInterval(function() {
 			no_AnsweredQuestions = Object.keys(selectedAnswers).length
 			no_totalQuestion = Object.keys(ajax_data).length
 			selectedAnswers["elapsedTime"] = time
-			submit();
-			alert("Your session has ended")
+			$('#timeUp').modal('show')
+			// submit();
+			
 		}, 500)
 	
 	}
@@ -75,7 +77,6 @@ let timer = setInterval(function() {
 }, 1000);
 
 const jumperBtns = () =>{
-	
 	btns = ""
 	for (let i = 0; i < ajax_data.length; i++) {
 		let answeredBtns = false
@@ -83,12 +84,8 @@ const jumperBtns = () =>{
 		if (selectedAnswers[`${min[0]}`]) {
 			answeredBtns = true
 		}
-		
 		btns += `<li class="page-item"><button class="page-link ${answeredBtns ? `answered`:""}  ${i==index ? `active`:""}"  onclick="displayExam(${i})">${i + 1}</button></li>`
 	}
-	
-	
-	
 	return btns
 }
 
@@ -143,14 +140,19 @@ let submit = ()=>{
 		method: "POST",
 		url: url_submit,
 		data: selectedAnswers,
-		success: function (success) {
-			console.log(success)
+		async: false,
+		success: function (response) {
+			no_of_correct_answer = response.no_of_correct_answer;
+			score = response.score
+			correctAnswers = response.correctAnswers
+			teacherRemark = response.pass
+			console.log(response)
 		},
 		else: function(error){
 			alert("Something went wrong")
 		}
 
-	})
+	});
 	result()
 }
 
@@ -219,23 +221,33 @@ const displayExam = (i)=>{
 }
 
 displayExam(0)
-document.forms[0].addEventListener("click", e =>{
-	e.preventDefault();
-	
+
+
+// If the student finishes before time this is the function that handles the submition 
+let submitHandler = ()=> {
 	let elapsedTime = Math.ceil(time - (distance/1000)) //no. of seconds used to answer the question
 	selectedAnswers["elapsedTime"] = elapsedTime
 	clearInterval(timer)
 	document.getElementById("timer").innerHTML = `<h3 class="text-center">Exam ended</h3>`;
-	alert("Your session has ended")
-	submit();
+	document.getElementById("confirmSubmit").addEventListener("click",
+	submit()
+	)
+	$('#myModal').modal('hide')
+}
+
+document.forms[0].addEventListener("click", e =>{
+	e.preventDefault();
+	
+	submitHandler()
 
 })
+
 
 let result = ()=>{
 	let elapsedTime = selectedAnswers.elapsedTime
 	delete selectedAnswers.csrfmiddlewaretoken;
 	delete selectedAnswers.elapsedTime
-	console.log(elapsedTime)
+	// let nullCount = values.filter (value => value === null).length; 
 	questionContainer.innerHTML = `
 			<div class="col-10 mx-auto" style="border: 2px solid black">
 			<div class="table-responsive mx-auto">
@@ -255,20 +267,20 @@ let result = ()=>{
 							<td class="text-center">${elapsedTime < 60 ? elapsedTime + " sec(s)" : (elapsedTime / 60) + " min(s)"}</td>
 						</tr>
 						<tr>
-							<th scope="row">Donuts</th>
-							<td class="text-center">3,000</td>
+							<th scope="row">No of correct Answers</th>
+							<td class="text-center">${no_of_correct_answer}</td>
 						</tr>
 						<tr>
-							<th scope="row">Donuts</th>
-							<td class="text-center">3,000</td>
+							<th scope="row">No of wrong answers</th>
+							<td class="text-center">${no_totalQuestion - no_of_correct_answer}</td>
 						</tr>
 						<tr>
-							<th scope="row">Donuts</th>
-							<td class="text-center">3,000</td>
+							<th scope="row">Score</th>
+							<td class="text-center"><b>${score}</b></td>
 						</tr>
 						<tr>
-							<th scope="row">Donuts</th>
-							<td class="text-center">3,000</td>
+							<th scope="row">Teacher's remark</th>
+							<td class="text-center">${teacherRemark ? "Pass" : "Fail"}</td>
 						</tr>
 
 					</tbody>
