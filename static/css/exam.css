@@ -11,7 +11,13 @@
 body {
     height: 100vh;
     background-color: bisque;
-    padding: 10px
+    padding: 10px;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
 }
 
 
@@ -30,12 +36,6 @@ label.box {
     border: 1px solid #ddd
 }
 
-
-
-
-
-
-
 .form-check-label {
     display: flex;
     align-items: center;
@@ -46,8 +46,6 @@ label.box {
     border-radius: 10px;
     margin-bottom: 20px;
 }
-
-
 
 .form-check-label:hover{
     background-color:#0d6efd;
@@ -70,6 +68,27 @@ input[type="radio"] {
     background-color: rgb(170, 160, 160);
     color: white;
     
+}
+
+.correct{
+    background-color: #dff0d8;
+    color: #3c763d;
+    border: none;
+} 
+.correct:hover{
+    color: #dff0d8;
+    background-color: #3c763d;
+}
+
+.wrong {
+    color: #a94442;
+    background-color: #f2dede;
+    border-color: #ebccd1;
+}
+
+.wrong:hover{
+    background-color: #a94442;
+    color: #f2dede;
 }
 
 

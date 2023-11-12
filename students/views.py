@@ -83,21 +83,22 @@ def session(request):
     return render(request, "students/exam_page.html")
 def session_data(request, pk):
     if is_ajax(request=request):
-        # if Session.objects.filter(user = request.user).exists():
-        #     print("Yes")
-        # else:
-        #     print("Mo")
+        if Session.objects.filter(user = request.user).exists():
+            print("Yes")
+        else:
+            print("Mo")
         exam = get_object_or_404(Exam, pk=pk)
         questions = exam.question_set.all().values()
         
         data_ =[]
         
         for question in questions:
-            options = [ question["option_A"], question["option_B"], question["option_C"], question["option_D"], ]
-            # shuffle(options)
-            data_.append({question["question"]:options})
+            options = [ question["option_A"], question["option_B"], question["option_C"], question["option_D"] ]
+            zipper =dict(list( zip(['A', 'B', 'C', 'D'], options)))
+            answer_Abbrv =  question["answer"] # the answer ib the database e.g "C"
+            data_.append({question["question"]:options, "answer": zipper[answer_Abbrv]})
         shuffle(data_)
-        data ={"data":data_, "time":exam.duration.total_seconds(), "user": request.user.username}
+        data ={"data":data_, "time":exam.duration.total_seconds(), "user": request.user.get_full_name()}
         return JsonResponse(data)
     else:
         raise PermissionDenied
