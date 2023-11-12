@@ -5,6 +5,7 @@ let ajax_data	//questions gotten from ajax call --> [ {…}, {…}, {…}, {…}
 let time
 let selectedAnswers = {}
 let no_of_correct_answer
+let no_AnsweredQuestions;
 
 //Get the data
 $.ajax({
@@ -21,9 +22,13 @@ $.ajax({
 })
 
 
-    //code for timer
 
-    // Update the count down every 1 second
+
+
+
+//     code for timer
+
+//     Update the count down every 1 second
 let percentremain=0;
 let distance = time * 1000;
 let fixed=new Date().getTime(); //gets the current time in milliseconds
@@ -54,7 +59,6 @@ let timer = setInterval(function() {
 			no_totalQuestion = Object.keys(ajax_data).length
 			selectedAnswers["elapsedTime"] = time
 			$('#timeUp').modal('show')
-			// submit();
 			
 		}, 500)
 	
@@ -110,53 +114,6 @@ const getOptions = () =>{
 
 }
 
-let promptSubmit = () => {
-	let modalBody = document.getElementById("modal-body")
-	
-	let message = ""
-	no_AnsweredQuestions = Object.keys(selectedAnswers).length
-	no_totalQuestion = Object.keys(ajax_data).length
-	if (no_AnsweredQuestions < no_totalQuestion){
-		message += `<p>You have ${no_totalQuestion - no_AnsweredQuestions}  unanswered question</p>`
-	}
-	message += "Once you click the Yes button, this process cannot be reversed"
-	modalBody.innerHTML = message
-
-
-
-}
-let csrf = document.getElementsByName("csrfmiddlewaretoken")
-let submit = ()=>{
-	
-	for (let i = 0; i < ajax_data.length; i++) {
-		let allQuestions = ajax_data[i]
-		if (selectedAnswers[`${Object.keys(allQuestions)[0]}`] == undefined) {
-			selectedAnswers[`${Object.keys(allQuestions)[0]}`] = null
-		}
-	}
-
-	selectedAnswers["csrfmiddlewaretoken"] = csrf[0].value 
-	$.ajax({
-		method: "POST",
-		url: url_submit,
-		data: selectedAnswers,
-		async: false,
-		success: function (response) {
-			no_of_correct_answer = response.no_of_correct_answer;
-			score = response.score
-			correctAnswers = response.correctAnswers
-			teacherRemark = response.pass
-			console.log(response)
-		},
-		else: function(error){
-			alert("Something went wrong")
-		}
-
-	});
-	result()
-}
-
-
 const addAnswer = ()=>{
     let currentOptions = document.getElementsByName("ans")
     currentOptions.forEach(currentOption =>{
@@ -178,6 +135,8 @@ const displayExam = (i)=>{
 		let btns =jumperBtns()
 		questionContainer.innerHTML = `
 		<div class="col-12" >
+			<div id ="warning"></div>
+			<div class="spinner-border"></div>
 			<p class="fw-bold" style="font-family: Georgia, 'Times New Roman', Times, serif;">Question ${i +1} of ${ajax_data.length}</p>
 			<hr>
 			<span class="fw-bold fs-4" style="font-family: Georgia, 'Times New Roman', Times, serif;">${question}</span>
@@ -219,8 +178,53 @@ const displayExam = (i)=>{
 	}
 	
 }
-
+// -----------------------------------------------------------------------------------------
 displayExam(0)
+
+// -----------------------------------------------------------------------------------------
+let promptSubmit = () => {
+	let modalBody = document.getElementById("modal-body")
+	
+	let message = ""
+	no_AnsweredQuestions = Object.keys(selectedAnswers).length
+	no_totalQuestion = Object.keys(ajax_data).length
+	if (no_AnsweredQuestions < no_totalQuestion){
+		message += `<p>You have ${no_totalQuestion - no_AnsweredQuestions}  unanswered question</p>`
+	}
+	message += "Once you click the Yes button, this process cannot be reversed"
+	modalBody.innerHTML = message
+
+
+
+}
+let csrf = document.getElementsByName("csrfmiddlewaretoken")
+let submit = ()=>{
+	
+	for (let i = 0; i < ajax_data.length; i++) {
+		let allQuestions = ajax_data[i]
+		if (selectedAnswers[`${Object.keys(allQuestions)[0]}`] == undefined) {
+			selectedAnswers[`${Object.keys(allQuestions)[0]}`] = null
+		}
+	}
+
+	selectedAnswers["csrfmiddlewaretoken"] = csrf[0].value 
+	$.ajax({
+		method: "POST",
+		url: url_submit,
+		data: selectedAnswers,
+		async: false,
+		success: function (response) {
+			no_of_correct_answer = response.no_of_correct_answer;
+			score = response.score
+			teacherRemark = response.pass
+			console.log(response)
+		},
+		else: function(error){
+			alert("Something went wrong")
+		}
+	});
+	result()
+}
 
 
 // If the student finishes before time this is the function that handles the submition 
@@ -239,8 +243,8 @@ document.forms[0].addEventListener("click", e =>{
 	e.preventDefault();
 	
 	submitHandler()
-
 })
+
 
 
 let result = ()=>{
@@ -286,11 +290,61 @@ let result = ()=>{
 					</tbody>
 				</table>
 			</div>
-			<div class="text-center"><button class="btn btn-primary mb-3 ">See Correction</button></div>
+			<div class="text-center"><button class="btn btn-primary mb-3 " onclick="correction()">See Correction</button></div>
 		</div>
 	`
 }
 
+let correction = () =>{
+	let quizContainer = document.getElementById("quiz-container")
+	questionContainer.innerHTML = ""
+	for (corr_index = 0; corr_index < ajax_data.length; corr_index++) {
+		q_and_A = ajax_data[corr_index]   // question and answer
+		correctionQuestion = Object.keys(q_and_A)[0]
+		questionContainer.innerHTML += 
+		`
+		<div class="col-12" >						
+			<span class="fw-bold fs-4" style="font-family: Georgia, 'Times New Roman', Times, serif;">${corr_index +1}. ${correctionQuestion}</span>
+			<div class="mt-4"> 
+			
+				${correctionOption()}
+			
+			</div>
+			<hr>
+		</div>
+	`
+		
+	}
+	
+}
+
+let correctionOption = () => {
+	let options = ""				
+	for (let j=0; j < Object.values(q_and_A)[0].length; j++){
+		let choice																		
+		let choiceIcon 
+		if (Object.values(q_and_A)[0][j] == Object.values(q_and_A)[1]){
+			choice= "correct"
+			if (Object.values(q_and_A)[0][j] == selectedAnswers[`${correctionQuestion}`]){
+				choiceIcon = `<span class="fas fa-check"></span>`
+			}else{
+				choiceIcon = `<span class="fas fa-exclamation-circle"></span>`
+			}
+
+		}
+		if (Object.values(q_and_A)[0][j] != Object.values(q_and_A)[1] && selectedAnswers[`${correctionQuestion}`] == Object.values(q_and_A)[0][j]){
+			choice="wrong"
+			choiceIcon = `<span class="fas fa-exclamation-triangle"></span>`
+		}
+		options += `
+				<div class="form-inline">
+				<label class="form-check-label ${choice}" >${choiceIcon ? choiceIcon : ""} &nbsp;  ${Object.values(q_and_A)[0][j]} </label> 
+				</div>
+				`
+	}
+	return options
+}
+// correction()
 // $.ajax({
 //     type: "GET", 
 //     url : url_data,
@@ -405,3 +459,30 @@ let result = ()=>{
 
 
 
+let warning = 3
+document.addEventListener("visibilitychange", (event) => {
+	if (document.visibilityState === "hidden") {
+	  
+	  document.getElementById("warning").innerHTML = `
+	  <div class="alert alert-danger">
+	  <strong>Warning</strong> You are not to leave this site, while in session. <br> You are on your ${warning} warning. The final warning shall 
+	  result in an abrupt termination of this session.
+	</div> 
+	  `
+	  if (warning==0){
+		  	no_AnsweredQuestions = Object.keys(selectedAnswers).length
+		  	
+		  	no_totalQuestion = Object.keys(ajax_data).length
+			  let elapsedTime = Math.ceil(time - (distance/1000)) //no. of seconds used to answer the question
+			  selectedAnswers["elapsedTime"] = elapsedTime
+			  clearInterval(timer)
+			  document.getElementById("timer").innerHTML = `<h3 class="text-center text-danger">Exam Infringement</h3>`;
+			submit()
+	  }
+	  warning --
+	  
+	}
+	// } else if (document.visibilityState === "visible") {
+	//   console.log("The document is visible");
+	// }
+  });
