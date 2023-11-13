@@ -95,7 +95,8 @@ def session_data(request, pk):
         for question in questions:
             options = [ question["option_A"], question["option_B"], question["option_C"], question["option_D"] ]
             zipper =dict(list( zip(['A', 'B', 'C', 'D'], options)))
-            answer_Abbrv =  question["answer"] # the answer ib the database e.g "C"
+            answer_Abbrv =  question["answer"] # the answer in the database e.g "C"
+            shuffle(options)
             data_.append({question["question"]:options, "answer": zipper[answer_Abbrv]})
         shuffle(data_)
         data ={"data":data_, "time":exam.duration.total_seconds(), "user": request.user.get_full_name()}
