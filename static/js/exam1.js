@@ -100,7 +100,7 @@ const getOptions = () =>{
 	for (let i= 0; i < Object.values(question_data)[0].length; i++){
 		let option = Object.values(question_data)[0][i]
 		let selected = false
-		if (selectedAnswers[`${Object.keys(question_data)}`] == option){
+		if (selectedAnswers[`${Object.keys(question_data)[0]}`] == option){
 			selected = true
 		}
 		options += `
@@ -118,8 +118,18 @@ const addAnswer = ()=>{
     let currentOptions = document.getElementsByName("ans")
     currentOptions.forEach(currentOption =>{
         if (currentOption.checked == true){
-			
             selectedAnswers[`${question}`] = currentOption.value
+        }
+    })
+	
+}
+
+const resetAnswer = ()=>{
+    let currentOptions = document.getElementsByName("ans")
+    currentOptions.forEach(currentOption =>{
+        if (currentOption.checked == true){
+			currentOption.checked = false
+            delete(selectedAnswers[`${question}`] )
         }
     })
 	
@@ -136,7 +146,6 @@ const displayExam = (i)=>{
 		questionContainer.innerHTML = `
 		<div class="col-12" >
 			<div id ="warning"></div>
-			<div class="spinner-border"></div>
 			<p class="fw-bold" style="font-family: Georgia, 'Times New Roman', Times, serif;">Question ${i +1} of ${ajax_data.length}</p>
 			<hr>
 			<span class="fw-bold fs-4" style="font-family: Georgia, 'Times New Roman', Times, serif;">${question}</span>
@@ -148,7 +157,7 @@ const displayExam = (i)=>{
 		<div class="col-12 mb-2">
 			<div class="d-flex justify-content-between flex-wrap" id="all_btns"> 
 				<div class="align-self-center mx-auto">
-					<button type="reset" class="btn btn-dark px-4 py-2 fw-bold">Reset</button>
+					<button type="reset" class="btn btn-dark px-4 py-2 fw-bold" onclick="resetAnswer()">Reset</button>
 				</div>
 				<div class="align-self-center mx-auto">
 					<button class="btn btn-primary px-4 py-2 fw-bold me-2" onclick="displayExam(${index - 1})" ${index < 1 ? "disabled" : ""}> Previous</button> 
