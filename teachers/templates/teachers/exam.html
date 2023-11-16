@@ -64,7 +64,7 @@
                     <th scope="col">Duration</th>
                     <th scope="col" class="text-center">Questions</th>
                     <th  scope="col" >Start Date</th>
-                    <th  scope="col">Date Created</th>
+                    <th  scope="col">STATUS</th>
                     <th  scope="col" class="table-dark text-center align-middle" colspan="3">ACTION</th>
                     {% comment %} <th colspan="2" scope="col">Action</th> {% endcomment %}
                   </tr>
@@ -80,7 +80,7 @@
                         <td>{{exam.duration }}</td>
                         <td class= "text-center">{{exam.question_set.count }}</td>
                         <td>{{exam.start_date | date:"d/m/y"}}</td>
-                        <td>{{exam.created | date:"d/m/y"}}</td>
+                        <td class="{% if exam.status == "Active" %}bg-success{% endif %} ">{{exam.status}}</td>
                         <td><a href="{% url "view-exam" exam.id %}" class="btn btn-warning btn-sm" ><i class="fas fa-eye"></i></a></td>
                         <td><a href="{% url "edit-exam" exam.id %}" class="btn btn-success btn-sm" ><i class="fas fa-pencil-alt"></i></a></td>
                         <td><a href="#" class="btn btn-danger btn-sm delete" data-id="{{exam.id}}" data-name="{{exam.name}}" 

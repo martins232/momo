@@ -4,29 +4,62 @@ const url_submit = location.origin+examSubmit
 let ajax_data	//questions gotten from ajax call --> [ {…}, {…}, {…}, {…} ]
 let time
 let selectedAnswers = {}
-let no_of_correct_answer
+let no_of_correct_answer //provided from post data
 let no_AnsweredQuestions;
+let attempts = 0
+let examstatus
+let warning
+let misconduct = false
+
 
 //Get the data
-$.ajax({
-	type: "GET",
-	url: url_data,
-	async: false,  //to make sure i can save the variable ajax_data
-	success: function (response) {
-		ajax_data = response.data
-		time = response.time
-	},
-	error: function (error){
-		console.log(error)
-	}
-})
+const  getData = () =>{ 
+	$.ajax({
+		type: "GET",
+		url: url_data,
+		async: false,  //to make sure i can save the variable ajax_data
+		success: function (response) {
+			console.log(response)
+			ajax_data = response.data
+			time = response.time
+			let allow_retake = response.retake
+			examstatus = "active"
+			warning = 2
+			if (allow_retake){
+				attempts++	
+			}else{
+				attempts = 2  //if teacher doen't want exam retake
+			}
+		},
+		error: function (error){
+			console.log(error)
+		}
+	})
+	
+}
+
+// -----------------------
+getData()
+// -----------------------
+
+
+const restart = () =>{
+	getData()
+	
+	selectedAnswers ={}
+	displayExam(0)
+	percentremain=0;
+	distance = time * 1000;
+	fixed=new Date().getTime(); //gets the current time in milliseconds
+	fixed +=distance;
+	timer = setInterval(startTimer, 1000);
+	
+}
 
 
 
 
 
-
-//     code for timer
 
 //     Update the count down every 1 second
 let percentremain=0;
@@ -34,7 +67,7 @@ let distance = time * 1000;
 let fixed=new Date().getTime(); //gets the current time in milliseconds
 fixed +=distance;
 
-let timer = setInterval(function() {
+function startTimer() {
 
 	//Test time in milliseconds
 	distance=fixed-(new Date().getTime());
@@ -78,7 +111,9 @@ let timer = setInterval(function() {
 		ChangeColor.classList.add("bg-danger")
 	}
 	
-}, 1000);
+}
+
+let timer = setInterval(startTimer, 1000);
 
 const jumperBtns = () =>{
 	btns = ""
@@ -149,6 +184,7 @@ const displayExam = (i)=>{
 			<p class="fw-bold" style="font-family: Georgia, 'Times New Roman', Times, serif;">Question ${i +1} of ${ajax_data.length}</p>
 			<hr>
 			<span class="fw-bold fs-4" style="font-family: Georgia, 'Times New Roman', Times, serif;">${question}</span>
+			
 			<div class="mt-4"> 
 				${options}
 			</div>
@@ -217,6 +253,8 @@ let submit = ()=>{
 	}
 
 	selectedAnswers["csrfmiddlewaretoken"] = csrf[0].value 
+	selectedAnswers["misconduct"] = misconduct
+	selectedAnswers["attempts"] = attempts
 	$.ajax({
 		method: "POST",
 		url: url_submit,
@@ -226,12 +264,15 @@ let submit = ()=>{
 			no_of_correct_answer = response.no_of_correct_answer;
 			score = response.score
 			teacherRemark = response.pass
-			console.log(response)
+			// console.log(response)
+			examstatus = "ended"
+			
 		},
 		else: function(error){
 			alert("Something went wrong")
 		}
 	});
+	
 	result()
 }
 
@@ -277,7 +318,7 @@ let result = ()=>{
 						</tr>
 						<tr>
 							<th scope="row">Time spent </th>
-							<td class="text-center">${elapsedTime < 60 ? elapsedTime + " sec(s)" : (elapsedTime / 60) + " min(s)"}</td>
+							<td class="text-center">${elapsedTime < 60 ? Math.ceil(elapsedTime) + " sec(s)" : Math.ceil(elapsedTime / 60) + " min(s)"}</td>
 						</tr>
 						<tr>
 							<th scope="row">No of correct Answers</th>
@@ -299,13 +340,18 @@ let result = ()=>{
 					</tbody>
 				</table>
 			</div>
-			<div class="text-center"><button class="btn btn-primary mb-3 " onclick="correction()">See Correction</button></div>
+			<div class="text-center">
+				
+				${attempts<2 ? '<button class="btn btn-primary mb-3 " onclick="restart()">Restart</button>' : ""}
+				${attempts==2 ? '<button class="btn btn-primary mb-3 " onclick="correction()">See Correction</button>' : ""}
+			</div>
 		</div>
 	`
 }
 
 let correction = () =>{
 	let quizContainer = document.getElementById("quiz-container")
+	document.getElementById("timer").innerHTML = "<h2>Correction</h2>"
 	questionContainer.innerHTML = ""
 	for (corr_index = 0; corr_index < ajax_data.length; corr_index++) {
 		q_and_A = ajax_data[corr_index]   // question and answer
@@ -324,6 +370,7 @@ let correction = () =>{
 	`
 		
 	}
+	attempts = 2
 	
 }
 
@@ -467,17 +514,17 @@ let correctionOption = () => {
 // console.log(`Outside console.log ${mydata}`)
 
 
-
-let warning = 3
-document.addEventListener("visibilitychange", (event) => {
-	if (document.visibilityState === "hidden") {
-	  
-	  document.getElementById("warning").innerHTML = `
+let warningFunc = () =>{
+	try {
+		document.getElementById("warning").innerHTML = `
 	  <div class="alert alert-danger">
 	  <strong>Warning</strong> You are not to leave this site, while in session. <br> You are on your ${warning} warning. The final warning shall 
 	  result in an abrupt termination of this session.
 	</div> 
 	  `
+	} catch (error) {
+		
+	}
 	  if (warning==0){
 		  	no_AnsweredQuestions = Object.keys(selectedAnswers).length
 		  	
@@ -486,12 +533,44 @@ document.addEventListener("visibilitychange", (event) => {
 			  selectedAnswers["elapsedTime"] = elapsedTime
 			  clearInterval(timer)
 			  document.getElementById("timer").innerHTML = `<h3 class="text-center text-danger">Exam Infringement</h3>`;
+			misconduct = true //what will be sent to the database
+			attempts = 2 //make exam not restartable
 			submit()
+			
 	  }
-	  warning --
+	  warning--  //for every infrigement decrease the warning
+}
+
+
+
+document.addEventListener("visibilitychange", (event) => {
+	if (document.visibilityState === "hidden") {
+		if (examstatus == "active"){
+			warningFunc()  //only call this function when exam is active
+		}
 	  
 	}
-	// } else if (document.visibilityState === "visible") {
-	//   console.log("The document is visible");
-	// }
   });
+
+
+
+//   <div class="card text-white bg-primary mb-3" style="max-width: 18rem;">
+// 		<div class="card-header">Class Stats</div>
+// 		<div class="card-body">
+// 		  <div class="d-flex align-items-center">
+// 			<i class="fas fa-graduation-cap fa-3x me-3"></i>
+// 			<div class="text-end">
+// 			  <h5 class="card-title">Total Students</h5>
+// 			  <p class="card-text display-4">25</p>
+// 			</div>
+// 		  </div>
+// 		</div>
+// 	  </div>
+
+
+/* <div  class="bg-image hover-overlay ripple shadow-1-strong rounded" data-mdb-ripple-color="light">
+  <img src="https://mdbcdn.b-cdn.net/img/new/fluid/city/113.webp" class="w-100 h-25" alt="Louvre" />
+  <a href="#!">
+    <div class="mask" style="background-color: hsla(0, 0%, 98%, 0.2)"></div>
+  </a>
+</div> */
