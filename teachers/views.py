@@ -183,8 +183,8 @@ def editQuestion(request, pk):
         if form.is_valid():
             form.save()
             messages.add_message(request, messages.SUCCESS, "Exam saved")
-            return redirect(request.META.get('HTTP_REFERER', '/'))
-            # return redirect("view-exam", pk = question.exam.id)
+            # return redirect(request.META.get('HTTP_REFERER', '/'))
+            return redirect("view-exam", pk = question.exam.id)
         
     context = {
         "form": form,

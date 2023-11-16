@@ -2,7 +2,11 @@ from django.db import models
 from users. models import User, Grade
 from teachers. models import Subject
   
-    
+
+STATUS = [
+    ("Active", "ACTIVE"), 
+    ("Pending", "PENDING")
+]
     
 # Create your models here.
 class Exam(models.Model):
@@ -11,8 +15,10 @@ class Exam(models.Model):
     teacher = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, limit_choices_to={"is_teacher":True})
     subject = models.ForeignKey(Subject, on_delete=models.SET_NULL, null=True)
     duration = models.DurationField()
-    pass_mark = models.FloatField(verbose_name="Pass make", default=60)
+    pass_mark = models.FloatField(verbose_name="Pass mark", default=60)
     start_date = models.DateTimeField()
+    status = models.CharField(max_length=25, choices=STATUS, default="Pending")
+    retake = models.BooleanField( default=False)
     updated = models.DateTimeField(auto_now=True)
     created = models.DateTimeField(auto_now_add=True)
     
@@ -44,6 +50,9 @@ class Session(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     exam = models.ForeignKey(Exam, on_delete=models.SET_NULL, null=True)
     score = models.FloatField()
+    elapsed_time = models.FloatField(null=True)
+    attempts = models.IntegerField(default=0)
+    misconduct = models.BooleanField(default=False)
     time_started = models.TimeField(auto_now_add=True)
     time_ended = models.TimeField(auto_now_add=True)
     
