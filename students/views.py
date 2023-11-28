@@ -10,6 +10,9 @@ from django.http import JsonResponse
 from random import shuffle
 from exam . models import Question, Session
 from django.core.exceptions import PermissionDenied
+# from django.utils import timezone
+
+
 
 
 
@@ -70,54 +73,71 @@ def exams(request):
 
 def session(request):
     if request.method == "POST":
-        print(request.POST)
-        print(request.POST.get("exam"))
         value = request.POST.get("exam")
-        request.session['value'] = value
+        if Session.objects.filter(user=request.user, exam=value).exists():
+            if request.user.session_set.get(exam__id=value).attempts == 2:
+                del value
+                return redirect("available-exam")
+        else:
+            request.session['value'] = value
+       
     else:
         value = request.session.get('value')
-        print("Value from GET: ",value)
         if not value:
             raise PermissionDenied
     
     return render(request, "students/exam_page.html")
 def session_data(request, pk):
     if is_ajax(request=request):
-        if Session.objects.filter(user = request.user).exists():
-            print("Yes")
+        session , created = Session.objects.get_or_create(user= request.user)
+        
+        if session.attempts < 2:
+            exam = get_object_or_404(Exam, pk=pk)
+            questions = exam.question_set.all().values()
+            
+            data_ =[]
+            
+            for question in questions:
+                options = [ question["option_A"], question["option_B"], question["option_C"], question["option_D"] ]
+                zipper =dict(list( zip(['A', 'B', 'C', 'D'], options)))
+                answer_Abbrv =  question["answer"] # the answer in the database e.g "C"
+                shuffle(options)
+                data_.append({question["question"]:options, "answer": zipper[answer_Abbrv]})
+            shuffle(data_)
+            data ={"data":data_, 
+                   "time":exam.duration.total_seconds(),
+                   "attempts": session.attempts, 
+                   "retake":exam.retake, 
+                   "review":exam.review,
+                   "user": request.user.get_full_name()}
+            
+            session.attempts = session.attempts +1
+            session.save()
+            
+            return JsonResponse(data)
         else:
-            print("Mo")
-        exam = get_object_or_404(Exam, pk=pk)
-        questions = exam.question_set.all().values()
-        
-        data_ =[]
-        
-        for question in questions:
-            options = [ question["option_A"], question["option_B"], question["option_C"], question["option_D"] ]
-            zipper =dict(list( zip(['A', 'B', 'C', 'D'], options)))
-            answer_Abbrv =  question["answer"] # the answer in the database e.g "C"
-            shuffle(options)
-            data_.append({question["question"]:options, "answer": zipper[answer_Abbrv]})
-        shuffle(data_)
-        data ={"data":data_, "time":exam.duration.total_seconds(),"retake":exam.retake, "user": request.user.get_full_name()}
-        return JsonResponse(data)
+            return JsonResponse({"data":False})  #exams has already been written
     else:
-        raise PermissionDenied
+        raise PermissionDenied  #someone is trying to see the data through a get method
     
 def is_ajax(request): #check if a call is an ajax call
     return request.META.get('HTTP_X_REQUESTED_WITH') == 'XMLHttpRequest'
  
 def session_save(request, pk):
-    if is_ajax(request=request):     
+    if is_ajax(request=request):   
+        user_session = Session.objects.get(user=request.user)
+        # db_attempts = user_session.attempts
         questions = []
         data =  request.POST
         data_ =dict(data.lists()) #lists() is only available for request.POST method-->, The lists method returns a list of tuples containing the names and values of the input fields.
+        ######################################
         data_.pop("csrfmiddlewaretoken") #remove the csrf_token from the dictionary for us to manipulate the question
         elapsed = data_.pop("elapsedTime")[0]
+        attempts= int(data_.pop("attempts")[0])
         misconduct = True if data_.pop("misconduct")[0] == "true" else False
-        attempts = data_.pop("attempts")[0]
-        
-        misconduct
+        attempts_= 2 if misconduct else attempts
+        # attempts_ = 2 if (attempts+ db_attempts) > 2 else attempts + db_attempts
+        ######################################
        
         for k in data_.keys():
             question = Question.objects.get(question = k)
@@ -149,7 +169,16 @@ def session_save(request, pk):
             #     results.append({str(q): "not answered"}) # if the question was not answered create a not answered dictionary
                 
         score_ = round(score * multiplier ,1)# convert to 100% scale
-        Session.objects.create(user=user, exam = exam, score=score_, elapsed_time=elapsed, attempts=attempts, misconduct=misconduct ) # create and instance of this user session
+        user_session.exam = exam
+        user_session.score=score_
+        user_session.elapsed_time=elapsed
+        user_session.attempts=attempts_
+        user_session.misconduct=misconduct
+        user_session.completed = True
+        user_session.choices = data_
+        user_session.save()
+        
+        # Session.objects.create(user=user, exam = exam, score=score_, elapsed_time=elapsed, attempts=attempts, misconduct=misconduct ) # create and instance of this user session
         
         if score_>=exam.pass_mark:
             return JsonResponse({"pass": True, "score": score_, "no_of_correct_answer":score, "correctAnswers": correct_answer})

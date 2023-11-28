@@ -19,16 +19,21 @@ const  getData = () =>{
 		url: url_data,
 		async: false,  //to make sure i can save the variable ajax_data
 		success: function (response) {
-			console.log(response)
 			ajax_data = response.data
-			time = response.time
-			let allow_retake = response.retake
-			examstatus = "active"
-			warning = 2
-			if (allow_retake){
-				attempts++	
+			if (ajax_data){
+				time = response.time
+				allow_retake = response.retake
+				window.review = response.review
+				examstatus = "active"
+				warning = 2
+				attempts = response.attempts
+				if (!allow_retake || review ){ //if don't allow retake or review after exam
+					attempts = 2	
+				}
+				console.log(response.review)
 			}else{
-				attempts = 2  //if teacher doen't want exam retake
+				alert("No exam at the moment")
+				window.location.href = "http://127.0.0.1:8000/student/available-exams"
 			}
 		},
 		error: function (error){
@@ -219,6 +224,7 @@ const displayExam = (i)=>{
 
 			`
 	}else{
+		// console.log(window.location.host+"/student/available-exams")
 		alert("No question")
 	}
 	
@@ -353,7 +359,7 @@ let correction = () =>{
 	let quizContainer = document.getElementById("quiz-container")
 	document.getElementById("timer").innerHTML = "<h2>Correction</h2>"
 	questionContainer.innerHTML = ""
-	for (corr_index = 0; corr_index < ajax_data.length; corr_index++) {
+	for (let corr_index = 0; corr_index < ajax_data.length; corr_index++) {
 		q_and_A = ajax_data[corr_index]   // question and answer
 		correctionQuestion = Object.keys(q_and_A)[0]
 		questionContainer.innerHTML += 
@@ -382,24 +388,26 @@ let correctionOption = () => {
 		if (Object.values(q_and_A)[0][j] == Object.values(q_and_A)[1]){
 			choice= "correct"
 			if (Object.values(q_and_A)[0][j] == selectedAnswers[`${correctionQuestion}`]){
-				choiceIcon = `<span class="fas fa-check"></span>`
+				choiceIcon = `<i class="fas fa-check mt-1"></i>`
 			}else{
-				choiceIcon = `<span class="fas fa-exclamation-circle"></span>`
+				choiceIcon = `<i class="fas fa-exclamation-circle mt-1"></i>`
 			}
 
 		}
 		if (Object.values(q_and_A)[0][j] != Object.values(q_and_A)[1] && selectedAnswers[`${correctionQuestion}`] == Object.values(q_and_A)[0][j]){
 			choice="wrong"
-			choiceIcon = `<span class="fas fa-exclamation-triangle"></span>`
+			choiceIcon = `<i class="fas fa-xmark mt-1"></i>`
 		}
 		options += `
-				<div class="form-inline">
-				<label class="form-check-label ${choice}" >${choiceIcon ? choiceIcon : ""} &nbsp;  ${Object.values(q_and_A)[0][j]} </label> 
-				</div>
+					<div class="d-flex ${choice ? choice : "no_choice"} justify-content-between">
+					<span> ${Object.values(q_and_A)[0][j]} </span> ${choiceIcon ? choiceIcon : ""}
+					</div>				
 				`
 	}
 	return options
 }
+
+
 // correction()
 // $.ajax({
 //     type: "GET", 

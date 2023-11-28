@@ -27,6 +27,7 @@ class ExamForm(forms.ModelForm):
         self.fields['subject'].queryset = request.user.subject_set.all()
         self.fields["duration"].help_text = "<li>H:M:S</li>"
         self.fields["retake"].label = "Allow students retake exam"
+        self.fields["review"].label = "Allow students view correction after exam"
         self.fields["duration"].initial = "00:60:00"
         # This will work but when the form selects all teachers that have an active session
         # self.fields['teacher'].initial = request.user

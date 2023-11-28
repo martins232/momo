@@ -5,7 +5,7 @@ from teachers. forms import UserUpdateForm,TeacherUpdateForm, ChangeProfilePictu
 from django.contrib.auth.decorators import login_required
 from exam.forms import ExamForm, QuestionForm
 from django.contrib import messages
-from exam .models import Exam, Question
+from exam .models import Exam, Question, Session
 from teachers.models import Subject
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Q
@@ -247,3 +247,26 @@ def viewAllQuestions(request):
     }
     return render(request, "teachers/view_all_question.html", context)
 
+####################################################################
+def sessionDashboard(request):
+    
+    all_exam = Exam.objects.filter(teacher=request.user)
+    
+    grade = request.GET.get("grade", 1)
+    exam = Exam.objects.get(id=grade)
+    total_student = exam.grade.student_set.all().count()
+    misconduct = Session.objects.filter(exam = 1, misconduct=True).count()
+    completed = Session.objects.filter(exam = 1, completed=True).count()
+    passed = Session.objects.filter(exam = 1,score__gte=exam.pass_mark, completed=True).count()
+    
+    # dict(Session.objects.filter(exam=1).values_list("misconduct").annotate(count=Count("misconduct", distinct=True)))
+    
+    context ={
+        "exams": all_exam,
+        "total_student": total_student,
+        "misconduct": misconduct,
+        "completed": completed,
+        "passed": passed,
+        "fail" : completed - passed
+    }
+    return render(request, "teachers/session_dashboard.html", context)
