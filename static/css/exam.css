@@ -10,7 +10,7 @@
 
 body {
     height: 100vh;
-    background-color: bisque;
+    /* background-color: bisque; */
     padding: 10px;
     -webkit-touch-callout: none;
     -webkit-user-select: none;
@@ -71,26 +71,31 @@ input[type="radio"] {
 }
 
 .correct{
+    width: 100%;
+    padding: 5px 10px;
+    border-radius: 10px;
+    margin-bottom: 20px;
     background-color: #dff0d8;
     color: #3c763d;
     border: none;
-} 
-.correct:hover{
-    color: #dff0d8;
-    background-color: #3c763d;
 }
-
-.wrong {
+.wrong{
+    width: 100%;
+    padding: 5px 10px;
+    border-radius: 10px;
+    margin-bottom: 20px;
     color: #a94442;
     background-color: #f2dede;
     border-color: #ebccd1;
 }
 
-.wrong:hover{
-    background-color: #a94442;
-    color: #f2dede;
+.no_choice{
+    width: 100%;
+    padding: 5px 10px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    border: 1px solid rgb(159, 156, 156);
 }
-
 
 
 

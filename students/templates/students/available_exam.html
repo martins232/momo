@@ -37,6 +37,7 @@
                     <td>{{exam.duration }}</td>
                     <td class= "text-center">{{exam.question_set.count }}</td>
                     <td>{{exam.start_date | date:"d/m/y"}}</td>
+                    
                     <td class="text-center"><a href="#" class="btn btn-success btn-sm start" data-id="{{exam.id}}"
                       data-name = {{request.user}}
                       data-exam="{{exam.name}}"
@@ -147,6 +148,7 @@ aria-labelledby="staticBackdropLabel" aria-hidden="true">
                 <li>The exam consists of <b class="text-danger">${quest_count}</b> questions.</li>
                 <li>You must answer all questions before your time elapse</li>
                 <li>If you don't submit your test before the time elapses the system will submit it automatically for you</li>
+                <li>This exam can only be taken twice if permitted</li>
             </ul>
         </li>
         <!-- Continue the list with remaining instructions -->

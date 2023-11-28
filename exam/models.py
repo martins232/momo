@@ -1,6 +1,7 @@
 from django.db import models
 from users. models import User, Grade
 from teachers. models import Subject
+
   
 
 STATUS = [
@@ -19,6 +20,7 @@ class Exam(models.Model):
     start_date = models.DateTimeField()
     status = models.CharField(max_length=25, choices=STATUS, default="Pending")
     retake = models.BooleanField( default=False)
+    review = models.BooleanField(default=False)
     updated = models.DateTimeField(auto_now=True)
     created = models.DateTimeField(auto_now_add=True)
     
@@ -49,16 +51,22 @@ class Question(models.Model):
 class Session(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     exam = models.ForeignKey(Exam, on_delete=models.SET_NULL, null=True)
-    score = models.FloatField()
+    score = models.FloatField(default=0.0)
     elapsed_time = models.FloatField(null=True)
     attempts = models.IntegerField(default=0)
     misconduct = models.BooleanField(default=False)
-    time_started = models.TimeField(auto_now_add=True)
-    time_ended = models.TimeField(auto_now_add=True)
+    time_started = models.DateTimeField(auto_now_add=True)
+    time_ended = models.DateTimeField(auto_now=True)
+    completed = models.BooleanField(default=False)
+    choices = models.JSONField(default=dict)
+    
     
     def __str__(self):
         return str(self.pk)
     
-    
-    
-    
+    @property
+    def passed(self):
+        if self.score > self.exam.pass_mark:
+            return "Passed"
+        else:
+            return "Fail"
