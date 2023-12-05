@@ -1,4 +1,4 @@
-const modalBtns = [...document.getElementsByClassName("delete")]
+let modalBtns = [...document.getElementsByClassName("delete")]
 const modalBody = document.getElementById("modal-body-confirm")
 const modalDelete = document.getElementById("confirmDelete")
 
@@ -11,6 +11,7 @@ modalBtns.forEach(modalBtn => modalBtn.addEventListener("click", ()=>{
     
     modalDelete.addEventListener("click", ()=>{
         window.location.href = "http://" + window.location.host + url
+        console.log(url)
     })
 
 })

@@ -1,21 +1,4 @@
 {% load static %}
-<!DOCTYPE html>
-<html lang="en">
-    <head>
-        <meta charset="utf-8" />
-        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
-        <meta name="description" content="" />
-        <meta name="author" content="" />
-        <title>SKODAJI</title>
-        
-        <link href="{% static "css/styles.css" %}" rel="stylesheet" />
-        <link href="https://cdn.jsdelivr.net/npm/simple-datatables@7.1.2/dist/style.min.css" rel="stylesheet" />
-        <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.css" />
-        {% block additional_css %}{% endblock additional_css %}
-        <script src="https://use.fontawesome.com/releases/v6.3.0/js/all.js" crossorigin="anonymous"></script>
-    </head>
-<body class="sb-nav-fixed">
 <nav class="sb-topnav navbar navbar-expand navbar-dark bg-dark"> 
     <!-- Navbar Brand-->
     <a class="navbar-brand ps-3" href="{% url "home" %}"><img src="{% static "images/logo.svg" %}" alt="Logo" style="width:65%;" ></a>

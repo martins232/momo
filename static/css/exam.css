@@ -21,11 +21,13 @@ body {
 }
 
 
-.container {
+/* .container {
     margin: 10px auto 30px;
     background: white;
-    padding: 20px 15px
-}
+    padding: 20px 60px;
+} */
+
+
 
 label.box {
     display: flex;

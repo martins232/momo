@@ -12,7 +12,7 @@ from django.db.models import Q
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.core.paginator import Paginator, EmptyPage
-
+from django.http.response import JsonResponse
 
 
 
@@ -246,6 +246,13 @@ def viewAllQuestions(request):
         "grades": grades
     }
     return render(request, "teachers/view_all_question.html", context)
+
+
+def sessionData(request, pk):
+    exam = get_object_or_404(Exam, id=pk)
+    data = list(Session.objects.filter(exam=exam).values('user__username','score', 'elapsed_time', 'attempts', 'misconduct', 'time_started', 'time_ended', 'completed',))
+    # print(data)
+    return JsonResponse({"exam": exam.name,"pass_mark": exam.pass_mark,"session": data})
 
 ####################################################################
 def sessionDashboard(request):

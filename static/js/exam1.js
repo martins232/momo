@@ -48,18 +48,18 @@ getData()
 // -----------------------
 
 
-const restart = () =>{
-	getData()
+// const restart = () =>{
+// 	getData()
 	
-	selectedAnswers ={}
-	displayExam(0)
-	percentremain=0;
-	distance = time * 1000;
-	fixed=new Date().getTime(); //gets the current time in milliseconds
-	fixed +=distance;
-	timer = setInterval(startTimer, 1000);
+// 	selectedAnswers ={}
+// 	displayExam(0)
+// 	percentremain=0;
+// 	distance = time * 1000;
+// 	fixed=new Date().getTime(); //gets the current time in milliseconds
+// 	fixed +=distance;
+// 	timer = setInterval(startTimer, 1000);
 	
-}
+// }
 
 
 
@@ -175,64 +175,64 @@ const resetAnswer = ()=>{
 	
 }
 
-let questionContainer = document.getElementById("quiz-container")
-const displayExam = (i)=>{
-	index = i
-	if (ajax_data[index]){
-		question_data = ajax_data[index] //an object for both question and answer
-		question = Object.keys(question_data)[0] //an object question
-		let options = getOptions() // an object of options array
-		let btns =jumperBtns()
-		questionContainer.innerHTML = `
-		<div class="col-12" >
-			<div id ="warning"></div>
-			<p class="fw-bold" style="font-family: Georgia, 'Times New Roman', Times, serif;">Question ${i +1} of ${ajax_data.length}</p>
-			<hr>
-			<span class="fw-bold fs-4" style="font-family: Georgia, 'Times New Roman', Times, serif;">${question}</span>
+// let questionContainer = document.getElementById("quiz-container")
+// const displayExam = (i)=>{
+// 	index = i
+// 	if (ajax_data[index]){
+// 		question_data = ajax_data[index] //an object for both question and answer
+// 		question = Object.keys(question_data)[0] //an object question
+// 		let options = getOptions() // an object of options array
+// 		let btns =jumperBtns()
+// 		questionContainer.innerHTML = `
+// 		<div class="col-12" >
+// 			<div id ="warning"></div>
+// 			<p class="fw-bold" style="font-family: Georgia, 'Times New Roman', Times, serif;">Question ${i +1} of ${ajax_data.length}</p>
+// 			<hr>
+// 			<span class="fw-bold fs-4" style="font-family: Georgia, 'Times New Roman', Times, serif;">${question}</span>
 			
-			<div class="mt-4"> 
-				${options}
-			</div>
-		</div>
+// 			<div class="mt-4"> 
+// 				${options}
+// 			</div>
+// 		</div>
 
-		<div class="col-12 mb-2">
-			<div class="d-flex justify-content-between flex-wrap" id="all_btns"> 
-				<div class="align-self-center mx-auto">
-					<button type="reset" class="btn btn-dark px-4 py-2 fw-bold" onclick="resetAnswer()">Reset</button>
-				</div>
-				<div class="align-self-center mx-auto">
-					<button class="btn btn-primary px-4 py-2 fw-bold me-2" onclick="displayExam(${index - 1})" ${index < 1 ? "disabled" : ""}> Previous</button> 
-					<button class="btn btn-primary px-4 py-2 fw-bold" onclick="displayExam(${index + 1})" ${index == ajax_data.length -1 ? "disabled" : ""}> Next</button> 
-				</div>
-				<div class="align-self-center mx-auto">
-				<button type="button" class="btn btn-success px-4 py-2 fw-bold" data-bs-toggle="modal" data-bs-target="#myModal" onclick="promptSubmit()">Submit</button>
+// 		<div class="col-12 mb-2">
+// 			<div class="d-flex justify-content-between flex-wrap" id="all_btns"> 
+// 				<div class="align-self-center mx-auto">
+// 					<button type="reset" class="btn btn-dark px-4 py-2 fw-bold" onclick="resetAnswer()">Reset</button>
+// 				</div>
+// 				<div class="align-self-center mx-auto">
+// 					<button class="btn btn-primary px-4 py-2 fw-bold me-2" onclick="displayExam(${index - 1})" ${index < 1 ? "disabled" : ""}> Previous</button> 
+// 					<button class="btn btn-primary px-4 py-2 fw-bold" onclick="displayExam(${index + 1})" ${index == ajax_data.length -1 ? "disabled" : ""}> Next</button> 
+// 				</div>
+// 				<div class="align-self-center mx-auto">
+// 				<button type="button" class="btn btn-success px-4 py-2 fw-bold" data-bs-toggle="modal" data-bs-target="#myModal" onclick="promptSubmit()">Submit</button>
 					
-				</div>
+// 				</div>
 				
-			</div>
-		</div>
+// 			</div>
+// 		</div>
 
-		<div class="col-12" >
-			<nav aria-label="Page navigation example" >
-				<ul class="pagination justify-content-center flex-wrap">
-					${btns}
-				</ul>
-			</nav>
-		</div>
+// 		<div class="col-12" >
+// 			<nav aria-label="Page navigation example" >
+// 				<ul class="pagination justify-content-center flex-wrap">
+// 					${btns}
+// 				</ul>
+// 			</nav>
+// 		</div>
 			
 
 
-			`
-	}else{
-		// console.log(window.location.host+"/student/available-exams")
-		alert("No question")
-	}
+// 			`
+// 	}else{
+// 		// console.log(window.location.host+"/student/available-exams")
+// 		alert("No question")
+// 	}
 	
-}
-// -----------------------------------------------------------------------------------------
-displayExam(0)
+// }
+// // -----------------------------------------------------------------------------------------
+// displayExam(0)
 
-// -----------------------------------------------------------------------------------------
+// // -----------------------------------------------------------------------------------------
 let promptSubmit = () => {
 	let modalBody = document.getElementById("modal-body")
 	
@@ -408,118 +408,118 @@ let correctionOption = () => {
 }
 
 
-// correction()
-// $.ajax({
-//     type: "GET", 
-//     url : url_data,
-// 	async: false, //i did this so that i would be able to save the data gotten from the api into mydata variable above
-//     success: function (response) {
-//         let data = response.data
+// // correction()
+// // $.ajax({
+// //     type: "GET", 
+// //     url : url_data,
+// // 	async: false, //i did this so that i would be able to save the data gotten from the api into mydata variable above
+// //     success: function (response) {
+// //         let data = response.data
 
-//         data.forEach(element => { //loop through the data
-// 			for (const [questions, answers] of Object.entries(element)) {
-// 				quiz_box.innerHTML += `
-//                 <hr>
-//                 <div class="mb-2">
+// //         data.forEach(element => { //loop through the data
+// // 			for (const [questions, answers] of Object.entries(element)) {
+// // 				quiz_box.innerHTML += `
+// //                 <hr>
+// //                 <div class="mb-2">
                 
-//                     <b>${questions}</b>
+// //                     <b>${questions}</b>
                 
-//                 </div>
+// //                 </div>
 
-//                 `
-// 				answers.forEach(answer => { //looop through the answer for each question
-// 					quiz_box.innerHTML += `
-//                     <div>
-//                         <label for="${answer}"><input type="radio" name="${questions}" class="form-check-input ans" id="${answer}" value="${answer}"> ${answer}</label>
-//                     </div>
-//                 `
-// 				})
+// //                 `
+// // 				answers.forEach(answer => { //looop through the answer for each question
+// // 					quiz_box.innerHTML += `
+// //                     <div>
+// //                         <label for="${answer}"><input type="radio" name="${questions}" class="form-check-input ans" id="${answer}" value="${answer}"> ${answer}</label>
+// //                     </div>
+// //                 `
+// // 				})
 
-// 			}
-// 		});
-// 		mydata = response.data
-// 		console.log(`Inside console.log ${mydata}`)
-//     },
-//     error: function(error){
-//         console.log(error)
-//     }
-// })
+// // 			}
+// // 		});
+// // 		mydata = response.data
+// // 		console.log(`Inside console.log ${mydata}`)
+// //     },
+// //     error: function(error){
+// //         console.log(error)
+// //     }
+// // })
 
-// const quizForm = document.getElementById("quiz-form") //get the form that would submit the quiz
-// const csrf = document.getElementsByName("csrfmiddlewaretoken") //get csrf token from the from the hidden input
+// // const quizForm = document.getElementById("quiz-form") //get the form that would submit the quiz
+// // const csrf = document.getElementsByName("csrfmiddlewaretoken") //get csrf token from the from the hidden input
 
-// //getElementsBy method always return a collect of elements while getElementby returns just an element
+// // //getElementsBy method always return a collect of elements while getElementby returns just an element
 
-// const sendData = () => {
-// 	const elements = [...document.getElementsByClassName("ans")] // get all the input field with class "ans"
-// 	const data = {} // create an empty object
-// 	data["csrfmiddlewaretoken"] = csrf[0].value  // add the csrf token to the data object
-// 	elements.forEach(el => { 
-// 		if (el.checked) {   //foreach of the element, if the element has been answered, append the element to the data object with it's answer
-// 			data[el.name] = el.value
-// 		} else {  // else if its not checked
-// 			if (!data[el.name]) { // check if el.name exists in the data object if 'it does not', create it and
-// 				data[el.name] = null // save it as a null
-// 			}
-// 		}
-// 	})
+// // const sendData = () => {
+// // 	const elements = [...document.getElementsByClassName("ans")] // get all the input field with class "ans"
+// // 	const data = {} // create an empty object
+// // 	data["csrfmiddlewaretoken"] = csrf[0].value  // add the csrf token to the data object
+// // 	elements.forEach(el => { 
+// // 		if (el.checked) {   //foreach of the element, if the element has been answered, append the element to the data object with it's answer
+// // 			data[el.name] = el.value
+// // 		} else {  // else if its not checked
+// // 			if (!data[el.name]) { // check if el.name exists in the data object if 'it does not', create it and
+// // 				data[el.name] = null // save it as a null
+// // 			}
+// // 		}
+// // 	})
 
-// 	$.ajax({
-// 		type: "POST", // make a post request to the url: student/session/4/save
-// 		url: usrl_submit, // A string containing the URL to which the request is sent.
-// 		data: data, // the data object from above to be sent to the server
-// 		success: function (response) {  // if the post request was sucessful a jsonresponse was created in the view as as this JsonResponse({"pass": True, "score": score_, "result":results})
-// 			const results = response.result // from the response, get result attribute
-// 			quizForm.classList.add("d-none") // clear the form element for correction
+// // 	$.ajax({
+// // 		type: "POST", // make a post request to the url: student/session/4/save
+// // 		url: usrl_submit, // A string containing the URL to which the request is sent.
+// // 		data: data, // the data object from above to be sent to the server
+// // 		success: function (response) {  // if the post request was sucessful a jsonresponse was created in the view as as this JsonResponse({"pass": True, "score": score_, "result":results})
+// // 			const results = response.result // from the response, get result attribute
+// // 			quizForm.classList.add("d-none") // clear the form element for correction
 
-// 			results.forEach(res => { // for each of the result
-// 				const resDiv = document.createElement("div") // create a div element
-// 				for (const [question, resp] of Object.entries(res)) {
-// 					resDiv.innerHTML += `${question}<br><hr>`
-// 					const cls = ["container", "p-3", "text-light", "h3"]
-// 					resDiv.classList.add(...cls)
+// // 			results.forEach(res => { // for each of the result
+// // 				const resDiv = document.createElement("div") // create a div element
+// // 				for (const [question, resp] of Object.entries(res)) {
+// // 					resDiv.innerHTML += `${question}<br><hr>`
+// // 					const cls = ["container", "p-3", "text-light", "h3"]
+// // 					resDiv.classList.add(...cls)
 
-// 					if (resp == "not answered") {
-// 						resDiv.innerHTML += "-not answered"
-// 						resDiv.classList.add("bg-danger")
-// 					}
-// 					else {
-// 						const answer = resp["answered"]
-// 						const correct = resp["correct_answer"]
+// // 					if (resp == "not answered") {
+// // 						resDiv.innerHTML += "-not answered"
+// // 						resDiv.classList.add("bg-danger")
+// // 					}
+// // 					else {
+// // 						const answer = resp["answered"]
+// // 						const correct = resp["correct_answer"]
 
-// 						if (answer == correct) {
-// 							resDiv.classList.add("bg-success")
-// 							resDiv.innerHTML += `answered: ${answer}`
-// 						} else {
-// 							resDiv.classList.add("bg-danger")
-// 							resDiv.innerHTML += `   |correct answer: ${correct}`
-// 							resDiv.innerHTML += `   |answered: ${answer}`
-// 						}
+// // 						if (answer == correct) {
+// // 							resDiv.classList.add("bg-success")
+// // 							resDiv.innerHTML += `answered: ${answer}`
+// // 						} else {
+// // 							resDiv.classList.add("bg-danger")
+// // 							resDiv.innerHTML += `   |correct answer: ${correct}`
+// // 							resDiv.innerHTML += `   |answered: ${answer}`
+// // 						}
 
-// 					}
+// // 					}
 					
-// 				}
-// 				document.getElementById("head").innerHTML = "Corrections"
-// 				const quiz_box = document.getElementById("jaden")
-// 				quiz_box.appendChild(resDiv)
-// 				// console.log(resDiv)
-// 			})
-// 		},
-// 		error: function (error) {
-// 			console.error(error)
-// 		}
+// // 				}
+// // 				document.getElementById("head").innerHTML = "Corrections"
+// // 				const quiz_box = document.getElementById("jaden")
+// // 				quiz_box.appendChild(resDiv)
+// // 				// console.log(resDiv)
+// // 			})
+// // 		},
+// // 		error: function (error) {
+// // 			console.error(error)
+// // 		}
 
-// 	})
-// }
+// // 	})
+// // }
 
-// quizForm.addEventListener("submit", e => {
-// 	e.preventDefault() //prevent the submit button from behaving as it would
+// // quizForm.addEventListener("submit", e => {
+// // 	e.preventDefault() //prevent the submit button from behaving as it would
 
-// 	sendData() // call the send button that would send the your request to python
+// // 	sendData() // call the send button that would send the your request to python
 
-// })
+// // })
 
-// console.log(`Outside console.log ${mydata}`)
+// // console.log(`Outside console.log ${mydata}`)
 
 
 let warningFunc = () =>{
@@ -562,23 +562,23 @@ document.addEventListener("visibilitychange", (event) => {
 
 
 
-//   <div class="card text-white bg-primary mb-3" style="max-width: 18rem;">
-// 		<div class="card-header">Class Stats</div>
-// 		<div class="card-body">
-// 		  <div class="d-flex align-items-center">
-// 			<i class="fas fa-graduation-cap fa-3x me-3"></i>
-// 			<div class="text-end">
-// 			  <h5 class="card-title">Total Students</h5>
-// 			  <p class="card-text display-4">25</p>
-// 			</div>
-// 		  </div>
-// 		</div>
-// 	  </div>
+// //   <div class="card text-white bg-primary mb-3" style="max-width: 18rem;">
+// // 		<div class="card-header">Class Stats</div>
+// // 		<div class="card-body">
+// // 		  <div class="d-flex align-items-center">
+// // 			<i class="fas fa-graduation-cap fa-3x me-3"></i>
+// // 			<div class="text-end">
+// // 			  <h5 class="card-title">Total Students</h5>
+// // 			  <p class="card-text display-4">25</p>
+// // 			</div>
+// // 		  </div>
+// // 		</div>
+// // 	  </div>
 
 
-/* <div  class="bg-image hover-overlay ripple shadow-1-strong rounded" data-mdb-ripple-color="light">
-  <img src="https://mdbcdn.b-cdn.net/img/new/fluid/city/113.webp" class="w-100 h-25" alt="Louvre" />
-  <a href="#!">
-    <div class="mask" style="background-color: hsla(0, 0%, 98%, 0.2)"></div>
-  </a>
-</div> */
+// /* <div  class="bg-image hover-overlay ripple shadow-1-strong rounded" data-mdb-ripple-color="light">
+//   <img src="https://mdbcdn.b-cdn.net/img/new/fluid/city/113.webp" class="w-100 h-25" alt="Louvre" />
+//   <a href="#!">
+//     <div class="mask" style="background-color: hsla(0, 0%, 98%, 0.2)"></div>
+//   </a>
+// </div> */

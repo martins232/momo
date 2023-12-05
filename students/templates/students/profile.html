@@ -1,173 +1,170 @@
-{% extends "students/main_student.html" %}
+{% extends "main.html" %}
+
 
 {% block content %}
-    <div class="container-fluid pt-3">
-        <!--<div class="card mb-4 mt-3 p-5">
-        </div>-->
-        <nav aria-label="breadcrumb" class="main-breadcrumb">
-            <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="javascript:void(0)">Home</a></li>
-                <li class="breadcrumb-item"><a href="javascript:void(0)">Teacher</a></li>
-                <li class="breadcrumb-item active" aria-current="page">Profile</li>
-            </ol>
-        </nav>
-        <div class="row gutters-sm">
-            <div class="col-md-4 mb-3">
-                <div class="card">
-                    <div class="card-body">
-                        <div class="d-flex flex-column align-items-center text-center">
+    <nav aria-label="breadcrumb" class="main-breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="javascript:void(0)">Home</a></li>
+            <li class="breadcrumb-item"><a href="javascript:void(0)">Teacher</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Profile</li>
+        </ol>
+    </nav>
+    <div class="row gutters-sm">
+        <div class="col-md-4 mb-3">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex flex-column align-items-center text-center">
+                    
+                        <!-- <img src="https://bootdey.com/img/Content/avatar/avatar7.png" alt="Admin"
+                                class="rounded-circle" width="150"> -->
+                                <img src="{{request.user.student.image.url}}" alt="Admin"
+                                class="rounded-circle" width="200" height="200">
+                            <div class="mt-3">
+                                <h4>{{request.user}}</h4>
+                                <p class="text-danger mb-1"><strong>Student</strong></p>
+                                <p class="text-muted font-size-sm">Skodaji</p>
+                                
+                                
+                            </div>
+                        </div>
+                        {% comment %} <div class="row">
+                        <div class="col-6"><p class="text-secondary"><b>No of assigned subjects:</b></p></div>
+                        <div class="col-6"><p>{{count_course}}</p></div>
+                        </div>
+
+                        <div class="row">
                         
-                            <!-- <img src="https://bootdey.com/img/Content/avatar/avatar7.png" alt="Admin"
-                                 class="rounded-circle" width="150"> -->
-                                 <img src="{{request.user.student.image.url}}" alt="Admin"
-                                 class="rounded-circle" width="200" height="200">
-                             <div class="mt-3">
-                                 <h4>{{request.user}}</h4>
-                                 <p class="text-danger mb-1"><strong>Student</strong></p>
-                                 <p class="text-muted font-size-sm">Skodaji</p>
-                                 
-                                 
-                             </div>
-                         </div>
-                         {% comment %} <div class="row">
-                            <div class="col-6"><p class="text-secondary"><b>No of assigned subjects:</b></p></div>
-                            <div class="col-6"><p>{{count_course}}</p></div>
-                         </div>
+                        <div class="col-6"><p class="text-secondary"><b>Assigned subjects: </b></p></div>
+                        
+                        <div class="col-6">{% for sub in subjects %}<li class="list-unstyled">{{sub.name}}</li>{% endfor %}</div>
+                        
+                        
+                        </div> {% endcomment %}
 
-                         <div class="row">
-                            
-                            <div class="col-6"><p class="text-secondary"><b>Assigned subjects: </b></p></div>
-                            
-                            <div class="col-6">{% for sub in subjects %}<li class="list-unstyled">{{sub.name}}</li>{% endfor %}</div>
-                            
-                            
-                         </div> {% endcomment %}
-
-                    </div>
                 </div>
-  
             </div>
-            <div class="col-md-8">
-                <div class="card mb-3">
-                    <div class="card-body">
-                        <div class="row">
-                            <div class="col-sm-3">
-                                <h6 class="mb-0">Full Name</h6>
-                            </div>
-                            <div class="col-sm-9 text-secondary">
-                                {{user.first_name}} {{user.last_name}}
-                            </div>
+
+        </div>
+        <div class="col-md-8">
+            <div class="card mb-3">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-sm-3">
+                            <h6 class="mb-0">Full Name</h6>
                         </div>
-                        <hr>
-                        <div class="row">
-                            <div class="col-sm-3">
-                                <h6 class="mb-0">Date of Birth</h6>
-                            </div>
-                            <div class="col-sm-9 text-secondary">
-                                {{user.student.birth}}
-                            </div>
+                        <div class="col-sm-9 text-secondary">
+                            {{user.first_name}} {{user.last_name}}
                         </div>
-                        <hr>
-                        <div class="row">
-                            <div class="col-sm-3">
-                                <h6 class="mb-0">Gender</h6>
-                            </div>
-                            <div class="col-sm-9 text-secondary">
-                                {{user.student.gender}}
-                            </div>
+                    </div>
+                    <hr>
+                    <div class="row">
+                        <div class="col-sm-3">
+                            <h6 class="mb-0">Date of Birth</h6>
                         </div>
-                        <hr>
-                        <div class="row">
-                            <div class="col-sm-3">
-                                <h6 class="mb-0">Address</h6>
-                            </div>
-                            <div class="col-sm-9 text-secondary">
-                                Bay Area, San Francisco, CA
-                            </div>
+                        <div class="col-sm-9 text-secondary">
+                            {{user.student.birth}}
                         </div>
-                        <hr>
-                        <div class="row">
-                            <div class="col-sm-12">
-                                <a class="btn btn-md btn-secondary" 
-                                    href="{% url "edit-student-profile" user.id %}"><i class="fas fa-pen"></i> Edit</a>
-                            </div>
-                           <!--target="__blank"-->
+                    </div>
+                    <hr>
+                    <div class="row">
+                        <div class="col-sm-3">
+                            <h6 class="mb-0">Gender</h6>
                         </div>
+                        <div class="col-sm-9 text-secondary">
+                            {{user.student.gender}}
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="row">
+                        <div class="col-sm-3">
+                            <h6 class="mb-0">Address</h6>
+                        </div>
+                        <div class="col-sm-9 text-secondary">
+                            Bay Area, San Francisco, CA
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <a class="btn btn-md btn-secondary" 
+                                href="{% url "edit-student-profile" user.id %}"><i class="fas fa-pen"></i> Edit</a>
+                        </div>
+                        <!--target="__blank"-->
                     </div>
                 </div>
-                
-                <div class="row gutters-sm">
-                    <div class="col-sm-6 mb-3">
-                        <div class="card h-100">
-                            <div class="card-body">
-                                <h6 class="d-flex align-items-center mb-3"><i
-                                        class="material-icons text-info mr-2">assignment</i>Project Status</h6>
-                                <small>Web Design</small>
-                                <div class="progress mb-3" style="height: 5px">
-                                    <div class="progress-bar bg-primary" role="progressbar" style="width: 80%"
-                                        aria-valuenow="80" aria-valuemin="0" aria-valuemax="100"></div>
-                                </div>
-                                <small>Website Markup</small>
-                                <div class="progress mb-3" style="height: 5px">
-                                    <div class="progress-bar bg-primary" role="progressbar" style="width: 72%"
-                                        aria-valuenow="72" aria-valuemin="0" aria-valuemax="100"></div>
-                                </div>
-                                <small>One Page</small>
-                                <div class="progress mb-3" style="height: 5px">
-                                    <div class="progress-bar bg-primary" role="progressbar" style="width: 89%"
-                                        aria-valuenow="89" aria-valuemin="0" aria-valuemax="100"></div>
-                                </div>
-                                <small>Mobile Template</small>
-                                <div class="progress mb-3" style="height: 5px">
-                                    <div class="progress-bar bg-primary" role="progressbar" style="width: 55%"
-                                        aria-valuenow="55" aria-valuemin="0" aria-valuemax="100"></div>
-                                </div>
-                                <small>Backend API</small>
-                                <div class="progress mb-3" style="height: 5px">
-                                    <div class="progress-bar bg-primary" role="progressbar" style="width: 66%"
-                                        aria-valuenow="66" aria-valuemin="0" aria-valuemax="100"></div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-sm-6 mb-3">
-                        <div class="card h-100">
-                            <div class="card-body">
-                                <h6 class="d-flex align-items-center mb-3"><i
-                                        class="material-icons text-info mr-2">assignment</i>Project Status</h6>
-                                <small>Web Design</small>
-                                <div class="progress mb-3" style="height: 5px">
-                                    <div class="progress-bar bg-primary" role="progressbar" style="width: 80%"
-                                        aria-valuenow="80" aria-valuemin="0" aria-valuemax="100"></div>
-                                </div>
-                                <small>Website Markup</small>
-                                <div class="progress mb-3" style="height: 5px">
-                                    <div class="progress-bar bg-primary" role="progressbar" style="width: 72%"
-                                        aria-valuenow="72" aria-valuemin="0" aria-valuemax="100"></div>
-                                </div>
-                                <small>One Page</small>
-                                <div class="progress mb-3" style="height: 5px">
-                                    <div class="progress-bar bg-primary" role="progressbar" style="width: 89%"
-                                        aria-valuenow="89" aria-valuemin="0" aria-valuemax="100"></div>
-                                </div>
-                                <small>Mobile Template</small>
-                                <div class="progress mb-3" style="height: 5px">
-                                    <div class="progress-bar bg-primary" role="progressbar" style="width: 55%"
-                                        aria-valuenow="55" aria-valuemin="0" aria-valuemax="100"></div>
-                                </div>
-                                <small>Backend API</small>
-                                <div class="progress mb-3" style="height: 5px">
-                                    <div class="progress-bar bg-primary" role="progressbar" style="width: 66%"
-                                        aria-valuenow="66" aria-valuemin="0" aria-valuemax="100"></div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-
-
             </div>
+            
+            <div class="row gutters-sm">
+                <div class="col-sm-6 mb-3">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <h6 class="d-flex align-items-center mb-3"><i
+                                    class="material-icons text-info mr-2">assignment</i>Project Status</h6>
+                            <small>Web Design</small>
+                            <div class="progress mb-3" style="height: 5px">
+                                <div class="progress-bar bg-primary" role="progressbar" style="width: 80%"
+                                    aria-valuenow="80" aria-valuemin="0" aria-valuemax="100"></div>
+                            </div>
+                            <small>Website Markup</small>
+                            <div class="progress mb-3" style="height: 5px">
+                                <div class="progress-bar bg-primary" role="progressbar" style="width: 72%"
+                                    aria-valuenow="72" aria-valuemin="0" aria-valuemax="100"></div>
+                            </div>
+                            <small>One Page</small>
+                            <div class="progress mb-3" style="height: 5px">
+                                <div class="progress-bar bg-primary" role="progressbar" style="width: 89%"
+                                    aria-valuenow="89" aria-valuemin="0" aria-valuemax="100"></div>
+                            </div>
+                            <small>Mobile Template</small>
+                            <div class="progress mb-3" style="height: 5px">
+                                <div class="progress-bar bg-primary" role="progressbar" style="width: 55%"
+                                    aria-valuenow="55" aria-valuemin="0" aria-valuemax="100"></div>
+                            </div>
+                            <small>Backend API</small>
+                            <div class="progress mb-3" style="height: 5px">
+                                <div class="progress-bar bg-primary" role="progressbar" style="width: 66%"
+                                    aria-valuenow="66" aria-valuemin="0" aria-valuemax="100"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-6 mb-3">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <h6 class="d-flex align-items-center mb-3"><i
+                                    class="material-icons text-info mr-2">assignment</i>Project Status</h6>
+                            <small>Web Design</small>
+                            <div class="progress mb-3" style="height: 5px">
+                                <div class="progress-bar bg-primary" role="progressbar" style="width: 80%"
+                                    aria-valuenow="80" aria-valuemin="0" aria-valuemax="100"></div>
+                            </div>
+                            <small>Website Markup</small>
+                            <div class="progress mb-3" style="height: 5px">
+                                <div class="progress-bar bg-primary" role="progressbar" style="width: 72%"
+                                    aria-valuenow="72" aria-valuemin="0" aria-valuemax="100"></div>
+                            </div>
+                            <small>One Page</small>
+                            <div class="progress mb-3" style="height: 5px">
+                                <div class="progress-bar bg-primary" role="progressbar" style="width: 89%"
+                                    aria-valuenow="89" aria-valuemin="0" aria-valuemax="100"></div>
+                            </div>
+                            <small>Mobile Template</small>
+                            <div class="progress mb-3" style="height: 5px">
+                                <div class="progress-bar bg-primary" role="progressbar" style="width: 55%"
+                                    aria-valuenow="55" aria-valuemin="0" aria-valuemax="100"></div>
+                            </div>
+                            <small>Backend API</small>
+                            <div class="progress mb-3" style="height: 5px">
+                                <div class="progress-bar bg-primary" role="progressbar" style="width: 66%"
+                                    aria-valuenow="66" aria-valuemin="0" aria-valuemax="100"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+
         </div>
     </div>
 {% endblock content %}
