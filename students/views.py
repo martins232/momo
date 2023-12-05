@@ -71,28 +71,31 @@ def exams(request):
     }
     return render(request, "students/available_exam.html", context)
 
-def session(request):
-    if request.method == "POST":
+def session(request):  #this is the exam page
+    if request.method == "POST":  #if the student clicks the start button on the modal in the available exam page
         value = request.POST.get("exam")
+        request.session['value'] = value 
         if Session.objects.filter(user=request.user, exam=value).exists():
-            if request.user.session_set.get(exam__id=value).attempts == 2:
-                del value
+            if  Session.objects.get(user=request.user, exam=value).attempts == 2:
+                del request.session['value']
                 return redirect("available-exam")
-        else:
-            request.session['value'] = value
-       
     else:
-        value = request.session.get('value')
-        if not value:
+        value = request.session.get('value')  #-------------------- bug -------------------- if student hard refreshes the page, the exam will be lost
+        if not value: #if the user copied the url, the user is without a value id, hence block the request
             raise PermissionDenied
-    
-    return render(request, "students/exam_page.html")
-def session_data(request, pk):
-    if is_ajax(request=request):
-        session , created = Session.objects.get_or_create(user= request.user)
         
+        if Session.objects.filter(user=request.user, exam=value).exists():
+            if  Session.objects.get(user=request.user, exam=value).attempts == 2:
+                del request.session['value']
+                return redirect("available-exam")
+    return render(request, "students/exam_page.html")
+
+def session_data(request, pk):
+    exam = get_object_or_404(Exam, pk=pk)
+    if is_ajax(request=request):
+        session , created = Session.objects.get_or_create(user= request.user, exam=exam)
+                
         if session.attempts < 2:
-            exam = get_object_or_404(Exam, pk=pk)
             questions = exam.question_set.all().values()
             
             data_ =[]
@@ -107,11 +110,11 @@ def session_data(request, pk):
             data ={"data":data_, 
                    "time":exam.duration.total_seconds(),
                    "attempts": session.attempts, 
-                   "retake":exam.retake, 
-                   "review":exam.review,
+                #    "allow_retake":exam.retake, 
+                   "allow_correction":exam.review,
                    "user": request.user.get_full_name()}
             
-            session.attempts = session.attempts +1
+            # session.attempts = session.attempts +1
             session.save()
             
             return JsonResponse(data)
@@ -124,26 +127,27 @@ def is_ajax(request): #check if a call is an ajax call
     return request.META.get('HTTP_X_REQUESTED_WITH') == 'XMLHttpRequest'
  
 def session_save(request, pk):
-    if is_ajax(request=request):   
-        user_session = Session.objects.get(user=request.user)
-        # db_attempts = user_session.attempts
+    if is_ajax(request=request):  
+        user = request.user
+        exam = Exam.objects.get(id=pk) 
+        user_session = Session.objects.get(user=user, exam = exam)
+        db_attempts = user_session.attempts
         questions = []
         data =  request.POST
         data_ =dict(data.lists()) #lists() is only available for request.POST method-->, The lists method returns a list of tuples containing the names and values of the input fields.
         ######################################
         data_.pop("csrfmiddlewaretoken") #remove the csrf_token from the dictionary for us to manipulate the question
         elapsed = data_.pop("elapsedTime")[0]
-        attempts= int(data_.pop("attempts")[0])
+        # attempts= int(data_.pop("attempts")[0])
         misconduct = True if data_.pop("misconduct")[0] == "true" else False
-        attempts_= 2 if misconduct else attempts
+        attempts_= 2 if misconduct | exam.review else db_attempts
         # attempts_ = 2 if (attempts+ db_attempts) > 2 else attempts + db_attempts
         ######################################
        
         for k in data_.keys():
             question = Question.objects.get(question = k)
             questions.append(question) # appending question object in a list
-        user = request.user
-        exam = Exam.objects.get(id=pk)
+
         
         score = 0
         multiplier = 100 / exam.question_set.all().count()
@@ -190,6 +194,6 @@ def session_save(request, pk):
         raise PermissionDenied
                 
             
-                
+
         
     

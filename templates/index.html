@@ -1,4 +1,8 @@
 {% extends "main.html" %}
+{% load static %}
+{% block additional_head_css %}<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.css" />{% endblock additional_head_css %}
+
+<!--<link href="https://cdn.jsdelivr.net/npm/simple-datatables@7.1.2/dist/style.min.css" rel="stylesheet" />-->
 
 {% block content %}
 <div class="container-fluid px-4">
@@ -555,3 +559,11 @@
 </div>
 
 {% endblock content %}
+
+{% block js %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.8.0/Chart.min.js" crossorigin="anonymous"></script>
+<script src="{% static "assets/demo/chart-area-demo.js" %}"></script>
+<script src="{% static "assets/demo/chart-bar-demo.js" %}"></script>
+<script src="https://cdn.jsdelivr.net/npm/simple-datatables@7.1.2/dist/umd/simple-datatables.min.js" crossorigin="anonymous"></script>
+<script src="{% static "js/datatables-simple-demo.js" %}"></script>
+{% endblock js %}

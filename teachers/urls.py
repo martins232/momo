@@ -13,4 +13,5 @@ urlpatterns = [
     path("exam/<str:pk>/question/edit/", views.editQuestion, name="view-question"),
     path("exam/<str:pk>/question/delete/", views.deleteQuestion, name="delete-question"),
     path("session-dashboard/", views.sessionDashboard, name="session-dashboard"),
+    path("session-data/<str:pk>/", views.sessionData, name="session-data"),
 ]
