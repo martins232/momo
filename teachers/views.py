@@ -250,10 +250,26 @@ def viewAllQuestions(request):
 
 def sessionData(request, pk):
     exam = get_object_or_404(Exam, id=pk)
-    data = list(Session.objects.filter(exam=exam).values('user__username','score', 'elapsed_time', 'attempts', 'misconduct', 'time_started', 'time_ended', 'completed',))
-    # print(data)
-    return JsonResponse({"exam": exam.name,"pass_mark": exam.pass_mark,"session": data})
+    students = User.objects.filter(is_student=True, student__grade=exam.grade).exclude(id__in=Session.objects.filter(exam=exam).values("user"))
+    sessions = list(Session.objects.filter(exam=exam).values("user", "score", "elapsed_time", "completed", "misconduct", "time_started"))
+    data = []
+    for session in sessions:
+        session["name"] = User.objects.get(id=session["user"]).get_full_name()
+        data.append(session)
 
+    for student in students:
+        session = {
+            "user": student.id,
+            "score": None,
+            "elapsed_time": None,
+            "completed": None,
+            "misconduct": None,
+            "time_started": None,
+            "name": student.get_full_name(),
+        }
+        data.append(session)   
+    return JsonResponse({"rows": data})
+    
 ####################################################################
 def sessionDashboard(request):
     
