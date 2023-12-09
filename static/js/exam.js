@@ -19,6 +19,9 @@ var fixed
 var timer
 
 
+const endSession = ()=>{
+	window.location = url_availableExams
+}
 
 const getData = () => $.ajax({
 	type: "GET",
@@ -46,6 +49,7 @@ const getData = () => $.ajax({
 		//timer
 		timer = setInterval(startTimer, 1000);
 		displayExam(0)
+		
 	}
 })
 getData()
@@ -78,6 +82,16 @@ function startTimer() {
 			selectedAnswers["elapsedTime"] = time
 			examstatus = "ended"
 			submit()
+		
+			// const myModalAlternative = new bootstrap.Modal('#myModal', {keyboard: false})
+			// myModalAlternative.toggle()
+
+			const myModal = document.querySelector('#myModal');
+    		const modal = bootstrap.Modal.getInstance(myModal);    
+    		if (modal){
+				modal.toggle();
+			}
+
 			$('#ended').modal('show')
 			
 		}, 500)
@@ -361,7 +375,7 @@ let correctionOption = () => {
 let correction = () =>{
 	document.getElementById("quiz-container").innerHTML =""
 	let questionContainer = document.getElementById("quiz-container")
-	document.getElementById("timer").innerHTML = "<h2>Correction</h2>"
+	document.getElementById("timer").innerHTML = `<button type="button" class="btn btn-secondary mt-2" data-bs-dismiss="modal" onclick="endSession()">End Session</button>`
 	for (let corr_index = 0; corr_index < ajax_data.length; corr_index++) {
 		q_and_A = ajax_data[corr_index]   // question and answer
 		correctionQuestion = Object.keys(q_and_A)[0]
@@ -411,14 +425,57 @@ let warningFunc = () =>{
 	  warning--  //for every infrigement decrease the warning
 }
 
+
+
+
+function keypressed(event){
+	let currentOptions = document.getElementsByName("ans")
+	if (event.keyCode==65){
+		currentOptions[0].checked = true
+	}
+	if (event.keyCode==66){
+		currentOptions[1].checked = true
+	}
+	if (event.keyCode==67){
+		currentOptions[2].checked = true
+	}
+	if (event.keyCode==68){
+		currentOptions[3].checked = true
+	}
+	addAnswer()
+	if (event.keyCode==37 | event.keyCode==40){
+		if (index >0 ){
+			index = index -1
+			displayExam(index)
+		}
+	}
+	if (event.keyCode==39 | event.keyCode==38){
+		if (index < ajax_data.length-1){
+			index = index + 1
+			displayExam(index)
+		}
+	}
+	
+}
 document.addEventListener("visibilitychange", (event) => {
 	if (document.visibilityState === "hidden") {
 		if (examstatus == "active"){
-			warningFunc()  //only call this function when exam is active
+			warningFunc()  
 		}
 	  
 	}
   });
+document.addEventListener("keydown", (event)=>{
+	if (examstatus=="active"){
+		console.log(event.target)
+		keypressed(event)
+	}
+})
+
+
+
+
+
 
 //   $(window).resize(function() {
 // 	// console.log("Please don't resize you browser")
