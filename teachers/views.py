@@ -13,6 +13,7 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.core.paginator import Paginator, EmptyPage
 from django.http.response import JsonResponse
+from django.db.models import Count, Avg
 
 
 
@@ -268,24 +269,28 @@ def sessionData(request, pk):
             "name": student.get_full_name(),
         }
         data.append(session)   
-    return JsonResponse({"rows": data})
+    return JsonResponse({"pass_mark":exam.pass_mark, "rows": data})
     
 ####################################################################
 def sessionDashboard(request):
     
-    all_exam = Exam.objects.filter(teacher=request.user)
-    
-    grade = request.GET.get("grade", 1)
-    exam = Exam.objects.get(id=grade)
-    total_student = exam.grade.student_set.all().count()
-    misconduct = Session.objects.filter(exam = 1, misconduct=True).count()
-    completed = Session.objects.filter(exam = 1, completed=True).count()
-    passed = Session.objects.filter(exam = 1,score__gte=exam.pass_mark, completed=True).count()
+    # all_exam = Exam.objects.filter(teacher=request.user)  
+    # grade = request.GET.get("grade", 1)
+
+    exam = Exam.objects.get(id=1)
+    avg_score = Session.objects.filter(exam=exam, completed=True).aggregate(score=Avg("score"))["score"]
+    questions = Question.objects.filter(exam=exam)
+    total_student = exam.grade.student_set.count()
+    misconduct = Session.objects.filter(exam = exam, misconduct=True).count()
+    completed = Session.objects.filter(exam = exam, completed=True).count()
+    passed = Session.objects.filter(exam = exam,score__gte=exam.pass_mark, completed=True).count()
     
     # dict(Session.objects.filter(exam=1).values_list("misconduct").annotate(count=Count("misconduct", distinct=True)))
     
     context ={
-        "exams": all_exam,
+        "exam": exam,
+        "avg_score": round(avg_score, 1),
+        "questions": questions,
         "total_student": total_student,
         "misconduct": misconduct,
         "completed": completed,
