@@ -29,16 +29,14 @@
             <div class="card-title">
                 <h2 class="text-center">Exam: {{exam.name}}</h2>
                 <div class="row">
-                    <div class="col-6">
+                    <div class="col-5">
                         <span><span class="fw-bold">Subject:</span> {{exam.subject.name}}</span><br />
                         <span><span class="fw-bold">No. of question:</span> {{questions.count}} </span><br />
-                        <span><span class="fw-bold">Time:</span> 30 mins </span>
+                        <span><span class="fw-bold">Duration:</span> {{exam.duration}} </span>
                     </div>
-                    <div class="col-6 text-end">
-                        <span class="btn btn-primary"><span class="fw-bold">Time:</span> 30 mins
-                        </span>
-                        <span class="btn btn-primary"><span class="fw-bold">Last updated:</span> 30 mins
-                        </span>
+                    <div class="col-7 text-end">
+                        <label class="btn btn-primary" style="cursor: default;"><span class="fw-bold">Pass mark:</span> {{exam.pass_mark | floatformat}}%</label>
+                        <label class="btn btn-primary" style="cursor: default;"><span class="fw-bold">Last updated:</span> <span id="time">a few seconds ago</span></label>
                     </div>
                 </div>
             </div>
@@ -59,7 +57,7 @@
                             </div>
                         </div>
                         <div class="card-footer d-flex align-items-center justify-content-between">
-                            <a class="small text-white stretched-link" href="#">View Details</a>
+                            <a class="small text-white stretched-link" href="#table" onclick="allStudent()">View Details</a>
                             <div class="small text-white">
                                 <i class="fas fa-angle-right"></i>
                             </div>
@@ -68,7 +66,7 @@
                 </div>
 
                 <div class="col-xl-4 col-md-6">
-                    <div class="card bg-success text-white mb-4">
+                    <div class="card bg-secondary text-white mb-4">
                         <div class="card-body pb-0">
                             <div class="">
                                 <div class="row">
@@ -85,7 +83,7 @@
                             </div>
                         </div>
                         <div class="card-footer d-flex align-items-center justify-content-between">
-                            <a class="small text-white stretched-link" href="#">View Details</a>
+                            <a class="small text-white stretched-link" href="#table">View Details</a>
                             <div class="small text-white">
                                 <i class="fas fa-angle-right"></i>
                             </div>
@@ -109,7 +107,7 @@
                             </div>
                         </div>
                         <div class="card-footer d-flex align-items-center justify-content-between">
-                            <a class="small text-white stretched-link" href="#">View Details</a>
+                            <a class="small text-white stretched-link" href="#table">View Details</a>
                             <div class="small text-white">
                                 <i class="fas fa-angle-right"></i>
                             </div>
@@ -118,7 +116,7 @@
                 </div>
 
                 <div class="col-xl-4 col-md-6">
-                    <div class="card bg-secondary text-white mb-4">
+                    <div class="card bg-info text-white mb-4">
                         <div class="card-body pb-0">
                             <div class="">
                                 <div class="row">
@@ -133,7 +131,7 @@
                             </div>
                         </div>
                         <div class="card-footer d-flex align-items-center justify-content-between">
-                            <a class="small text-white stretched-link" href="#">View Details</a>
+                            <a class="small text-white stretched-link" href="#table" onclick="summaryCompleted()">View Details</a>
                             <div class="small text-white">
                                 <i class="fas fa-angle-right"></i>
                             </div>
@@ -142,7 +140,7 @@
                 </div>
 
                 <div class="col-xl-4 col-md-6">
-                    <div class="card bg-info text-white mb-4">
+                    <div class="card bg-success text-white mb-4">
                         <div class="card-body pb-0">
                             <div class="">
                                 <div class="row">
@@ -157,7 +155,7 @@
                             </div>
                         </div>
                         <div class="card-footer d-flex align-items-center justify-content-between">
-                            <a class="small text-white stretched-link" href="#">View Details</a>
+                            <a class="small text-white stretched-link" href="#table" onclick="summaryPass()">View Details</a>
                             <div class="small text-white">
                                 <i class="fas fa-angle-right"></i>
                             </div>
@@ -181,7 +179,7 @@
                             </div>
                         </div>
                         <div class="card-footer d-flex align-items-center justify-content-between">
-                            <a class="small text-white stretched-link" href="#">View Details</a>
+                            <a class="small text-white stretched-link" href="#table" onclick="summaryFail()">View Details</a>
                             <div class="small text-white">
                                 <i class="fas fa-angle-right"></i>
                             </div>
@@ -211,7 +209,7 @@
   data-resizable="true"
   data-reorderable-columns="true"
   data-fixed-columns= "true",
-  data-fixed-number = "1"
+  data-fixed-number = "0"
   
   
   data-show-fullscreen="true"
@@ -226,11 +224,12 @@
   <thead> <!--id used for javascript-->
     <tr>
         <th data-field="user" data-visible="false"></th>
-        <th data-field="name" data-sortable="true" data-formatter="nameDetailFormatter"data-width="25" data-width-unit="%">Student Name</th>
-        <th data-field="score" data-sortable="true" data-align="center">Score</t>
+        <th data-field="name" data-sortable="true" data-formatter="nameDetailFormatter"data-width="22" data-width-unit="%">Student Name</th>
+        <th data-field="score" data-sortable="true" data-align="center">Score %</t>
         <th data-field="time_started" data-sortable="true" data-align="center" data-formatter="dateFormatter"data-width="25" data-width-unit="%">Time started</th>
-        <th data-field="elapsed_time" data-sortable="true" data-align="center">Time spent</th>
+        <th data-field="elapsed_time" data-sortable="true" data-align="center" data-formatter="elapsedTimeFormatter">Time spent</th>
         <th data-field="completed" data-sortable="true" data-align="center" data-formatter="completedIconFormatter">Completed</th>
+        <th data-field="remark" data-formatter="remarkFormatter" data-align="center" >Status</th>
         <th data-field="misconduct" data-sortable="true" data-align="center" data-formatter="misconductFormatter">Misconduct</th>
         
        
@@ -256,10 +255,34 @@
 
 
 <script>
+    let time= 0
+    let timer
+    let passMark
 
+    
+
+    function addTimer() {
+        time++
+        if (time> 60){
+            var h = Math.floor(time / 3600);
+            var m = Math.floor(time % 3600 / 60);
+            var s = Math.floor(time % 3600 % 60);
+
+            var hDisplay = h > 0 ? h + (h == 1 ? " hr, " : " hrs, ") : "";
+            var mDisplay = m > 0 ? m + (m == 1 ? " min, " : " mins, ") : "";
+            var sDisplay = s > 0 ? s + (s == 1 ? " sec" : " secs") : "";
+            $("#time").html(`${hDisplay}  ${mDisplay}  ${sDisplay} ago`)
+        }else{
+            $("#time").html("a few seconds ago")
+        }
+    }
     function ajaxRequest(params) {
-        var url = "http://127.0.0.1:8000/teacher/session-data/1/"
+        var id = "{{exam_id}}"
+        var url = `${window.origin}/teacher/session-data/${id}/`
+        
+
         $.get(url).then(function (res) {
+            passMark = res.pass_mark
             var data = res.rows
             var submitted = 0
             var passed = 0
@@ -272,27 +295,49 @@
                     submitted++
                     score = score + d.score
                     avg = (score/submitted).toFixed(1)
-                    d.score> res.pass_mark ? passed++ : fail++
+                    d.score> passMark ? passed++ : fail++
                 }
             }
             $('#submitted').html(submitted)
             $('#passed').html(passed) 
             $('#average').html(avg)
             $('#fail').html(fail)
+
+            if (timer){
+                clearInterval(timer)
+                $("#time").html("getting data...")
+                time = 0
+            }
+            timer = setInterval(addTimer, 1000)
+
+
             
             params.success(res)
         })  
     }
     
-  
+    function elapsedTimeFormatter(value){
+        if (value){
+            const minutes = Math.floor(value / 60).toString().padStart(2, '0');;
+            const seconds = (value % 60).toString().padStart(2, '0');;
+            return `${minutes}: ${seconds}`
+        }else{
+            return "-"
+        }
+    }
 
     function nameDetailFormatter(index, row){
-        name = row.completed == true?`<a href="{% url "home" %}" target="_blank">${row.name}</a>` : row.name
+
+        name = row.completed == true?`<a href="{% url "student-performance" exam_id %}?student=${row.name}&id=${row.user}" target="_blank" rel=noopener>${row.name}</a>` : row.name
         return name
+    }
+    function remarkFormatter(index, row){
+        remark = row.completed ? (row.score >= passMark ? `<p class="text-success fw-bold">Passed</p>` : `<p class="text-danger fw-bold">Failed</p>`) : row.score
+        return remark
     }
     function dateFormatter(value, row) {
         var django_timestamp =    (row.time_started) ?  new Date (row.time_started): null;
-        var iso_string  = django_timestamp ?  django_timestamp.toUTCString  (): "-";
+        var iso_string  = django_timestamp ?  django_timestamp.toLocaleString() : "-";
         // return  `<span class="text-success"><i class="fas fa-user-alien"></></span>` 
         return iso_string
     }
@@ -324,8 +369,7 @@
             return `${status} `
 
     }
-    
-    
+   
     
     
     
@@ -337,7 +381,37 @@
         
     })
     $table.bootstrapTable('updateFormatText', 'formatSearch', 'Enter keywords...')
+    
+    function summaryPass(){
+        $table.bootstrapTable('filterBy', {},{
+        'filterAlgorithm': (row) => {
+          return row.score > passMark
+        }
+    })
+    }
+    function summaryFail(){
+        $table.bootstrapTable('filterBy', {},{
+        'filterAlgorithm': (row) => {
+          return row.score < passMark & row.score != null & row.completed ==  true
+        }
+    })}
+    function summaryCompleted(){
+        $table.bootstrapTable('filterBy', {},{
+        'filterAlgorithm': (row) => {
+          return row.completed ==  true
+        }
+    })}
 
+    function allStudent(){
+        $table.bootstrapTable('filterBy', {},{
+        'filterAlgorithm': (row) => {
+          return row
+        }
+    }
+    )}
+    
+  
+    
     
     
   </script>

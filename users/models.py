@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
+from datetime import date
 
 
 
@@ -38,6 +39,12 @@ class Student(models.Model):
     image = models.FileField(upload_to="photo", verbose_name="Photo", default="/media/photo/avatar.jpg")
     status = models.CharField(max_length=50, null=True, choices=STATUS_CHOICE, default="Pending")
     
+    @property
+    def get_age(self):
+        birth_day = self.birth
+        age = int((date.today() - birth_day).days / 365)
+        return age
+        
     
     def __str__(self):
         return self.user.first_name + " " + self.user.last_name

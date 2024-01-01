@@ -1,19 +1,15 @@
- /* Style the div element */
- /* .container-fluid {
-    margin: 10px 40px;
-    padding-top: 10px;
-    position: relative;
-    border: 2px solid grey;
-  }
+.correct{
 
-  /* Style the select element */
-  /* .select {
-    position: absolute;
-    top: -10px;
-    left: 10px;
-    width: 100px;
-    height: 20px;
-    border: 2px solid black;
-    border-radius: 10px;
-    background: white;
-  } */
+  padding: 6px 0px 6px 0px;
+  margin-bottom: 20px;
+  background-color: #dff0d8;
+  color: #3c763d;
+  
+}
+.wrong{
+ 
+  padding: 6px 0px 6px 0px;
+  margin-bottom: 20px;
+  color: #a94442;
+  background-color: #f2dede;
+}

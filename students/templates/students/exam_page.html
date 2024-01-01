@@ -15,8 +15,8 @@
 
     </head>
 
-    <body>
-        <div class="card">
+    <body id="question">
+        <div  class="card">
             <div class="pb-2 sticky-top mb-1 mx-auto"
                 style="background:#d1e7dd;transform:skewX(20deg);min-height:60px;margin-left:10px;margin-right:10px;border-left:20px double white;border-right:20px double white; top:20px; width:96%">
                 <div class="container-fluid " style="transform:skewX(-20deg);">
@@ -31,7 +31,7 @@
                 </div>
             </div>
             <div class="row">
-                <div class="col-xs-12 col-md-9 mx-auto">
+                <div class="col-xs-12  mx-auto">
 
                     <div class="container mt-2">
                         <div class="row" id="quiz-container">
@@ -92,7 +92,7 @@
                 const examSubmit = "{% url "exam-save" pk=request.session.value %}";
                 const availableExams = "{% url "available-exam"  %}";
             </script>
-            <script src="{% static "js/exam.js" %}" defer></script>
+            <script src="{% static "js/exam.js" %}?page=123" defer></script>
     </body>
 
 </html>

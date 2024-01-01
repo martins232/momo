@@ -21,6 +21,41 @@ class ExamForm(forms.ModelForm):
             }
         )
         )
+    start_date = forms.SplitDateTimeField(
+        label='Start Date',
+        widget=forms.SplitDateTimeWidget(
+        date_attrs={
+            "style": "font-size:14px; cursor:pointer",
+            "type":"date",
+            # "onkeydown":"return false", # Javascript prevent typing
+            "min": str(date.today())
+            },
+       date_format='%Y-%m-%d',      
+        time_attrs={
+            'type':'time',
+            "style": "font-size:14px; cursor:pointer",
+            "class": "mt-3 w-25"
+            },
+        time_format='%H:%M',
+        ))
+    end_date = forms.SplitDateTimeField(
+        label='End Date',
+        widget=forms.SplitDateTimeWidget(
+        date_attrs={
+            "style": "font-size:14px; cursor:pointer",
+            "type":"date",
+            # "onkeydown":"return false", # Javascript prevent typing
+            "min": str(date.today() + timedelta(days=1)),
+            
+            },
+       date_format='%Y-%m-%d',      
+        time_attrs={
+            'type':'time',
+            "style": "font-size:14px; cursor:pointer",
+            "class": "mt-3 w-25"
+            },
+        time_format='%H:%M',
+        ))
     
     def __init__(self, request, *args, **kwargs):
         super(ExamForm, self).__init__(*args, **kwargs)
@@ -39,17 +74,7 @@ class ExamForm(forms.ModelForm):
         
         help_text={"duration": "Duration (H:M:S)"}
         
-        widgets ={
-            # Birth date
-            "start_date": forms.DateInput(
-                attrs={
-                     "style": "font-size:14px; cursor:pointer",
-                     "type":"date",
-                     "onkeydown":"return false", # Javascript prevent typing
-                     "min": str(date.today())
-                }
-            ),
-        }
+        
     def clean_duration(self):
         duration = self.cleaned_data.get("duration")
         if duration > timedelta(hours=6, minutes=00, seconds=00):
@@ -59,12 +84,12 @@ class ExamForm(forms.ModelForm):
         else:
             return duration
     
-    def clean_start_date(self):
-        start_date= self.cleaned_data.get("start_date")
-        two_weeks_from_now = datetime.now() + timedelta(days=14)
-        if start_date.timestamp() >two_weeks_from_now.timestamp():
-            raise ValidationError("The exam start date must be within a two-week window from the current date.")
-        return start_date
+    # def clean_start_date(self):
+    #     start_date= self.cleaned_data.get("start_date")
+    #     two_weeks_from_now = datetime.now() + timedelta(days=14)
+    #     if start_date.timestamp() >two_weeks_from_now.timestamp():
+    #         raise ValidationError("The exam start date must be within a two-week window from the current date.")
+    #     return start_date
 
 class QuestionForm(forms.ModelForm):
     answer_choice =[
