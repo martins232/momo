@@ -18,6 +18,7 @@ class Exam(models.Model):
     duration = models.DurationField()
     pass_mark = models.FloatField(verbose_name="Pass mark", default=60)
     start_date = models.DateTimeField()
+    end_date = models.DateTimeField()
     status = models.CharField(max_length=25, choices=STATUS, default="Pending")
     retake = models.BooleanField( default=False)
     review = models.BooleanField(default=False)
@@ -27,6 +28,9 @@ class Exam(models.Model):
     
     def __str__(self):
         return self.name
+    @property
+    def get_no_question(self):
+        return self.question_set.all().count()
     
     class Meta:
         ordering = [ "created"]
@@ -70,3 +74,6 @@ class Session(models.Model):
             return "Passed"
         else:
             return "Fail"
+    
+    
+   

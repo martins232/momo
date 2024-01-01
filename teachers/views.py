@@ -249,9 +249,9 @@ def viewAllQuestions(request):
     return render(request, "teachers/view_all_question.html", context)
 
 
-def sessionData(request, pk):
+def sessionDashboardData(request, pk):
     exam = get_object_or_404(Exam, id=pk)
-    students = User.objects.filter(is_student=True, student__grade=exam.grade).exclude(id__in=Session.objects.filter(exam=exam).values("user"))
+    students = User.objects.filter(is_student=True, student__grade=exam.grade, student__status="Approved").exclude(id__in=Session.objects.filter(exam=exam).values("user"))
     sessions = list(Session.objects.filter(exam=exam).values("user", "score", "elapsed_time", "completed", "misconduct", "time_started"))
     data = []
     for session in sessions:
@@ -272,29 +272,140 @@ def sessionData(request, pk):
     return JsonResponse({"pass_mark":exam.pass_mark, "rows": data})
     
 ####################################################################
-def sessionDashboard(request):
+def sessionDashboard(request, pk):
+    exam = Exam.objects.get(id=pk)
     
-    # all_exam = Exam.objects.filter(teacher=request.user)  
-    # grade = request.GET.get("grade", 1)
-
-    exam = Exam.objects.get(id=1)
-    avg_score = Session.objects.filter(exam=exam, completed=True).aggregate(score=Avg("score"))["score"]
     questions = Question.objects.filter(exam=exam)
-    total_student = exam.grade.student_set.count()
+    total_student = exam.grade.student_set.filter(status="Approved").count()
     misconduct = Session.objects.filter(exam = exam, misconduct=True).count()
     completed = Session.objects.filter(exam = exam, completed=True).count()
     passed = Session.objects.filter(exam = exam,score__gte=exam.pass_mark, completed=True).count()
     
+    try:
+        avg_score = Session.objects.filter(exam=exam, completed=True).aggregate(score=Avg("score"))["score"]
+        avg_score = round(avg_score, 1)
+    except Exception as e:
+        avg_score = "-"
     # dict(Session.objects.filter(exam=1).values_list("misconduct").annotate(count=Count("misconduct", distinct=True)))
     
     context ={
         "exam": exam,
-        "avg_score": round(avg_score, 1),
+        "exam_id": exam.id,
+        "avg_score": avg_score,
         "questions": questions,
         "total_student": total_student,
         "misconduct": misconduct,
         "completed": completed,
         "passed": passed,
-        "fail" : completed - passed
+        "fail" : completed - passed,
+        
     }
     return render(request, "teachers/session_dashboard.html", context)
+
+def studentPerformance(request, pk):
+    student_name = request.GET.get("student")
+    id = request.GET.get("id")
+    
+    exam = Exam.objects.get(id=pk)
+    student = User.objects.get(id=id)
+    session = Session.objects.get(exam=exam, user=student)
+    choices = session.choices
+    
+    questions = exam.question_set.all().values()
+            
+    data_ =[]
+    
+    
+    no_correct = 0
+    no_incorrect = 0
+    no_unanswered = 0
+    
+
+    for question in questions:
+        options = [ question["option_A"], question["option_B"], question["option_C"], question["option_D"] ]
+        zipper =dict(list( zip(['A', 'B', 'C', 'D'], options)))
+        answer_Abbrv =  question["answer"] # the answer in the database e.g "C"
+        
+        if choices[question["question"]][0] == "":
+            no_unanswered += 1
+        if choices[question["question"]][0] == zipper[answer_Abbrv]:
+            no_correct += 1
+        if choices[question["question"]][0] != zipper[answer_Abbrv]:
+            no_incorrect += 1
+        
+        data_.append({"question": question["question"], 
+                      "options_A" : question["option_A"], 
+                      "options_B" : question["option_B"], 
+                      "options_C" : question["option_C"], 
+                      "options_D" : question["option_D"], 
+                      "answer": zipper[answer_Abbrv], 
+                      "choice": choices[question["question"]][0]})
+        
+    context = {
+        "student": student,
+        "exam": exam,
+        "student_name": student_name,
+        "session" : session,
+        "data_": data_,
+        "no_unanswered": no_unanswered,
+        "no_correct": no_correct,
+        "no_incorrect": no_incorrect
+  
+    }
+    return render(request, "teachers/student_performance.html", context)
+
+def examDashboardData(request, pk):
+    exam = Exam.objects.get(id = pk)
+    sessions = Session.objects.filter(exam= exam)
+    questions = Question.objects.filter(exam =exam)
+    
+    data = []
+    for question in questions:
+        correct_count = 0
+        incorrect_count = 0
+        unanswered_count = 0
+        
+        correct_student = {}
+        incorrect_student = {}
+        unanswered_student = {}
+        
+        options = {"A" :question.option_A, "B" :question.option_B, "C" :question.option_C, "D" :question.option_D,}
+        
+        for session in sessions:
+            print(type(sessions))
+            if session.choices[question.question][0] == "":
+                unanswered_count += 1
+                unanswered_student[str(session.user.id)] = str(session.user.get_full_name())
+            elif session.choices[question.question][0] == options[question.answer]:
+                correct_count +=1
+                correct_student[str(session.user.id)] = str(session.user.get_full_name())
+            elif session.choices[question.question][0] != options[question.answer]:
+                incorrect_count +=1
+                incorrect_student[str(session.user.id)] = session.user.get_full_name()
+            
+        data.append({
+            "question": question.question, 
+            "correct": correct_count, 
+            "incorrect": incorrect_count, 
+            "unanswered": unanswered_count,
+            "correct_student": correct_student,
+            "incorrect_student": incorrect_student,
+            "unanswered_student": unanswered_student
+            })
+      
+            
+    
+    
+    return JsonResponse({"rows":data})
+    # context = {
+    #     "exam": exam,
+    #     "data_": data
+    # }
+    # return render(request, "teachers/exam_dashboard.html", context)
+    
+    
+def examDashboard(request, pk):
+    
+    
+    context = {"pk": pk}    
+    return render(request, "teachers/exam_dashboard.html", context)

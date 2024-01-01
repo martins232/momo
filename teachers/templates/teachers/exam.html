@@ -74,7 +74,7 @@
                     
                     <tr>
                         <th scope="row">{{forloop.counter}}</th>
-                        <td class="user-select-all">{{exam.name}}</td>
+                        <td class="user-select-all"><a href="{% url "session-dashboard" exam.id %}">{{exam.name}}</a></td>
                         <td>{{exam.grade.grade}}</td>
                         <td>{{exam.subject}}</td>
                         <td>{{exam.duration }}</td>

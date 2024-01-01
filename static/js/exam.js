@@ -50,6 +50,9 @@ const getData = () => $.ajax({
 		timer = setInterval(startTimer, 1000);
 		displayExam(0)
 		
+	},
+	error: function(error){
+		alert("Something went wrong")
 	}
 })
 getData()
@@ -99,7 +102,7 @@ function startTimer() {
 	}
 	// Display the result in the element with id="demo"
 	document.getElementById("timer").innerHTML = 
-	`<h3 class="text-center">Time remaining:</h3>
+	`<h3  class="text-center">Time remaining:</h3>
 
 		<div class="progress mt-2 fs-4" style="height: 30px; border: 2px solid #d3d9df; background-color: white;">
 			<div class="progress-bar progress-bar-animated progress-bar-striped py-2" id="bar" style="overflow: visible; width:${percentremain}%;">
@@ -213,7 +216,7 @@ let submit = ()=>{
 			
 		},
 		error: function(error){
-			console.log("Something went wrong")
+			alert("Something went wrong")
 		}
 		
 	});
@@ -231,9 +234,9 @@ const displayExam = (i)=>{
 		questionContainer.innerHTML = `
 		<div class="col-12" >
 			<div id ="warning"></div>
-			<p class="fw-bold" style="font-family: Georgia, 'Times New Roman', Times, serif;">Question ${i +1} of ${ajax_data.length}</p>
+			<p id="question" class="fw-bold" style="font-family: Georgia, 'Times New Roman', Times, serif;">Question ${i +1} of ${ajax_data.length}</p>
 			<hr>
-			<span class="fw-bold fs-4" style="font-family: Georgia, 'Times New Roman', Times, serif;">${question}</span>
+			<span id="question" class="fw-bold fs-4" style="font-family: Georgia, 'Times New Roman', Times, serif;">${question}</span>
 			
 			<div class="mt-4"> 
 				${options}
@@ -246,8 +249,8 @@ const displayExam = (i)=>{
 					<button type="reset" class="btn btn-dark px-4 py-2 fw-bold" onclick="resetAnswer()">Reset</button>
 				</div>
 				<div class="align-self-center mx-auto">
-					<button class="btn btn-primary px-4 py-2 fw-bold me-2" onclick="displayExam(${index - 1})" ${index < 1 ? "disabled" : ""}> Previous</button> 
-					<button class="btn btn-primary px-4 py-2 fw-bold" onclick="displayExam(${index + 1})" ${index == ajax_data.length -1 ? "disabled" : ""}> Next</button> 
+					<a href="#question" class="btn btn-primary px-4 py-2 fw-bold me-2" onclick="displayExam(${index - 1})" ${index < 1 ? "disabled" : ""}> Previous</a> 
+					<a href="#question" class="btn btn-primary px-4 py-2 fw-bold" onclick="displayExam(${index + 1})" ${index == ajax_data.length -1 ? "disabled" : ""}> Next</a> 
 				</div>
 				<div class="align-self-center mx-auto">
 				<button type="button" class="btn btn-success px-4 py-2 fw-bold" data-bs-toggle="modal" data-bs-target="#myModal" onclick="promptSubmit()">Submit</button>
@@ -467,7 +470,6 @@ document.addEventListener("visibilitychange", (event) => {
   });
 document.addEventListener("keydown", (event)=>{
 	if (examstatus=="active"){
-		console.log(event.target)
 		keypressed(event)
 	}
 })

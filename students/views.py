@@ -74,18 +74,18 @@ def exams(request):
 def session(request):  #this is the exam page
     if request.method == "POST":  #if the student clicks the start button on the modal in the available exam page
         value = request.POST.get("exam")
-        request.session['value'] = value 
+        request.session['value'] = value # add the exam.id to the session header
         if Session.objects.filter(user=request.user, exam=value).exists():
             if  Session.objects.get(user=request.user, exam=value).attempts == 2:
                 del request.session['value']
                 return redirect("available-exam")
     else:
         value = request.session.get('value')  #-------------------- bug -------------------- if student hard refreshes the page, the exam will be lost
-        if not value: #if the user copied the url, the user is without a value id, hence block the request
+        if not value: #if the user copied the url, the user is without a value id, hence raise a permission error
             raise PermissionDenied
         
-        if Session.objects.filter(user=request.user, exam=value).exists():
-            if  Session.objects.get(user=request.user, exam=value).attempts == 2:
+        if Session.objects.filter(user=request.user, exam=value).exists(): # if the user has a pk in the db and refreshes the page, run this code
+            if  Session.objects.get(user=request.user, exam=value).attempts == 2: # if no. of attempt == 2 del the exam.id from session header
                 del request.session['value']
                 return redirect("available-exam")
     return render(request, "students/exam_page.html")

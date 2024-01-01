@@ -12,6 +12,12 @@ urlpatterns = [
     path("exam/questions", views.viewAllQuestions, name="all-questions"),
     path("exam/<str:pk>/question/edit/", views.editQuestion, name="view-question"),
     path("exam/<str:pk>/question/delete/", views.deleteQuestion, name="delete-question"),
-    path("session-dashboard/", views.sessionDashboard, name="session-dashboard"),
-    path("session-data/<str:pk>/", views.sessionData, name="session-data"),
+    path("session-dashboard/<str:pk>/", views.sessionDashboard, name="session-dashboard"),
+    path("analysis/<str:pk>/", views.studentPerformance, name="student-performance"),
+    path("exam-dashboard/<str:pk>/", views.examDashboard, name="exam-dashboard"),
+    
+    
+    path("session-data/<str:pk>/", views.sessionDashboardData, name="session-data"),
+    path("exam-data/<str:pk>/", views.examDashboardData, name="exam-data"),
+    
 ]

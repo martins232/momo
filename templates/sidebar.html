@@ -9,7 +9,7 @@
             <!--Normal sidebar-->
             <a class="nav-link" href="{% url "home" %}"><div class="sb-nav-link-icon"><i class="fas fa-tachometer-alt"></i></div>Dashboard</a>
             <a class="nav-link" href="{% url "profile" %}"><div class="sb-nav-link-icon"><i class="fas fa-user-tie"></i></div>Profile</a>
-            <a class="nav-link" href="{% url "exam" %}"><div class="sb-nav-link-icon"><i class="fas fa-book-open"></i></div>Exam</a>
+            <a class="nav-link" href="{% url "exam" %}"><div class="sb-nav-link-icon"><i class="fas fa-book-open"></i></div>Active Exam</a>
              <!--end of Normal sidebar-->
 
             <div class="sb-sidenav-menu-heading">EXAM</div>
@@ -17,7 +17,7 @@
             
              <!--Normal sidebar-->
             <a class="nav-link" href="{% url "all-questions" %}"><div class="sb-nav-link-icon"><i class="fas fa-folder-open"></i></div>Questions</a>
-            <a class="nav-link" href="{% url "session-dashboard" %}"><div class="sb-nav-link-icon"><i class="fas fa-folder-open"></i></div>Analysis</a>
+            {% comment %} <a class="nav-link" href="{% url "session-dashboard" %}"><div class="sb-nav-link-icon"><i class="fas fa-folder-open"></i></div>Analysis</a> {% endcomment %}
               <!--end of Normal sidebar-->
 
 

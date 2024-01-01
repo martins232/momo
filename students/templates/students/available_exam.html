@@ -75,11 +75,11 @@ aria-labelledby="staticBackdropLabel" aria-hidden="true">
             
                 <div class="modal-footer">
                    <div class="d-grid gap-2 d-md-block">
-                    <form action="{% url "exam-session" %}" method="POST" autocomplete="OFF" target="_blank">
+                    <form action="{% url "exam-session" %}" method="POST" autocomplete="OFF"  target="_blank" >
                         {% csrf_token %}
                       <input type="hidden" name="exam" value=""> <!-- value will be added by js-->
                       <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                      <button type="submit" class="btn btn-success"><i class="fas fa-hourglass-start"></i> Start</button>
+                      <button type="submit" class="btn btn-success" onclick="alert("me")"><i class="fas fa-hourglass-start"></i> Start</button>
                     </form>
                    </div>
 

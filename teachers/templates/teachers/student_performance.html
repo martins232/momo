@@ -1,0 +1,293 @@
+{% extends "main.html" %}
+{% load tz %}
+{% load static %}
+
+{% block title %}{{student}} performance{% endblock title %}
+
+{% block additional_head_css %}
+<link rel="stylesheet" href="{% static "css/analysis.css" %}">
+{% endblock additional_head_css %}
+
+
+
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h2>Performance Details</h2>
+        <h6 class="bg-dark text-light p-2">Exam Summary</h6>
+
+        <div class="row">
+            <div class="col-4"><p class="fw-bold">Exam Name: </p></div>
+            <div class="col-6"><p>{{exam.name}}</p></div>
+            </div>
+        <div class="row">
+            <div class="col-4"><p class="fw-bold">Scheduled Start Time:</p></div>
+            <div class="col-6"><p>{{exam.start_date}}</p></div>
+            </div>
+        <div class="row">
+            <div class="col-4"><p class="fw-bold">Scheduled End Time:</p></div>
+            <div class="col-6"><p>{{exam.end_date}}</p></div>
+        </div>
+    </div>
+
+
+    <div class="card-body">
+
+        <div class="row">
+            
+            <div class="col-md-5 bg-light">
+                <div class="row">
+                    <div class="col-4"><p class="fw-bold">Student Name:</p></div>
+                    <div class="col-6"><p>{{student_name}}</p></div>
+                 </div>
+                <div class="row">
+                    <div class="col-4"><p class="fw-bold">Age: </p></div>
+                    <div class="col-6"><p>{{student.student.get_age}}</p></div>
+                 </div>
+                <div class="row">
+                    <div class="col-4"><p class="fw-bold">Grade: </p></div>
+                    <div class="col-6"><p>{{student.student.grade}}</p></div>
+                 </div>
+            </div>
+
+            <div class="col-md-5  ms-auto bg-light" >
+                <div class="row">
+                    <div class="col-4"><p class="fw-bold">Start Time:</p></div>
+                    <div class="col-6"><p>{{session.time_started}}</p></div>
+                 </div>
+                <div class="row">
+                    <div class="col-4"><p class="fw-bold">End Time: </p></div>
+                    <div class="col-6"><p>{{session.time_ended}}</p></div>
+                </div>
+                <div class="row">
+                    <div class="col-4"><p class="fw-bold">Time Spent: </p></div>
+                    <div class="col-6"><p>{{session.elapsed_time}}</p></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mt-4">
+            <div class="col-md-7">
+                <div class="card" >
+                    <div class="card-header"><h4>Answered vs Not answered</h4></div>
+                    <div class="card-body" style="height: 250px;">
+                        <canvas id="myChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+
+            <div class="col-md-5">
+                
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<div class="row mt-2 ms-1 me-1">
+    <div class="col-4 col-md-2" style="border: 1px solid black;">
+        <div class=" py-2">
+            <h6>Time Spent</h6>
+            <p class="fw-bold">25 <br> <span class="text-secondary">in {{exam.get_no_question}}</span></p>
+        </div>
+    </div>
+    <div class="col-4 col-md-2" style="border: 1px solid black;">
+        <div class=" py-2">
+            <h6>Correct</h6>
+            <p class="fw-bold">{{no_correct}} <br> <span class="text-secondary">in {{exam.get_no_question}}</span></p>
+        </div>
+    </div>
+    <div class="col-4 col-md-2" style="border: 1px solid black;">
+        <div class=" py-2">
+            <h6>Incorrect</h6>
+            <p class="fw-bold">{{no_incorrect}} <br> <span class="text-secondary">in {{exam.get_no_question}}</span></p>
+        </div>
+    </div>
+    <div class="col-4 col-md-2" style="border: 1px solid black;">
+        <div class=" py-2">
+            <h6>Unanswered</h6>
+            <p class="fw-bold">{{no_unanswered}} <br> <span class="text-secondary">in {{exam.get_no_question}}</span></p>
+        </div>
+    </div>
+    <div class="col-4 col-md-2" style="border: 1px solid black;">
+        <div class=" py-2">
+            <h6>Percentage</h6>
+            <p class="fw-bold">{{session.score}} <br> <span class="text-secondary">{{exam.pass_mark | floatformat}}% required</span></p>
+        </div>
+    </div>
+    <div class="col-4 col-md-2" style="border: 1px solid black;">
+        <div class=" py-2">
+            <h6>Result Status</h6>
+            <p class="fw-bold">{{session.passed}} <br> <span class="text-secondary">Rank</span></p>
+        </div>
+    </div>
+    
+    
+</div>
+
+
+
+<div class="table-responsive mt-3">
+    <table class="table table-sm table-bordered table-hover table-striped">
+        <thead class="table-secondary border-secondary ">
+        <tr>
+            <th scope="col">#</th>
+            <th scope="col"  class="col-10">Question</th>
+            <th scope="col" ></th>
+            <th scope="col" class="col-1 text-center">Answer</th>
+        </tr>
+        </thead>
+        <tbody>
+            {% for data in data_ %}
+            <tr>
+                <th scope="row">{{forloop.counter}}</th>
+                <td >{{data.question}}</td>
+                <td class="text-center"> <span class="btn seeDetails" data-bs-toggle="modal" data-bs-target="#staticBackdrop"
+                        data-question = "{{data.question}}"
+                        data-no = "{{forloop.counter}}"
+                        data-A = "{{data.options_A}}"
+                        data-B = "{{data.options_B}}"
+                        data-C = "{{data.options_C}}"
+                        data-D = "{{data.options_D}}"
+                        data-answer = "{{data.answer}}"
+                        data-choice = "{{data.choice}}"
+                    ><i class="fas fa-file-alt"></i></span> </td>
+                
+                
+                <td class = "text-center">{% if data.choice == data.answer %}
+                    <span class="text-success fw-bold">Correct</span>
+                    {% elif data.choice == "" %}
+                    <span  class="text-danger fw-bold">N/A</span>
+                    {% else  %}
+                    <span  class="text-danger fw-bold">Incorrect</span>
+                    {% endif %}</td>
+            </tr>
+            
+            {% endfor %}
+
+       
+        
+        </tbody>
+  </table>
+</div>
+
+<div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg  modal-dialog-scrollable">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+{% endblock content %}
+
+
+{% block js %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js"></script>
+
+
+<script>
+    $(document).ready(function (){
+        var questionModal = document.getElementById('staticBackdrop')
+        questionModal.addEventListener('show.bs.modal', function (event) {
+            var button = event.relatedTarget
+            var question = button.getAttribute("data-question")
+            var question_no = button.getAttribute("data-no")
+            var option_A = button.getAttribute("data-A")
+            var option_B = button.getAttribute("data-B")
+            var option_C = button.getAttribute("data-C")
+            var option_D = button.getAttribute("data-D")
+            var answer = button.getAttribute("data-answer")
+            var choice = button.getAttribute("data-choice")
+
+            var modalBody = questionModal.querySelector('.modal-body')
+
+             
+
+            modalBody.innerHTML = `
+            
+            <div class="d-flex justify-content-between bg-dark text-light" style="border: 2px solid black; padding: 5px;">
+                <div><span class="fw-bold">Subject:</span> {{exam.subject}}</div>
+                <div class="me-2"><span class="fw-bold">Question ID:</span> ${question_no}</div>
+            </div>
+
+            <div class="d-flex mt-4">
+                <div class="mx-3"><h4>Q</h4></div>
+                <div>${question}</div>
+            </div>
+
+            <div class="row ms-1 mt-3">
+                <div class="col-1" ><h4>A</h4></div>
+                <div class="col-11">
+                    <p class="${option_A == answer ? "correct" : (option_A == choice) ? "wrong" : "" }">[A] ${option_A}</p>
+                    <p class="${option_B == answer ? "correct" : (option_B == choice) ? "wrong" : "" }">[B] ${option_B}</p>
+                    <p class="${option_C == answer ? "correct" : (option_C == choice) ? "wrong" : "" }">[C] ${option_C}</p>
+                    <p class="${option_D == answer ? "correct" : (option_D == choice) ? "wrong" : "" }">[D] ${option_D}</p>
+                </div>
+            </div>
+
+
+            `
+            
+
+        })
+        
+        
+
+        // questionModal.addEventListener("show.bs.modal", function (event){
+        //     console.log(questionModal)
+        // })
+    //     jane = [...document.getElementsByClassName("seeDetails")]
+    //    jane.forEach(element => element.addEventListener("click" , ()=>{
+    //         console.log(element)
+    //    }));
+    })
+    
+</script>
+
+
+
+
+<script>
+    var max = "{{exam.get_no_question}}"
+    var xValues = ["Total", "Correct"];
+    var yValues = ["{{exam.get_no_question}}", "{{no_correct}}" ];
+    var barColors = ["Blue", "green"];
+
+    new Chart("myChart", {
+        type: "bar",
+    data: {
+        labels: xValues,
+        datasets: [{
+        backgroundColor: barColors,
+        data: yValues
+        }]
+    },
+    options: {
+        maintainAspectRatio: false,
+        legend: {display: true},
+        scales: {
+          xAxes: [{ticks: {min: 0, max:15}}],
+          yAxes: [{ticks: {min: 0, max:15}}],
+        //   yAxes: [{ticks: {min: 6, max:16}}],
+        }
+    }
+    });
+    
+    
+    
+</script>
+
+
+{% endblock js %}
