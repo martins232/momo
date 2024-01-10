@@ -7,6 +7,20 @@
 {% endblock additional_head_css %}
 
 {% block content %}
+<div class="card text-center">
+  <div class="card-header ">
+    Exam summary
+  </div>
+  <div class="card-body">
+    <h5 class="card-title">Special title treatment</h5>
+    <p class="card-text">With supporting text below as a natural lead-in to additional content.</p>
+    <a href="#" class="btn btn-primary">Go somewhere</a>
+  </div>
+  <div class="card-footer text-body-secondary">
+    2 days ago
+  </div>
+</div>
+
 <table
   id="table"
   data-toggle="table"
@@ -53,7 +67,7 @@
     }
 
     function detailsFormatter(index, row){
-        return `<span class="btn btn-secondary" id="seeDetails" 
+        return `<span class="btn btn-secondary border rounded-circle" id="seeDetails" 
                     data-bs-toggle="modal" data-bs-target="#studentDetail" data-index='${JSON.stringify(row)}'><i class="fas fa-file-alt"></i>
                 </span>`
     }
@@ -73,7 +87,8 @@
               </div>`
     }
 
-    const students = (data_obj, x)=> {
+    // function to group students as correct, incorrect and unanswered
+    const students = (data_obj, x) => {
 
       if (Object.keys(data_obj[x]).length > 0){
         let students = ``
@@ -96,20 +111,26 @@
            const button = event.relatedTarget
            var data = button.getAttribute("data-index")
            var data_obj = JSON.parse(data)
-
+          
+           $(".modal-footer").css("display", "none");
+           console.log(data_obj)
            //var obj = JSON.parse(x)
            $(".modal-title").text("Question details")
            $(".modal-body").html(`
-           
+          
+
+           <p class="fs-6 text-justify" >${data_obj.question}</p>
+          
+           <hr>
            <ul class="nav nav-tabs" role="tablist">
             <li class="nav-item">
-              <a class="nav-link active" data-bs-toggle="tab" href="#correct">Correct</a>
+              <a class="nav-link active" data-bs-toggle="tab" href="#correct">Correct <span class="badge text-bg-secondary">${data_obj.correct}</span></a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" data-bs-toggle="tab" href="#incorrect">Incorrect</a>
+              <a class="nav-link" data-bs-toggle="tab" href="#incorrect">Incorrect <span class="badge text-bg-secondary">${data_obj.incorrect}</span></a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" data-bs-toggle="tab" href="#unanswered">Unanswered</a>
+              <a class="nav-link" data-bs-toggle="tab" href="#unanswered">Unanswered <span class="badge text-bg-secondary">${data_obj.unanswered}</span></a>
             </li>
           </ul>
         

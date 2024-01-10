@@ -1,3 +1,4 @@
+
 from django.shortcuts import render, redirect, get_object_or_404
 from users.models import User, Teacher, Grade
 from main . decorators import teacher
@@ -91,6 +92,7 @@ def createExam(request):
         "form": form,
         "exams": exams,
     }
+  
     return render(request, "teachers/exam.html", context)
 @teacher
 @receiver(post_save, sender=Subject)
@@ -151,7 +153,10 @@ def viewExam(request, pk):
     if request.user != exam.teacher:
         return redirect("404")
     
+    
     form = QuestionForm(request.POST or None)
+    # print(form)
+    
     
     if request.method == "POST":
         form = QuestionForm(request.POST)
@@ -161,6 +166,9 @@ def viewExam(request, pk):
            question.exam = exam
            question.save()
            return redirect("view-exam", pk=exam.id)
+        else:
+            print(form.errors)
+        
         
     
     context = {
@@ -354,6 +362,7 @@ def studentPerformance(request, pk):
     }
     return render(request, "teachers/student_performance.html", context)
 
+#JSON data after exams has been taken
 def examDashboardData(request, pk):
     exam = Exam.objects.get(id = pk)
     sessions = Session.objects.filter(exam= exam)
@@ -372,7 +381,6 @@ def examDashboardData(request, pk):
         options = {"A" :question.option_A, "B" :question.option_B, "C" :question.option_C, "D" :question.option_D,}
         
         for session in sessions:
-            print(type(sessions))
             if session.choices[question.question][0] == "":
                 unanswered_count += 1
                 unanswered_student[str(session.user.id)] = str(session.user.get_full_name())
@@ -397,15 +405,19 @@ def examDashboardData(request, pk):
     
     
     return JsonResponse({"rows":data})
-    # context = {
-    #     "exam": exam,
-    #     "data_": data
-    # }
-    # return render(request, "teachers/exam_dashboard.html", context)
+  
     
-    
+#dashboard after exams has been taken  
 def examDashboard(request, pk):
     
     
     context = {"pk": pk}    
     return render(request, "teachers/exam_dashboard.html", context)
+
+
+def allQuestions(request):
+    
+    questions = Question.objects.filter()
+    
+    context = {"questions": questions}
+    return render(request, "teachers/all_questions.html", context)

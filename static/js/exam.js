@@ -236,7 +236,7 @@ const displayExam = (i)=>{
 			<div id ="warning"></div>
 			<p id="question" class="fw-bold" style="font-family: Georgia, 'Times New Roman', Times, serif;">Question ${i +1} of ${ajax_data.length}</p>
 			<hr>
-			<span id="question" class="fw-bold fs-4" style="font-family: Georgia, 'Times New Roman', Times, serif;">${question}</span>
+			<span id="question" class="fw-bold text-justify fs-4" style="font-family: Georgia, 'Times New Roman', Times, serif;">${question}</span>
 			
 			<div class="mt-4"> 
 				${options}
