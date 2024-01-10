@@ -52,9 +52,12 @@ INSTALLED_APPS = [
     "teachers",
     "students",
     "exam",
+    
+    
     "crispy_forms",
     "crispy_bootstrap5",
     "django_cleanup",
+    "tinymce",
     
 ]
 
@@ -168,3 +171,14 @@ MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 # USE_I18N = True
 # USE_L10N = True
 # USE_TZ = True
+
+TINYMCE_DEFAULT_CONFIG = {
+    # 'height': 360,
+    # 'width': 900,
+    'cleanup_on_startup': True,
+    'custom_undo_redo_levels': 20,
+    'selector': 'textarea',
+    'plugins': 'paste',
+    'paste_as_text': True,
+    'toolbar': 'undo redo | formatselect | bold italic underline backcolor | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | removeformat',
+}

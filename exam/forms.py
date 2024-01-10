@@ -4,6 +4,7 @@ from .models import Exam, Question
 from users.models import Grade
 from datetime import date, timedelta, datetime
 from django.core.exceptions import ValidationError
+from tinymce.widgets import TinyMCE
 
 
 class ExamForm(forms.ModelForm):
@@ -98,6 +99,7 @@ class QuestionForm(forms.ModelForm):
         ("C", "C"),
         ("D", "D"),
     ]
+
     answer = forms.ChoiceField(widget=forms.RadioSelect,
         choices=answer_choice,)   
     
@@ -105,15 +107,19 @@ class QuestionForm(forms.ModelForm):
     class Meta:
         model = Question
         exclude = ("exam", 'teacher', 'updated', 'created')
+        widgets = {
+            'question': TinyMCE(attrs={'cols': 20, 'rows': 20}),
+        }
         
     def __init__(self,  *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields["question"].widget.attrs.update({"rows":5,}) 
+        # self.fields["question"].widget.attrs.update({"rows":5,}) 
         fields= ('option_A', 'option_B', 'option_C', 'option_D', )
         for field in fields:
             self.fields[field].widget.attrs.update({
-            "placeholder":f"Answer for {field}",
+            "placeholder":f"Answer for {self.fields[field].label}",
             "rows":2,
             "style":"border-radius: 9px;"}) 
+            
         
     

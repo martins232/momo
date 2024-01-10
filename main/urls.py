@@ -8,6 +8,7 @@ urlpatterns = [
     path("", include("users.urls")),
     path("teacher/", include("teachers.urls")),
     path("student/", include("students.urls")),
+    path('tinymce/', include('tinymce.urls')),
 ]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 admin.site.site_header  =  "Skodaji Admin"  
