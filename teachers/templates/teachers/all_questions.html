@@ -1,0 +1,448 @@
+{% extends "main.html" %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block title %}All questions{% endblock title %}
+
+{% block additional_head_css %}
+<link rel="stylesheet" href="https://unpkg.com/bootstrap-table@1.22.2/dist/bootstrap-table.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
+
+{% endblock additional_head_css %}
+
+{% block content %}
+
+<nav aria-label="breadcrumb" class="main-breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="javascript:void(0)">Home</a></li>
+        <li class="breadcrumb-item"><a href="javascript:void(0)">Teacher</a></li>
+        <li class="breadcrumb-item active" aria-current="page">All Questions</li>
+    </ol>
+</nav>
+
+<div id="alert">
+    {% comment %} notification {% endcomment %}
+</div>
+
+<div class="d-grid gap-2 d-md-block">
+    <a href="{% url "exam" %}" class="btn btn-secondary"  ><i class="fas fa-angle-left"></i> Back</a>
+</div>
+
+<div class="d-grid mt-3 gap-2 d-block">
+    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addQuestion">
+        <i class="fas fa-plus fa-lg"></i> Add Question
+    </button>
+</div>
+
+
+<div id="toolbar">
+    <button id="remove" class="btn btn-danger" disabled >
+        <i class="fa fa-trash"></i> Delete</button>
+  </div>
+<!-- data-toggle="table" Activates bootstrap table without writing JavaScript.-->
+<table
+    id="table" {% comment %} instanciate the table  {% endcomment %}
+    data-toggle="table"
+    data-ajax = "ajaxRequest" {% comment "" %}request{% endcomment %}
+    data-side-pagination="server" {% comment "" %}"server" or "client"{% endcomment %}
+    data-pagination="true"
+    data-pagination-pre-text="<"
+    data-pagination-next-text=">"
+    data-search="true"
+    data-page-list = "[5, 25, 50, 100, 200, 400]"
+    data-pagination-loop = "false"
+    data-page-size = "25"   {% comment "" %}default no of rows{% endcomment %}
+    data-cache= "false"
+
+
+    data-toolbar="#toolbar"
+    data-click-to-select="false" {% comment "" %}click a row to select{% endcomment %}
+    data-unique-id="id" {% comment "" %}Indicate a unique identifier for each row.{% endcomment %}
+    data-detail-view="true" {% comment "" %}to show a detailed view table{% endcomment %}
+	  data-detail-view-by-click="false"
+    data-detail-formatter="detailFormatter" {% comment "" %}to show detail view table.{% endcomment %}
+>
+    <thead>
+        <tr>
+
+
+        <th data-field="check" data-checkbox="true"></th>
+        <th data-field="question">Question</th>
+        <th data-field="exam">Exam</th>
+        <th data-field="answer">Answer</th>
+        <th data-field="subject__name" >Subject</th>
+        <th data-field="operate" data-formatter="operateFormatter" data-events="operateEvents" data-align="center"></th>
+        </tr>
+    </thead>
+
+</table>
+
+
+
+
+
+
+<div class="modal" id="addQuestion">
+    <div class="modal-dialog modal-dialog-scrollable">
+      <div class="modal-content">
+
+        <!-- Modal Header -->
+        <div class="modal-header ">
+          <h4 class="modal-title text-center">Add Question</h4>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+
+        <!-- Modal body -->
+        <div class="modal-body" id="modal-body-confirm">
+
+            <form id="question-data">
+                {% csrf_token %}
+                {{form | crispy}}
+
+
+        </div>
+
+        <!-- Modal footer -->
+        <div class="modal-footer d-flex justify-content-between">
+            <button type="submit" class="btn btn-success end">Save</button>
+            <button type="submit" class="btn btn-success">Save and add another</button>
+
+            </form>
+
+        </div>
+
+      </div>
+    </div>
+</div>
+
+<div class="modal" id="editQuestion">
+  <div class="modal-dialog modal-dialog-scrollable">
+    <div class="modal-content">
+
+      <!-- Modal Header -->
+      <div class="modal-header ">
+        <h4 class="modal-title text-center">Edit Question</h4>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+
+      <!-- Modal body -->
+      <div class="modal-body" id="modal-body-confirm">
+
+          <form id="edit-questionData"> 
+            <label for="subject">Subject:</label></th>
+            <select class="form-select" name="subject" id="subject" required>
+              {% for subject in subjects %}
+                <option value={{subject.id}}>{{subject}}</option>
+              {% endfor %}
+            </select><br>
+
+            <label for="id_question">Question*</label>
+            <textarea class="form-control" name="question" cols="40" rows="5" required id="id_question"></textarea><br>
+            
+            <label for="id_option_A">Option A*</label>
+            <textarea class="form-control" name="option_A" cols="40" rows="2" placeholder="Answer for Option A" style="border-radius: 9px" required id="id_option_A"></textarea><br>
+
+            <label for="id_option_B">Option B*</label>
+            <textarea class="form-control" name="option_B" cols="40" rows="2" placeholder="Answer for Option B" style="border-radius: 9px" required id="id_option_B"></textarea><br>
+
+            <label for="id_option_C">Option C*</label>
+            <textarea class="form-control" name="option_C" cols="40" rows="2" placeholder="Answer for Option C" style="border-radius: 9px" required id="id_option_C"></textarea><br>
+
+            <label for="id_option_D">Option D*</label>
+            <textarea class="form-control" name="option_D" cols="40" rows="2" placeholder="Answer for Option D" style="border-radius: 9px" required id="id_option_D"></textarea><br>
+
+            <label>Answer*</label>
+            <div id="id_answer">
+              <div>
+                  <label for="id_answer_0"><input type="radio" class="form-check-input" name="answer" value="A" required id="id_answer_0" /> A</label>
+              </div>
+              <div>
+                  <label for="id_answer_1"><input type="radio" class="form-check-input" name="answer" value="B" required id="id_answer_1" /> B</label>
+              </div>
+              <div>
+                  <label for="id_answer_2"><input type="radio" class="form-check-input" name="answer" value="C" required id="id_answer_2" /> C</label>
+              </div>
+              <div>
+                  <label for="id_answer_3"><input type="radio" class="form-check-input" name="answer" value="D" required id="id_answer_3" /> D</label>
+              </div>
+          </div>
+              
+      </div>
+
+      <!-- Modal footer -->
+      <div class="modal-footer d-flex justify-content-between">
+          <button type="submit" class="btn btn-success end">Save</button>
+          <button type="submit" class="btn btn-success">Save and Edit another</button>
+
+          </form>
+
+      </div>
+
+    </div>
+  </div>
+</div>
+
+{% endblock content %}
+
+{% block js %}
+
+<script src="https://unpkg.com/bootstrap-table@1.22.2/dist/bootstrap-table.min.js"></script>
+<script>
+
+var $table = $('#table')
+var $remove = $('#remove')
+let selections 
+const formDataObj = {};
+let index
+
+
+
+function ajaxRequest(params) {
+    var url = 'question-data'
+    $.get(url+ '?' + $.param(params.data)).then(function (res) {
+      params.success(res)
+      selections = []
+      $remove.prop("disabled", true)
+    })
+}
+
+function getIdSelections() {
+    return $.map($table.bootstrapTable('getSelections'), function (row) {
+      return row.id
+    })
+  }
+
+
+//When delete button is clicked  
+$($remove.click(function () {
+    $.ajax({
+        type: "POST",
+        url: "delete-question",
+        data: {
+            id: JSON.stringify(selections),
+            "csrfmiddlewaretoken": csrftoken 
+                      //or
+            //"csrfmiddlewaretoken": "{{csrf_token}}" 
+        },
+        success: function (success){
+            notify("success", "Question(s) deleted")
+			$table.bootstrapTable('remove', {
+				field: 'id',
+				values: getIdSelections()
+			  })
+			  $remove.prop('disabled', true)
+            //$table.bootstrapTable('refresh')
+            const autoCloseElements = [...$(".auto-close")]
+            setTimeout(function () {
+                autoCloseElements.forEach(el => fadeAndSlide(el));
+            }, 5000);
+        },
+        error: function (error){
+            alert("No")
+        }
+    })
+  })
+)
+
+//edit 
+function operateFormatter(value, row, index) {
+  return [
+    '<a class="edit" href="javascript:void(0)" title="Edit question" data-bs-toggle="modal" data-bs-target="#editQuestion">',
+    '<i class="fas fa-pencil"></i>',
+    '</a>'
+  ].join('')
+}
+
+//adding existing the values into the input field
+window.operateEvents = {
+  'click .edit': function (e, value, row, index) {
+    index = index
+    console.log(index)
+    formDataObj.id = row.id
+    $("#edit-questionData select[name='subject']").val(row.subject)
+
+    
+    $("#edit-questionData #id_question").val(row.question)
+    $("#edit-questionData #id_option_A").val(row.option_A)
+    $("#edit-questionData #id_option_B").val(row.option_B)
+    $("#edit-questionData #id_option_C").val(row.option_C)
+    $("#edit-questionData #id_option_D").val(row.option_D)
+
+    $("#edit-questionData input[name='answer']").each(function() {
+      
+      if ($(this).val() == row.answer) {
+        $(this).attr("checked", true)
+      }
+    }) 
+  }}
+
+
+//control disabled delete button
+$table.on('check.bs.table uncheck.bs.table ' +
+      'check-all.bs.table uncheck-all.bs.table',
+    function () {
+      $remove.prop('disabled', !$table.bootstrapTable('getSelections').length)
+
+      // save your data, here just save the current page
+      selections = getIdSelections()
+      // push or splice the selections if you want to save all data selections
+    })
+
+
+function getCookie(name) {
+  let cookieValue = null;
+  if (document.cookie && document.cookie !== '') {
+      const cookies = document.cookie.split(';');
+      for (let i = 0; i < cookies.length; i++) {
+          const cookie = cookies[i].trim();
+          // Does this cookie string begin with the name we want?
+          if (cookie.substring(0, name.length + 1) === (name + '=')) {
+              cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+              break;
+          }
+      }
+  }
+  return cookieValue;
+}
+const csrftoken = getCookie('csrftoken');
+
+//creating a question 
+$(document).ready(function(){
+    let form = $("#question-data")
+	form.submit(function(event){
+		event.preventDefault()
+		let data_= $("#question-data").serialize()
+		$.ajax({
+			type: "POST",
+			url : "create-question",
+			data: data_,
+			success: function (success){
+                $("#question-data")[0].reset()
+				
+                //close after adding a question
+                if ($('button[type="submit"]:focus').hasClass('end')){
+                    $(".modal").modal("hide")
+                }
+
+                $table.bootstrapTable('refresh')
+
+                if (success.message == "added"){
+                  	notify("success", "Question added");
+                }else{
+                    notify("danger", "Something went wrong");
+                }
+                //close the alert element
+                const autoCloseElements = [...$(".auto-close")]
+                setTimeout(function () {
+                    autoCloseElements.forEach(el => fadeAndSlide(el));
+                }, 5000);
+
+
+			},
+			error: function (error){
+				alert("Something went wrong")
+			}
+
+		})
+	})
+
+
+})
+
+//editing a question
+$(document).ready(function(){
+  let form = $("#edit-questionData")
+  form.submit(function(event){
+    event.preventDefault()
+    const myFormData = new FormData(event.target);
+    
+    myFormData.forEach((value, key) => (formDataObj[key] = value));
+    formDataObj.csrfmiddlewaretoken = csrftoken
+
+    $.ajax({
+      type: "POST",
+			url : "edit-question",
+			data: formDataObj,
+			success: function (success){
+        console.log(formDataObj)
+        
+        notify("success", "Saved successfully")
+        $(".modal").modal("hide")
+
+        $table.bootstrapTable("collapseAllRows")
+        $table.bootstrapTable("refresh")
+        const autoCloseElements = [...$(".auto-close")]
+        setTimeout(function () {
+            autoCloseElements.forEach(el => fadeAndSlide(el));
+        }, 5000);
+
+      },
+			error: function (error){
+        console.log(error)
+      }
+    })
+    
+  })
+})
+
+
+
+
+function detailFormatter(index, row) {
+    
+   return `<div class="mx-auto border border-2 p-2">
+            
+            <p class="fw-bold fs-5" style=" margin-right: 50px;">Q: ${row.question}</p>
+            <p class="ms-5"><span class="me-2 fw-bold">[A]</span> ${row.option_A} </p>
+            <p class="ms-5"><span class="me-2 fw-bold">[B]</span> ${row.option_B} </p>
+            <p class="ms-5"><span class="me-2 fw-bold">[C]</span> ${row.option_C} </p>
+            <p class="ms-5"><span class="me-2 fw-bold">[D]</span> ${row.option_D} </p>
+
+            <p class="ms-5"><span class="me-2 fst-italic text-decoration-underline">Answer</span> <span class="fw-bold">${row.answer} </span> </p>
+          </div>`
+  }
+
+
+
+//alerts *****************************************************************************************************************
+
+function notify(color, msg){
+    $("#alert").html(`
+        <div class="auto-close alert alert-${color} alert-dismissible fade show py-1" role="alert" >
+            ${msg}
+        </div>
+    `)
+}
+
+function fadeAndSlide(element) {
+    const fadeDuration = 500;
+    const slideDuration = 500;
+
+    // Step 1: Fade out the element
+    let opacity = 1;
+    const fadeInterval = setInterval(function () {
+      if (opacity > 0) {
+        opacity -= 0.1;
+        element.style.opacity = opacity;
+      } else {
+        clearInterval(fadeInterval);
+        // Step 2: Slide up the element
+        let height = element.offsetHeight;
+        const slideInterval = setInterval(function () {
+          if (height > 0) {
+            height -= 10;
+            element.style.height = height + "px";
+          } else {
+            clearInterval(slideInterval);
+            // Step 3: Remove the element from the DOM
+            element.parentNode.removeChild(element);
+          }
+        }, slideDuration / 10);
+      }
+    }, fadeDuration / 10);
+  }
+// *****************************************************************************************************************
+
+</script>
+<script src="{% static "js/questions.js" %}"></script>
+{% endblock js %}

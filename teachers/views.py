@@ -1,4 +1,6 @@
 
+import json
+from operator import le
 from django.shortcuts import render, redirect, get_object_or_404
 from users.models import User, Teacher, Grade
 from main . decorators import teacher
@@ -141,6 +143,8 @@ def editExam(request, pk):
         "obj_name": "EXAM"
     }  
     return render(request, "teachers/edit.html", context) 
+
+
 @teacher
 @login_required(login_url="login")
 def viewExam(request, pk):
@@ -154,15 +158,13 @@ def viewExam(request, pk):
         return redirect("404")
     
     
-    form = QuestionForm(request.POST or None)
-    # print(form)
-    
+    form = QuestionForm(request, request.POST or None)
     
     if request.method == "POST":
-        form = QuestionForm(request.POST)
+        form = QuestionForm(request, request.POST)
         if form.is_valid():
            question = form.save(commit=False)
-           question.teacher = request.user
+           question.subject = exam.subject
            question.exam = exam
            question.save()
            return redirect("view-exam", pk=exam.id)
@@ -177,29 +179,29 @@ def viewExam(request, pk):
         "questions":questions
     }
     return render(request, "teachers/view_exam.html", context)
-@teacher
-@login_required(login_url="login")
-def editQuestion(request, pk):
-    try:
-        question= Question.objects.get(id=pk)
-    except ObjectDoesNotExist:
-        return redirect("404")
+# @teacher
+# @login_required(login_url="login")
+# def editQuestion(request, pk):
+#     try:
+#         question= Question.objects.get(id=pk)
+#     except ObjectDoesNotExist:
+#         return redirect("404")
     
-    form = QuestionForm(instance=question)
+#     form = QuestionForm(instance=question)
     
-    if request.method == "POST":
-        form = QuestionForm(request.POST, instance=question) 
-        if form.is_valid():
-            form.save()
-            messages.add_message(request, messages.SUCCESS, "Exam saved")
-            # return redirect(request.META.get('HTTP_REFERER', '/'))
-            return redirect("view-exam", pk = question.exam.id)
+#     if request.method == "POST":
+#         form = QuestionForm(request.POST, instance=question) 
+#         if form.is_valid():
+#             form.save()
+#             messages.add_message(request, messages.SUCCESS, "Exam saved")
+#             # return redirect(request.META.get('HTTP_REFERER', '/'))
+#             return redirect("view-exam", pk = question.exam.id)
         
-    context = {
-        "form": form,
-        "obj_name": "QUESTION"
-    }  
-    return render(request, "teachers/edit.html", context) 
+#     context = {
+#         "form": form,
+#         "obj_name": "QUESTION"
+#     }  
+#     return render(request, "teachers/edit.html", context) 
     
 
 @teacher 
@@ -415,9 +417,64 @@ def examDashboard(request, pk):
     return render(request, "teachers/exam_dashboard.html", context)
 
 
+def questionData(request):
+    
+    
+    search = request.GET.get("search")
+    limit = int(request.GET.get("limit"))
+    offset = int(request.GET.get("offset"))
+
+    length = len(Question.objects.filter(subject__teacher=request.user)) 
+    questions = Question.objects.filter(subject__teacher=request.user).filter(Q(subject__name__icontains=search) | Q(question__icontains=search)).values("id", "question","option_A", "option_B","option_C","option_D", "answer", "exam","subject", "subject__name", )
+    
+    if search:
+        length =  len(questions)
+    
+    questions = questions[offset:limit+offset]
+    return JsonResponse({"total":length, "rows":list(questions)})
+
+
 def allQuestions(request):
     
-    questions = Question.objects.filter()
+    form = QuestionForm(request)
+    subjects = Subject.objects.filter(teacher= request.user)
     
-    context = {"questions": questions}
+    context = {
+        "form":form,
+        "subjects": subjects
+    }
+    
     return render(request, "teachers/all_questions.html", context)
+
+def is_ajax(request): #check if a call is an ajax call
+    return request.META.get('HTTP_X_REQUESTED_WITH') == 'XMLHttpRequest'
+
+def createQuestion(request):  
+    if is_ajax(request=request):
+        form = QuestionForm(request, request.POST)
+        if form.is_valid:
+            form.save()
+            return JsonResponse({"message":"added"})
+        else:
+            return JsonResponse({"message":form.errors})
+        
+def deleteQuestion(request):
+    if is_ajax(request=request):
+        ids = json.loads(request.POST.get("id"))
+        quest = Question.objects.filter(id__in = ids)
+        quest.delete()
+        return JsonResponse({"deleted": True})
+    
+def editQuestion(request):
+    if is_ajax(request=request):
+        id = request.POST.get("id")
+        question = Question.objects.get(id=id)
+        form = QuestionForm(request, request.POST, instance=question)
+        if form.is_valid:
+            form.save()
+            return JsonResponse({"res":"added"})
+        else:
+            print("No")
+            return JsonResponse({"res":form.errors})
+        
+    

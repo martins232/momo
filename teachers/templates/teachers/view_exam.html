@@ -105,7 +105,12 @@
 {% include "modal.html" %}
 {% endblock content %}
 
+{% block js %}
+<script>
+    $("#div_id_subject").css({"display":"none"})
+</script>
 
+{% endblock js %}
 
 <!-- <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.slim.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>

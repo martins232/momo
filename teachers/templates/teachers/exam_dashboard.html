@@ -53,7 +53,6 @@
         var url = `${window.origin}/teacher/exam-data/${id}/` 
         $.get(url).then(function (res) {
           params.success(res)
-          console.log(res.rows)
         })
     }
 
@@ -76,13 +75,18 @@
     function difficultyFormatter(index, row){
       let color = ""
       difficulty_width = Math.round( row.incorrect * 100 / (row.correct + row.incorrect))
+      
       if (difficulty_width > 50){
-        color = "warning"
+        if (difficulty_width<90){
+          color = "warning"
+        }else{
+          color = "danger"
+        }
       }else{
         color = "success"
       }
       return `<div class="progress border border-${color}">
-                <div class="progress-bar bg-${color} ${color== "success" ? "text-dark" : "text-dark"} fw-bold overflow-visible" style="width:${difficulty_width}%">${difficulty_width}%</div>
+                <div class="progress-bar bg-${color} ${color== "success" ? "text-dark" : "text-dark"} fw-bold overflow-visible" style="width:${difficulty_width}%">${difficulty_width}% </div>
                 
               </div>`
     }
