@@ -106,14 +106,16 @@ class QuestionForm(forms.ModelForm):
     
     class Meta:
         model = Question
-        exclude = ("exam", 'teacher', 'updated', 'created')
-        widgets = {
-            'question': TinyMCE(attrs={'cols': 20, 'rows': 20}),
-        }
+        exclude = ("exam", 'updated', 'created')
+        # widgets = {
+        #     'question': TinyMCE(attrs={'cols': 20, 'rows': 20}),
+        # }
         
-    def __init__(self,  *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        # self.fields["question"].widget.attrs.update({"rows":5,}) 
+    def __init__(self,request,  *args, **kwargs):
+        super(QuestionForm, self).__init__(*args, **kwargs)
+        self.fields["question"].widget.attrs.update({"rows":5,}) 
+        self.fields['subject'].queryset = request.user.subject_set.all()
+        self.fields["subject"].widget.attrs.update({'id': 'subject'})
         fields= ('option_A', 'option_B', 'option_C', 'option_D', )
         for field in fields:
             self.fields[field].widget.attrs.update({

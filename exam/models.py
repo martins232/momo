@@ -37,8 +37,9 @@ class Exam(models.Model):
     
     
 class Question(models.Model):
-    teacher = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, limit_choices_to={"is_teacher":True})
-    exam = models.ForeignKey(Exam, on_delete=models.RESTRICT)
+    # teacher = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, limit_choices_to={"is_teacher":True})
+    subject = models.ForeignKey(Subject, on_delete=models.RESTRICT, blank=False)
+    exam = models.ForeignKey(Exam, on_delete=models.SET_NULL, null=True, blank=True)
     question = models.TextField()
     option_A = models.TextField()
     option_B = models.TextField()
@@ -50,6 +51,9 @@ class Question(models.Model):
     
     def __str__(self):
         return self.question
+    
+    class Meta:
+        ordering = [ "-created"]
     
     
 class Session(models.Model):
