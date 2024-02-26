@@ -24,9 +24,9 @@
     {% comment %} notification {% endcomment %}
 </div>
 
-<div class="d-grid gap-2 d-md-block">
+{% comment %} <div class="d-grid gap-2 d-md-block">
     <a href="{% url "exam" %}" class="btn btn-secondary"  ><i class="fas fa-angle-left"></i> Back</a>
-</div>
+</div> {% endcomment %}
 
 <div class="d-grid mt-3 gap-2 d-block">
     <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addQuestion">
@@ -67,6 +67,7 @@
 
 
         <th data-field="check" data-checkbox="true"></th>
+        <th data-field="#" data-formatter="numberingFormatter">#</th>
         <th data-field="question">Question</th>
         <th data-field="exam">Exam</th>
         <th data-field="answer">Answer</th>
@@ -104,7 +105,7 @@
 
         <!-- Modal footer -->
         <div class="modal-footer d-flex justify-content-between">
-            <button type="submit" class="btn btn-success end">Save</button>
+            <button type="submit" class="btn btn-success once">Save</button>
             <button type="submit" class="btn btn-success">Save and add another</button>
 
             </form>
@@ -170,9 +171,9 @@
       </div>
 
       <!-- Modal footer -->
-      <div class="modal-footer d-flex justify-content-between">
-          <button type="submit" class="btn btn-success end">Save</button>
-          <button type="submit" class="btn btn-success">Save and Edit another</button>
+      <div class="modal-footer">
+          <button type="submit" class="btn btn-success">Save</button>
+          
 
           </form>
 
@@ -193,16 +194,18 @@ var $table = $('#table')
 var $remove = $('#remove')
 let selections 
 const formDataObj = {};
-let index
+let nos 
 
 
 
 function ajaxRequest(params) {
     var url = 'question-data'
     $.get(url+ '?' + $.param(params.data)).then(function (res) {
+      nos = res.offset
       params.success(res)
       selections = []
       $remove.prop("disabled", true)
+      
     })
 }
 
@@ -244,7 +247,7 @@ $($remove.click(function () {
   })
 )
 
-//edit 
+//edit formatter
 function operateFormatter(value, row, index) {
   return [
     '<a class="edit" href="javascript:void(0)" title="Edit question" data-bs-toggle="modal" data-bs-target="#editQuestion">',
@@ -253,15 +256,18 @@ function operateFormatter(value, row, index) {
   ].join('')
 }
 
-//adding existing the values into the input field
+function numberingFormatter(){
+  nos = nos + 1
+  return nos
+}
+
+//adding existing values into the input field
 window.operateEvents = {
   'click .edit': function (e, value, row, index) {
-    index = index
-    console.log(index)
+    index = index //index of the row that is about to be editted
+    
     formDataObj.id = row.id
     $("#edit-questionData select[name='subject']").val(row.subject)
-
-    
     $("#edit-questionData #id_question").val(row.question)
     $("#edit-questionData #id_option_A").val(row.option_A)
     $("#edit-questionData #id_option_B").val(row.option_B)
@@ -278,15 +284,13 @@ window.operateEvents = {
 
 
 //control disabled delete button
-$table.on('check.bs.table uncheck.bs.table ' +
-      'check-all.bs.table uncheck-all.bs.table',
-    function () {
-      $remove.prop('disabled', !$table.bootstrapTable('getSelections').length)
+$table.on('check.bs.table uncheck.bs.table ' + 'check-all.bs.table uncheck-all.bs.table', function () {
+    $remove.prop('disabled', !$table.bootstrapTable('getSelections').length)
 
-      // save your data, here just save the current page
-      selections = getIdSelections()
-      // push or splice the selections if you want to save all data selections
-    })
+    // save your data, here just save the current page
+    selections = getIdSelections()
+    // push or splice the selections if you want to save all data selections
+})
 
 
 function getCookie(name) {
@@ -309,7 +313,7 @@ const csrftoken = getCookie('csrftoken');
 //creating a question 
 $(document).ready(function(){
     let form = $("#question-data")
-	form.submit(function(event){
+	  form.submit(function(event){
 		event.preventDefault()
 		let data_= $("#question-data").serialize()
 		$.ajax({
@@ -320,7 +324,7 @@ $(document).ready(function(){
                 $("#question-data")[0].reset()
 				
                 //close after adding a question
-                if ($('button[type="submit"]:focus').hasClass('end')){
+                if ($('button[type="submit"]:focus').hasClass('once')){
                     $(".modal").modal("hide")
                 }
 

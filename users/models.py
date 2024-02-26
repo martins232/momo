@@ -14,6 +14,10 @@ STATUS_CHOICE = (
 class Grade(models.Model):
     grade = models.IntegerField()
     
+    
+    class Meta:
+        ordering = ["grade"]
+    
     def __str__(self):
         return f"Grade {str(self.grade)}"
 

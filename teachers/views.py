@@ -1,15 +1,14 @@
-
 import json
 from operator import le
 from django.shortcuts import render, redirect, get_object_or_404
 from users.models import User, Teacher, Grade
 from main . decorators import teacher
-from teachers. forms import UserUpdateForm,TeacherUpdateForm, ChangeProfilePicture
+from teachers. forms import UserUpdateForm,TeacherUpdateForm, ChangeProfilePicture, TopicForm
 from django.contrib.auth.decorators import login_required
 from exam.forms import ExamForm, QuestionForm
 from django.contrib import messages
 from exam .models import Exam, Question, Session
-from teachers.models import Subject
+from teachers.models import Subject, Topic
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Q
 from django.db.models.signals import post_save
@@ -17,6 +16,9 @@ from django.dispatch import receiver
 from django.core.paginator import Paginator, EmptyPage
 from django.http.response import JsonResponse
 from django.db.models import Count, Avg
+
+
+from django.utils import timezone
 
 
 
@@ -73,12 +75,17 @@ def editProfileImage(request, pk):
     return render(request, "teachers/image.html", context)
 @teacher
 @login_required(login_url="login")
-def createExam(request):
+def scheduledExam(request):
     #form to create exam
     form = ExamForm(request, request.POST or None)
     
-    #get all the exams by this user
-    exams = User.objects.get(username=request.user.username).exam_set.all()
+    #get all the exams by this teacher
+    # exams = Exam.objects.filter(teacher=request.user, )
+    exams = Exam.objects.filter( Q(start_date__gt=timezone.now()) | Q(start_date__lte=timezone.now(), end_date__gt=timezone.now()), teacher=request.user
+)
+    
+    #all the classes 
+    grades = Grade.objects.all()
     
     if request.method == "POST":
         form = ExamForm(request, request.POST)
@@ -87,15 +94,20 @@ def createExam(request):
             exam.teacher = request.user
             exam.save()
             messages.add_message(request, messages.SUCCESS, "Exam created")
-            return redirect("exam")
+            return redirect("scheduled-exam")
         else:
             messages.add_message(request, messages.ERROR, form.errors.as_ul())   
     context = {
         "form": form,
         "exams": exams,
+        "grades": grades,
     }
   
-    return render(request, "teachers/exam.html", context)
+    return render(request, "teachers/schedule_exam.html", context)
+
+def closedExam(request):
+    return render(request, "teachers/closed_exam.html")
+
 @teacher
 @receiver(post_save, sender=Subject)
 def set_exam_teacher_null(sender, instance, **kwargs):
@@ -104,7 +116,7 @@ def set_exam_teacher_null(sender, instance, **kwargs):
     """
     # instance is the subject object that was deleted
     # get the exams that are related to this subject
-    exams = Exam.objects.filter(subject=instance)
+    exams = Exam.objects.filter(subject=instance) #all the exams by the new teacher of this subject
     # # # loop through the exams and set their teacher to null
     for exam in exams:
         exam.teacher = instance.teacher
@@ -136,7 +148,7 @@ def editExam(request, pk):
         if form.is_valid():
             form.save()
             messages.add_message(request, messages.SUCCESS, "Exam saved")
-            return redirect("exam")
+            return redirect("scheduled-exam")
         
     context = {
         "form": form,
@@ -145,40 +157,40 @@ def editExam(request, pk):
     return render(request, "teachers/edit.html", context) 
 
 
-@teacher
-@login_required(login_url="login")
-def viewExam(request, pk):
-    try:
-        exam = Exam.objects.get(id=pk)
-        questions= exam.question_set.all()
-    except ObjectDoesNotExist:
-        return redirect("404")
+# @teacher
+# @login_required(login_url="login")
+# def viewExam(request, pk):
+#     try:
+#         exam = Exam.objects.get(id=pk)
+#         questions= exam.question_set.all()
+#     except ObjectDoesNotExist:
+#         return redirect("404")
     
-    if request.user != exam.teacher:
-        return redirect("404")
+#     if request.user != exam.teacher:
+#         return redirect("404")
     
     
-    form = QuestionForm(request, request.POST or None)
+#     form = QuestionForm(request, request.POST or None)
     
-    if request.method == "POST":
-        form = QuestionForm(request, request.POST)
-        if form.is_valid():
-           question = form.save(commit=False)
-           question.subject = exam.subject
-           question.exam = exam
-           question.save()
-           return redirect("view-exam", pk=exam.id)
-        else:
-            print(form.errors)
+#     if request.method == "POST":
+#         form = QuestionForm(request, request.POST)
+#         if form.is_valid():
+#            question = form.save(commit=False)
+#            question.subject = exam.subject
+#            question.exam = exam
+#            question.save()
+#            return redirect("view-exam", pk=exam.id)
+#         else:
+#             print(form.errors)
         
         
     
-    context = {
-        "exam": exam,
-        "form": form,
-        "questions":questions
-    }
-    return render(request, "teachers/view_exam.html", context)
+#     context = {
+#         "exam": exam,
+#         "form": form,
+#         "questions":questions
+#     }
+#     return render(request, "teachers/view_exam.html", context)
 # @teacher
 # @login_required(login_url="login")
 # def editQuestion(request, pk):
@@ -218,45 +230,6 @@ def deleteQuestion(request, pk):
     # return redirect("all-questions")
       
     
-
-@teacher
-@login_required(login_url="login")
-def viewAllQuestions(request):
-    #filtering
-    # filt_subject= request.GET.get("subject") if request.GET.get("subject") != None else ""
-    # filt_question= request.GET.get("question") if request.GET.get("question") != None else ""
-    # filt_grade= request.GET.get("grade") if request.GET.get("grade") != None else 0
-    filt_subject= request.GET.get("subject", "") 
-    filt_question= request.GET.get("question", "") 
-    filt_grade= request.GET.get("grade", 0) 
-    #########
-    
-    teacher = User.objects.get(username=request.user.username)
-    questions = teacher.question_set.filter(
-            Q(exam__subject__name__exact=filt_subject) | 
-            Q(exam__grade__grade__exact=filt_grade) |
-            Q(question__exact=filt_question)
-            )
-    
-    # if filt_subject or int(filt_grade):  #for some reasons i don't know why, if i remove the int the logic becomes true 
-    #     questions = teacher.question_set.filter(
-    #         Q(exam__subject__name__exact=filt_subject) | 
-    #         Q(exam__grade__grade__exact=filt_grade) 
-    #         )
-
-    # else:
-    #     questions = teacher.question_set.filter(Q(question__contains=filt_question))
-        
-    
-    #for drop down in search box
-    subjects = teacher.subject_set.all()
-    grades = Grade.objects.all()
-    context ={
-        "questions":questions,
-        "subjects": subjects,
-        "grades": grades
-    }
-    return render(request, "teachers/view_all_question.html", context)
 
 
 def sessionDashboardData(request, pk):
@@ -419,22 +392,53 @@ def examDashboard(request, pk):
 
 def questionData(request):
     
+     # for the sake of other subjects that would use this JSON data
+    subject_list = Subject.objects.filter(teacher=request.user) # used in the all_question page to filter all questions by a particular teacher 
     
-    search = request.GET.get("search")
+    subject = request.GET.get("subject") # used in the drag page to filter questions for a particular subject 
+    search = request.GET.get("search") 
     limit = int(request.GET.get("limit"))
     offset = int(request.GET.get("offset"))
+    unassigned = request.GET.get("unassigned")
+    exam_id = request.GET.get("exam")
+    # unassigned = bool(int(request.GET.get("unassigned", 0)))
+    
+    
+    
+    # if a particular subject that is making the request through ajax
+    if subject != None:
+        subject_list = list(subject)
+    
 
-    length = len(Question.objects.filter(subject__teacher=request.user)) 
-    questions = Question.objects.filter(subject__teacher=request.user).filter(Q(subject__name__icontains=search) | Q(question__icontains=search)).values("id", "question","option_A", "option_B","option_C","option_D", "answer", "exam","subject", "subject__name", )
+    length = len(Question.objects.filter(subject__in=subject_list)) #get all the questions by the logged in teacher
+    questions = Question.objects.filter(subject__in=subject_list).filter(Q(subject__name__icontains=search) | Q(question__icontains=search)).values("id", "question","option_A", "option_B","option_C","option_D", "answer", "exam","subject", "subject__name", )
+    
+    
+    
+    
     
     if search:
         length =  len(questions)
+        
+    if unassigned is not None: # if the teacher wants filter between unassigned  and assigned questions
+        unassigned = bool(int(unassigned))
+        if unassigned:
+            questions = questions.filter(exam__isnull = unassigned)
+            length =  len(questions)
+        else:
+            questions = questions.filter(exam__isnull = unassigned)
+            length =  len(questions) 
     
+    if exam_id != None and unassigned==False: #to get just assigned topic to a particular exam
+        questions = questions.filter(exam = exam_id)
+        length =  len(questions)
+       
     questions = questions[offset:limit+offset]
-    return JsonResponse({"total":length, "rows":list(questions)})
+    return JsonResponse({"total":length, "offset": offset, "rows":list(questions)})
 
 
 def allQuestions(request):
+    
     
     form = QuestionForm(request)
     subjects = Subject.objects.filter(teacher= request.user)
@@ -462,7 +466,7 @@ def deleteQuestion(request):
     if is_ajax(request=request):
         ids = json.loads(request.POST.get("id"))
         quest = Question.objects.filter(id__in = ids)
-        quest.delete()
+        a = quest.delete()
         return JsonResponse({"deleted": True})
     
 def editQuestion(request):
@@ -474,7 +478,88 @@ def editQuestion(request):
             form.save()
             return JsonResponse({"res":"added"})
         else:
-            print("No")
             return JsonResponse({"res":form.errors})
         
+        
+        
+def viewExam(request, pk):
+    exam = Exam.objects.get(id=pk)
+    context = {"exam": exam} #used for sending subject id in the templated
+  
+    return render(request, "teachers/view_exam.html", context)
+
+def assignQuestionToExam(request, pk):
+    exam = Exam.objects.get(id=pk)
+    if is_ajax(request=request):
+        ids = json.loads(request.POST.get("id"))
+        questions = Question.objects.filter(id__in = ids)
+        questions.update(exam=pk)
+        return JsonResponse({"message": f"{len(ids)} Question(s) added to {exam.name}. <br>Total questions: <span class='fw-bold'>{exam.get_no_question}</span>"})
+    
+def removeQuestionFromExam(request, pk):
+    exam = Exam.objects.get(id=pk)
+    if is_ajax(request=request):
+        ids = json.loads(request.POST.get("id"))
+        questions = Question.objects.filter(id__in = ids)
+        questions.update(exam=None)
+        return JsonResponse({"message": f"{len(ids)} Question(s) removed from {exam.name}. <br>Total questions: <span class='fw-bold'>{exam.get_no_question}</span>"})
+
+def topicsData(request):
+    teacher = request.user
+    subject = Subject.objects.filter(teacher = teacher)
+    data = {}
+    grade = request.GET.get("grade") 
+    
+    
+    if grade is not None:
+        for sub in subject:
+            data[sub.name] = list(Topic.objects.filter(subject=sub, grade=grade).values("grade","id", "subject", "name"))
+    return JsonResponse(data)
+
+def allTopics(request):
+    form = TopicForm(request)
+    grades = Grade.objects.all()
+    # subjects = Subject.objects.filter(teacher = request.user)
+    context = {
+        "form": form,
+        "grades": grades
+        }
+    
+    return render(request, "teachers/topics.html", context)
+
+def addTopic(request):
+    if is_ajax(request=request):
+        form = TopicForm(request, request.POST)
+        if form.is_valid():
+            topic = form.save()
+            msg = topic.subject.name + " for " + str(topic.grade)
+            return JsonResponse({"message": f"New topic created in {msg}"})
+        else:
+            return JsonResponse({"message":"No"})
+        
+def editTopic(request):
+    if is_ajax(request=request):      
+        topic_id = request.POST.get("id")
+        topic = get_object_or_404(Topic, id=topic_id)       
+        form = TopicForm(request, request.POST, instance= topic)
+        if form.is_valid():
+            topic =form.save()
+            msg = topic.subject.name + " for " + str(topic.grade)
+            return JsonResponse({"message": f"Topic updated in {msg}"})
+        else:
+            return JsonResponse({"message": form.errors})
+
+
+def deleteTopic(request):
+    if is_ajax(request=request):
+        id = request.POST.get("id")
+        topic =Topic.objects.get(pk=id)
+        if topic:
+            msg = topic.subject.name + " for " + str(topic.grade)
+            topic.delete()
+            return JsonResponse({"message":f"Topic deleted from {msg}"})
+        else:
+            return JsonResponse({"message":"Something went wrong"})
+        
+
     

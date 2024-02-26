@@ -32,7 +32,7 @@
                     <div class="col-5">
                         <span><span class="fw-bold">Subject:</span> {{exam.subject.name}}</span><br />
                         <span><span class="fw-bold">No. of question:</span> {{questions.count}} </span><br />
-                        <span><span class="fw-bold">Duration:</span> {{exam.duration}} </span>
+                        <span><span class="fw-bold">Duration:</span> {{exam.seconds_to_hms}} </span>
                     </div>
                     <div class="col-7 text-end">
                         <label class="btn btn-primary" style="cursor: default;"><span class="fw-bold">Pass mark:</span> {{exam.pass_mark | floatformat}}%</label>

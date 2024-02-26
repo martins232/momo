@@ -8,16 +8,19 @@
 
             <!--Normal sidebar-->
             <a class="nav-link" href="{% url "home" %}"><div class="sb-nav-link-icon"><i class="fas fa-tachometer-alt"></i></div>Dashboard</a>
+            <a class="nav-link" href="{% url "all-topics" %}"><div class="sb-nav-link-icon"><i class="fas fa-tachometer-alt"></i></div>Add topics</a>
             <a class="nav-link" href="{% url "profile" %}"><div class="sb-nav-link-icon"><i class="fas fa-user-tie"></i></div>Profile</a>
-            <a class="nav-link" href="{% url "exam" %}"><div class="sb-nav-link-icon"><i class="fas fa-book-open"></i></div>Active Exam</a>
-             <!--end of Normal sidebar-->
+            <a class="nav-link" href="{% url "all-questions" %}"><div class="sb-nav-link-icon"><i class="fas fa-folder-open"></i></div>All questions</a>
+            <!--end of Normal sidebar-->
 
             <div class="sb-sidenav-menu-heading">EXAM</div>
              <!--section breaker-->
             
              <!--Normal sidebar-->
-            <a class="nav-link" href="{% url "view-all-questions" %}"><div class="sb-nav-link-icon"><i class="fas fa-folder-open"></i></div>Questions</a>
-            <a class="nav-link" href="{% url "all-questions" %}"><div class="sb-nav-link-icon"><i class="fas fa-folder-open"></i></div>Updated Questions</a>
+            {% comment %} <a class="nav-link" href="{% url "view-all-questions" %}"><div class="sb-nav-link-icon"><i class="fas fa-folder-open"></i></div>Questions</a> {% endcomment %}
+            <a class="nav-link" href="{% url "scheduled-exam" %}"><div class="sb-nav-link-icon"><i class="fas fa-book-open"></i></div>Scheduled Exam</a>
+            <a class="nav-link" href="{% url "closed-exam" %}"><div class="sb-nav-link-icon"><i class="fas fa-book-open"></i></div>Closed Exams</a>
+
             {% comment %} <a class="nav-link" href="{% url "session-dashboard" %}"><div class="sb-nav-link-icon"><i class="fas fa-folder-open"></i></div>Analysis</a> {% endcomment %}
               <!--end of Normal sidebar-->
 

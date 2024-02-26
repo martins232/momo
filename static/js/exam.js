@@ -12,7 +12,6 @@ let examstatus
 let warning
 
 
-
 var percentremain
 var distance
 var fixed
@@ -47,8 +46,8 @@ const getData = () => $.ajax({
 		fixed +=distance;
 
 		//timer
-		timer = setInterval(startTimer, 1000);
 		displayExam(0)
+		timer = setInterval(startTimer, 1000);
 		
 	},
 	error: function(error){
