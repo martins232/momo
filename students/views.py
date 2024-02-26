@@ -10,7 +10,8 @@ from django.http import JsonResponse
 from random import shuffle
 from exam . models import Question, Session
 from django.core.exceptions import PermissionDenied
-# from django.utils import timezone
+from django.utils import timezone
+from django.db.models import Q
 
 
 
@@ -63,7 +64,7 @@ def editStudentProfileImage(request, pk):
     return render(request, "teachers/image.html", context)
 
 def exams(request):
-    exams = Exam.objects.filter(grade=request.user.student.grade)
+    exams = Exam.objects.filter(Q(start_date__lte=timezone.now(), end_date__gt=timezone.now()), grade=request.user.student.grade)
     
      
     context ={
@@ -192,6 +193,9 @@ def session_save(request, pk):
            # return JsonResponse({"pass": False, "score": score_, "result":results}) # create a json response for this user to display data
     else:
         raise PermissionDenied
+    
+def examResult(request):
+    return render(request, "students/exam_result.html")
                 
             
 

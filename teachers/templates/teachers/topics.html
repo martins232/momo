@@ -1,0 +1,302 @@
+{% extends "main.html" %}
+{% load crispy_forms_tags %}
+
+{% block additional_head_css %}
+<style>
+
+
+    .action_btn{
+        display: none;
+    }
+
+    li:hover{
+        background-color: #f2f2f2;
+    }
+
+    li:hover > div .action_btn {
+        display:inline-block;
+    }
+</style>
+{% endblock additional_head_css %}
+
+{% block content %}
+<nav aria-label="breadcrumb" class="main-breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="javascript:void(0)">Home</a></li>
+        <li class="breadcrumb-item"><a href="javascript:void(0)">Teacher</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Topics</li>
+    </ol>
+</nav>
+
+<div id="alert">
+    {% comment %} notification {% endcomment %}
+</div>
+
+<div class="row">
+    <div class="col-md-4 mb-2">
+        <form id="edit-topic-form" class="d-none">
+            <h2>Edit topic</h2>
+            {% csrf_token %}
+            <input type="hidden" name="id">
+            {{form | crispy}}
+
+            <div class="d-flex justify-content-end">
+                <button type="submit" class="btn btn-success">Save</button>
+            </div>
+        </form>
+
+        <form id="topic-form" >
+            <h2>Add topics</h2>
+            {% csrf_token %}
+            <!--form for adding Topics-->
+            {{form | crispy}}
+            
+            {% comment %} {{form.subject| as_crispy_field}}
+
+            <div class="mb-5"> <label for="id_name" class="form-label requiredField">
+                Topic name<span class="asteriskField">*</span> 
+            </label> 
+
+
+            <input type="text" name="name" maxlength="225" class="textinput form-control" required="" id="id_name"> 
+            </div> {% endcomment %}
+
+            <div class="d-flex justify-content-between">
+                <button type="submit" class="btn btn-success once">Save</button>
+                <button type="submit" class="btn btn-success">Save and add another</button>
+            </div>
+        </form>
+    </div>
+    <div class="col-md-8" >
+        <select name="grade" id="class_filter" class="form-select">
+            {% for grade in grades  %}
+                <option value="{{grade.id}}">{{grade}}</option>
+            {% endfor %}
+        </select>
+        <div id="topic_area"></div>
+        {% comment %} {% for subject in subjects %}
+            <h2 class="text-center">{{subject.name}}</h2>
+            <ul>
+                {% for topic in subject.topic_set.all %}
+                    <li>{{topic.name}}</li>
+                {% endfor %}
+            </ul>
+        {% endfor %} {% endcomment %}
+        
+    </div>
+</div>
+{% endblock content %}
+
+
+{% block js %}
+    <script>
+
+        //adding topics
+       $(document).ready(function(){
+        let form = $("#topic-form")
+        form.submit(function(event){
+            event.preventDefault()
+            data = form.serialize()
+            $.ajax({
+                type: "POST",
+                url: window.origin + "/teacher/add-topic/",
+                data: data,
+                success: function (success){
+                    if (success){
+                        notify("success",success.message);
+                    }else{
+                        notify("danger", "Something went wrong");
+                    }
+                    
+                        //reset form after adding a question
+                    if ($('button[type="submit"]:focus').hasClass('once')){
+                        $("#topic-form")[0].reset()
+                    }else{
+                        $("#topic-form input[name=name]").val("")
+                    }
+                    //close the alert element
+                    const autoCloseElements = [...$(".auto-close")]
+                    setTimeout(function () {
+                        autoCloseElements.forEach(el => fadeAndSlide(el));
+                    }, 5000);
+                    getTopicData()
+                }
+            })
+        })
+       })
+
+         //editing topics
+         $(document).ready(function(){
+            let form = $("#edit-topic-form")
+            form.submit(function(event){
+                event.preventDefault()
+                data = form.serialize()
+                $("#edit-topic-form").hide()
+                $("#topic-form").show()
+                $.ajax({
+                    type: "POST",
+                    url:  window.origin + `/teacher/edit-topic/`,
+                    data: data,
+                    success: function (success){
+                        console.log("Yes")
+                        if (success){
+                            notify("success", success.message);
+                        }else{
+                            notify("success", success.message);
+                        }
+                        //close the alert element
+                        const autoCloseElements = [...$(".auto-close")]
+                        setTimeout(function () {
+                            autoCloseElements.forEach(el => fadeAndSlide(el));
+                        }, 5000);
+                        getTopicData()
+                    },
+                })
+
+                
+            })
+           })
+let obs
+const getTopicData = (url=window.origin + "/teacher/topic-data/" +`?grade=${$("#class_filter").val()}`)=>{
+    $.ajax({
+        type: "GET",
+        url: url,
+        success: function (success){
+            obs = success
+            let topic = ""
+            // Loop through each subject
+            for (const subject in obs) {
+                topic += `<h2 class=" mt-2 text-center bg-dark text-light">${subject}</h2>`
+            
+                // Loop through each student in the subject
+                topic += "<ol class='list-group'>"
+                for (const sub_topic of obs[subject]) {
+                    topic += `<li class='list-group-item d-flex justify-content-between align-items-center position-relative'>
+                        <span>${sub_topic.name}</span> 
+
+                        
+                        <div class="position-absolute top-0 end-0 mt-1">
+                            <button onclick="scroller(); actionBtn(this);" class="action_btn btn btn-sm btn-light" data-action="edit" data-id=${sub_topic.id} data-subject=${subject}><i class="fas fa-pencil"></i></button>
+                            <button onclick="actionBtn(this)" class="action_btn btn btn-sm btn-light text-danger me-2" data-action="delete" data-id=${sub_topic.id}><i class="fas fa-trash"></i></button>
+                        </div>
+                    
+                    </li>`
+                    
+                }
+                topic += "</ol>"
+            }
+            $("#topic_area").html(`${topic}`)
+           
+            
+        },
+    })
+    
+}
+getTopicData()
+
+
+//when a select option changes
+$("#class_filter").on("change", function(){
+    //getTopicData(url=window.origin + "/teacher/topic-data/"+`?grade=${$(this).val()}`)
+    getTopicData()
+})
+
+function scroller(){
+    var element = document.getElementById("edit-topic-form")
+    element.scrollIntoView({behavior: "smooth", block: "end", inline: "nearest"})   
+}
+
+
+
+
+//alerts *****************************************************************************************************************
+
+function notify(color, msg){
+    $("#alert").html(`
+        <div class="auto-close alert alert-${color} alert-dismissible fade show py-1" role="alert" >
+            ${msg}
+        </div>
+    `)
+}
+
+function fadeAndSlide(element) {
+    const fadeDuration = 500;
+    const slideDuration = 500;
+
+    // Step 1: Fade out the element
+    let opacity = 1;
+    const fadeInterval = setInterval(function () {
+      if (opacity > 0) {
+        opacity -= 0.1;
+        element.style.opacity = opacity;
+      } else {
+        clearInterval(fadeInterval);
+        // Step 2: Slide up the element
+        let height = element.offsetHeight;
+        const slideInterval = setInterval(function () {
+          if (height > 0) {
+            height -= 10;
+            element.style.height = height + "px";
+          } else {
+            clearInterval(slideInterval);
+            // Step 3: Remove the element from the DOM
+            element.parentNode.removeChild(element);
+          }
+        }, slideDuration / 10);
+      }
+    }, fadeDuration / 10);
+  }
+// *****************************************************************************************************************
+
+
+//action btn click
+function actionBtn(n){
+    let action= n.getAttribute("data-action")
+    if (action === "edit"){
+        $("#topic-form").hide() // hideing creation form
+        let id= n.getAttribute("data-id")
+        let subject = n.getAttribute("data-subject")
+        let topic_data = obs[subject].find(topic => topic.id == id) //output: {id: 20, subject: 1, name: 'Another one big God'}
+
+        $("#edit-topic-form input[name=id]").val(topic_data.id)
+        $("#edit-topic-form input[name=name]").val(topic_data.name)
+        $("#edit-topic-form select[name=subject]").val(topic_data.subject)
+        
+        if (topic_data.grade){
+            $("#edit-topic-form select[name=grade]").val(topic_data.grade)
+        }
+
+
+        $("#edit-topic-form").removeAttr("class").show() //displaying edit form
+        //console.log($("#edit-topic-form select[name=subject]"))
+    }
+ 
+    if (action === "delete"){
+        let id= n.getAttribute("data-id")
+        $.ajax({
+            type: "POST",
+            url: window.origin + "/teacher/delete-topic/",
+            data: {"csrfmiddlewaretoken": "{{csrf_token}}", "id": id},
+            success: function(success){
+                notify("success", success.message)
+                //close the alert element
+                const autoCloseElements = [...$(".auto-close")]
+                setTimeout(function () {
+                    autoCloseElements.forEach(el => fadeAndSlide(el));
+                }, 5000);
+                getTopicData()
+            },
+            error: function(error){
+                console.log(error)
+            }
+        })
+    }
+ 
+ }
+
+
+
+    </script>
+{% endblock js %}
+
+

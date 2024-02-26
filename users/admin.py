@@ -9,8 +9,8 @@ from django.contrib import messages
 
 class StudentAdmin(admin.ModelAdmin):
     actions = ["mark_pending", "mark_approved", "mark_rejected", "remove_rejected"] 
-    list_filter = ["status"]
-    list_display = ('name', 'birth', 'gender', 'image', "action", "_") #Tables you will see
+    list_filter = ["status", "grade"]
+    list_display = ('name',"grade", 'birth', 'gender', 'image', "action", "_") #Tables you will see
     fields =['birth',"grade", 'gender', 'image', "status"] # forms that could be filled in the admin
     
     

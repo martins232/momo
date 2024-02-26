@@ -1,7 +1,7 @@
 {% load static %}
 <nav class="sb-topnav navbar navbar-expand navbar-dark bg-dark"> 
     <!-- Navbar Brand-->
-    <a class="navbar-brand ps-3" href="{% url "home" %}"><img src="{% static "images/logo.svg" %}" alt="Logo" style="width:65%;" ></a>
+    <a class="navbar-brand ps-3"  {% if request.user.is_teacher %} href="{% url "home" %}" {% endif %}><img src="{% static "images/logo.svg" %}" alt="Logo" style="width:65%;" ></a>
     <!-- Sidebar Toggle-->
     <button class="btn btn-link btn-sm order-1 order-lg-0 me-4 me-lg-0" id="sidebarToggle" href="#!"><i class="fas fa-bars"></i></button>
     <!-- Navbar Search-->
@@ -12,7 +12,8 @@
             <button class="btn btn-primary" id="btnNavbarSearch" type="button"><i class="fas fa-search"></i></button>
         </div>
     </form>
-
+   
+    
     {% if request.user.is_student %}
     <a href="#" class=" position-relative me-2 mt-2 text-secondary">
         <i class="fas fa-bell fa-2x"></i>

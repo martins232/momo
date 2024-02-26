@@ -1,12 +1,17 @@
 from django.db import models
 from users. models import User, Grade
 from teachers. models import Subject
+from django.utils import timezone
+
+
+
+from datetime import date
 
   
 
 STATUS = [
-    ("Active", "ACTIVE"), 
-    ("Pending", "PENDING")
+    ("active", "ACTIVE"), 
+    ("pending", "PENDING")
 ]
     
 # Create your models here.
@@ -26,11 +31,49 @@ class Exam(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     
     
+    
     def __str__(self):
         return self.name
+    
+    @property
+    def get_exam_status(self):
+        now = timezone.localtime(timezone.now())
+        startExam = timezone.localtime(self.start_date)
+        endExam = timezone.localtime(self.end_date)
+
+        if now < startExam:
+            self.status = "pending"
+            
+        if now> startExam  and now< endExam:
+            self.status ="active"
+            
+        if now> startExam and now> endExam:
+            self.status= "ended"
+
+        #####################debuging###############################################
+        # print("Current tz: ",timezone.get_current_timezone())
+        # print("Current tz name: ",timezone.get_current_timezone_name())
+        # print("Current time in UTC: ",timezone.now())
+        # print("The time is: ",timezone.localtime(now))
+        # print("The date is: ",timezone.localdate(now))
+        # print("The Exam end date is: ",timezone.localtime(self.end_date))
+        # print("The Exam end date is UTC: ",self.end_date)
+        #####################debuging###############################################
+        
+        return f"{self.status}"                 
+                                                    
     @property
     def get_no_question(self):
         return self.question_set.all().count()
+    
+    @property
+    def seconds_to_hms(self):
+        duration = self.duration.seconds
+        hours = int(duration // 3600)
+        minutes = int((duration % 3600) // 60)
+        seconds = int(duration % 60)
+        
+        return f"{str(hours) + 'hr(s): ' if hours > 0 else ''} {str(minutes) + 'min(s): ' if minutes > 0 else ''} {str(seconds) + 'sec(s)' if seconds > 0 else ''}"
     
     class Meta:
         ordering = [ "created"]
@@ -74,10 +117,19 @@ class Session(models.Model):
     
     @property
     def passed(self):
-        if self.score > self.exam.pass_mark:
+        if self.score >= self.exam.pass_mark:
             return "Passed"
         else:
             return "Fail"
+        
+    def seconds_to_hms(self):
+      
+        hours = int(self.elapsed_time // 3600)
+        minutes = int((self.elapsed_time % 3600) // 60)
+        seconds = int(self.elapsed_time % 60)
+        
+        
+        return f"{str(hours) + 'h: ' if hours > 0 else ''} {str(minutes) + 'm: ' if minutes > 0 else ''} {str(seconds) + 's' if seconds > 0 else ''}"
     
     
    

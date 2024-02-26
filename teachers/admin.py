@@ -1,5 +1,5 @@
 from django.contrib import admin
-from . models import Subject
+from . models import Subject, Topic
 from django.utils.html import format_html
 
 
@@ -25,3 +25,4 @@ class SubjectAdmin(admin.ModelAdmin):
     assign_teacher.allow_tags=True
     
 admin.site.register(Subject, SubjectAdmin)
+

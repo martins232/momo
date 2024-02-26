@@ -8,5 +8,6 @@ urlpatterns = [
     path("available-exams", views.exams, name="available-exam"),
     path("session/", views.session, name="exam-session"),
     path("session/<str:pk>/data", views.session_data, name="exam-data"),
-    path("session/<str:pk>/save", views.session_save, name="exam-save")
+    path("session/<str:pk>/save", views.session_save, name="exam-save"),
+    path("exam-results/", views.examResult, name="exam-results"),
 ]

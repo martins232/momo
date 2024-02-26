@@ -29,7 +29,7 @@ class ExamForm(forms.ModelForm):
             "style": "font-size:14px; cursor:pointer",
             "type":"date",
             # "onkeydown":"return false", # Javascript prevent typing
-            "min": str(date.today())
+            # "min": str(date.today())
             },
        date_format='%Y-%m-%d',      
         time_attrs={
@@ -46,7 +46,7 @@ class ExamForm(forms.ModelForm):
             "style": "font-size:14px; cursor:pointer",
             "type":"date",
             # "onkeydown":"return false", # Javascript prevent typing
-            "min": str(date.today() + timedelta(days=1)),
+            # "min": str(date.today() + timedelta(days=1)),
             
             },
        date_format='%Y-%m-%d',      

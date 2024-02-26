@@ -1,5 +1,6 @@
 from django import forms
 from django.core.validators import RegexValidator
+from teachers.models import Topic, Subject
 from users  . models import User, Teacher
 from  django.core.files.base import File
 
@@ -177,4 +178,14 @@ class ChangeProfilePicture(forms.ModelForm):
                 raise forms.ValidationError("Max. Upload: 2MB")
             
             
+class TopicForm(forms.ModelForm):
     
+    class Meta:
+        model= Topic
+        fields = "__all__"
+        
+    def __init__(self, request, *args, **kwargs):
+        super(TopicForm, self).__init__(*args, **kwargs)
+        self.fields["subject"].queryset = Subject.objects.filter(teacher=request.user)
+        self.fields['name'].label = "Topic name"
+        
