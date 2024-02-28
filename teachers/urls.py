@@ -15,6 +15,7 @@ urlpatterns = [
     path("session-dashboard/<str:pk>/", views.sessionDashboard, name="session-dashboard"),
     path("analysis/<str:pk>/", views.studentPerformance, name="student-performance"),
     path("exam-dashboard/<str:pk>/", views.examDashboard, name="exam-dashboard"),
+    path("new-exam-dashboard/<str:pk>/", views.newExamDashboard, name="new-exam-dashboard"),
     
     
     path("all-topics/", views.allTopics, name="all-topics"),
@@ -32,6 +33,7 @@ urlpatterns = [
     
     path("session-data/<str:pk>/", views.sessionDashboardData, name="session-data"),
     path("exam-data/<str:pk>/", views.examDashboardData, name="exam-data"),
+   
     
     
     path("exam/<str:pk>/", views.viewExam, name="view-exam"),

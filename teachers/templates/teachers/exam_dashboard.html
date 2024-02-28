@@ -7,38 +7,85 @@
 {% endblock additional_head_css %}
 
 {% block content %}
-<div class="card text-center">
-  <div class="card-header ">
-    Exam summary
-  </div>
-  <div class="card-body">
-    <h5 class="card-title">Special title treatment</h5>
-    <p class="card-text">With supporting text below as a natural lead-in to additional content.</p>
-    <a href="#" class="btn btn-primary">Go somewhere</a>
-  </div>
-  <div class="card-footer text-body-secondary">
-    2 days ago
-  </div>
+<div class="accordion mb-2" id="accordionExample">
+	<div class="accordion-item">
+	  <h2 class="accordion-header" id="headingOne">
+		<button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne"  >
+		  Student Ranking
+		</button>
+	  </h2>
+	  <div id="collapseOne" class="accordion-collapse collapse show"  data-bs-parent="#accordionExample">
+		<div class="accordion-body">
+			<div class="table-responsive">
+				<table class="table table-sm table-hover ">
+					<thead>
+						<tr>
+							<th></th>
+							<th>Name of student</th>
+							<th>Score</th>
+						</tr>
+					</thead>
+                    <tbody>
+                        {% for session in sessions  %}
+                        <tr>
+                            <td>{{forloop.counter}}</td>
+                            <td><a href="{% url "student-performance" exam.id %}?student={{session.user.get_full_name}}&id={{session.user.id}}" target="_blank" rel=noopener>{{session.user.get_full_name}}</a></td>
+                            <td>{{session.score}}</td>
+                        </tr>
+                        
+                        {% endfor %}
+                    </tbody>
+				</table>
+			</div>
+			
+		
+		</div>
+	  </div>
+	</div>
+	<div class="accordion-item">
+	  <h2 class="accordion-header" id="headingTwo">
+		<button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo"  >
+		  Accordion Item #2
+		</button>
+	  </h2>
+	  <div id="collapseTwo" class="accordion-collapse collapse"  data-bs-parent="#accordionExample">
+		<div class="accordion-body">
+		  <strong>This is the second item's accordion body.</strong> It is hidden by default, until the collapse plugin adds the appropriate classes that we use to style each element. These classes control the overall appearance, as well as the showing and hiding via CSS transitions. You can modify any of this with custom CSS or overriding our default variables. It's also worth noting that just about any HTML can go within the <code>.accordion-body</code>, though the transition does limit overflow.
+		</div>
+	  </div>
+	</div>
+	<div class="accordion-item">
+	  <h2 class="accordion-header" id="headingThree">
+		<button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree"  >
+		  Question Summary
+		</button>
+	  </h2>
+	  <div id="collapseThree" class="accordion-collapse collapse"  data-bs-parent="#accordionExample">
+		<div class="accordion-body">
+			<table
+			id="table"
+			data-toggle="table"
+			data-ajax="ajaxRequest"
+			data-side-pagination="client"
+			data-pagination="false">
+			<thead>
+				
+				<tr>
+					<th data-field="question" >Question</th>
+					<th data-field="pattern" data-formatter="patternFormatter" data-align="center">Answer Pattern</th>
+					<th data-field="details" data-formatter="detailsFormatter" data-align="center">Details</th>
+					<th data-field="difficulty" data-formatter="difficultyFormatter" data-align="center">Difficulty</th>
+				</tr>
+			</thead>
+		</table>
+		</div>
+	  </div>
+	</div>
 </div>
 
-<table
-  id="table"
-  data-toggle="table"
-  data-ajax="ajaxRequest"
-  data-side-pagination="client"
-  data-pagination="false">
-  <thead>
-    
-    <tr>
-      <th data-field="question" >Question</th>
-      <th data-field="pattern" data-formatter="patternFormatter" data-align="center">Answer Pattern</th>
-      <th data-field="details" data-formatter="detailsFormatter" data-align="center">Details</th>
-      <th data-field="difficulty" data-formatter="difficultyFormatter" data-align="center">Difficulty</th>
-    </tr>
-  </thead>
-</table>
 
-    {% include "modal.html" with type_of_modal="studentDetail" %}
+
+		{% include "modal.html" with type_of_modal="studentDetail" %}
 {% endblock content %}
 
 {% block js %}
@@ -47,114 +94,114 @@
 
 
 <script>
-  let id
-    function ajaxRequest(params) {
-        id = "{{pk}}"
-        var url = `${window.origin}/teacher/exam-data/${id}/` 
-        $.get(url).then(function (res) {
-          params.success(res)
-        })
-    }
+	let id
+		function ajaxRequest(params) {
+				id = "{{pk}}"
+				var url = `${window.origin}/teacher/exam-data/${id}/` 
+				$.get(url).then(function (res) {
+					params.success(res)
+				})
+		}
 
-    function patternFormatter(index, row){
-        pattern = `
-            ${row.correct} <span class="fw-bold text-success">Correct</span><br>
-            ${row.incorrect} <span class="fw-bold text-danger">Inorrect</span><br>
-            ${row.unanswered} <span class="fw-bold text-secondary">Unanswered</span><br>
-        `
-        return pattern
-    }
+		function patternFormatter(index, row){
+				pattern = `
+						${row.correct} <span class="fw-bold text-success">Correct</span><br>
+						${row.incorrect} <span class="fw-bold text-danger">Inorrect</span><br>
+						${row.unanswered} <span class="fw-bold text-secondary">Unanswered</span><br>
+				`
+				return pattern
+		}
 
-    function detailsFormatter(index, row){
-        return `<span class="btn btn-secondary border rounded-circle" id="seeDetails" 
-                    data-bs-toggle="modal" data-bs-target="#studentDetail" data-index='${JSON.stringify(row)}'><i class="fas fa-file-alt"></i>
-                </span>`
-    }
-    
+		function detailsFormatter(index, row){
+				return `<span class="btn btn-secondary border rounded-circle" id="seeDetails" 
+										data-bs-toggle="modal" data-bs-target="#studentDetail" data-index='${JSON.stringify(row)}'><i class="fas fa-file-alt"></i>
+								</span>`
+		}
+		
 
-    function difficultyFormatter(index, row){
-      let color = ""
-      difficulty_width = Math.round( row.incorrect * 100 / (row.correct + row.incorrect))
-      
-      if (difficulty_width > 50){
-        if (difficulty_width<90){
-          color = "warning"
-        }else{
-          color = "danger"
-        }
-      }else{
-        color = "success"
-      }
-      return `<div class="progress border border-${color}">
-                <div class="progress-bar bg-${color} ${color== "success" ? "text-dark" : "text-dark"} fw-bold overflow-visible" style="width:${difficulty_width}%">${difficulty_width}% </div>
-                
-              </div>`
-    }
+		function difficultyFormatter(index, row){
+			let color = ""
+			difficulty_width = Math.round( row.incorrect * 100 / (row.correct + row.incorrect))
+			
+			if (difficulty_width > 50){
+				if (difficulty_width<90){
+					color = "warning"
+				}else{
+					color = "danger"
+				}
+			}else{
+				color = "success"
+			}
+			return `<div class="progress border border-${color}">
+								<div class="progress-bar bg-${color} ${color== "success" ? "text-dark" : "text-dark"} fw-bold overflow-visible" style="width:${difficulty_width}%">${difficulty_width}% </div>
+								
+							</div>`
+		}
 
-    // function to group students as correct, incorrect and unanswered
-    const students = (data_obj, x) => {
+		// function to group students as correct, incorrect and unanswered
+		const students = (data_obj, x) => {
 
-      if (Object.keys(data_obj[x]).length > 0){
-        let students = ``
-        for (keys in data_obj[x]){
-          students += `<li class="ps-3"><a href="{% url "student-performance" pk %}?student=${data_obj[x][keys]}&id=${keys}">${data_obj[x][keys]}</a></li>`
-        }
-       
-        return `<ol>${students}</ol>`
-      }else{
-        return "No student"
-      }
-      
-    }
+			if (Object.keys(data_obj[x]).length > 0){
+				let students = ``
+				for (keys in data_obj[x]){
+					students += `<li class="ps-3"><a href="{% url "student-performance" pk %}?student=${data_obj[x][keys]}&id=${keys}">${data_obj[x][keys]}</a></li>`
+				}
+			 
+				return `<ol>${students}</ol>`
+			}else{
+				return "No student"
+			}
+			
+		}
 
-    var  student_detail= document.getElementById("studentDetail")
-    if (student_detail){
-        student_detail.addEventListener('show.bs.modal', event => {
+		var  student_detail= document.getElementById("studentDetail")
+		if (student_detail){
+				student_detail.addEventListener('show.bs.modal', event => {
 
-            // Button that triggered the modal
-           const button = event.relatedTarget
-           var data = button.getAttribute("data-index")
-           var data_obj = JSON.parse(data)
-          
-           $(".modal-footer").css("display", "none");
-           console.log(data_obj)
-           //var obj = JSON.parse(x)
-           $(".modal-title").text("Question details")
-           $(".modal-body").html(`
-          
+						// Button that triggered the modal
+					 const button = event.relatedTarget
+					 var data = button.getAttribute("data-index")
+					 var data_obj = JSON.parse(data)
+					
+					 $(".modal-footer").css("display", "none");
+					 console.log(data_obj)
+					 //var obj = JSON.parse(x)
+					 $(".modal-title").text("Question details")
+					 $(".modal-body").html(`
+					
 
-           <p class="fs-6 text-justify" >${data_obj.question}</p>
-          
-           <hr>
-           <ul class="nav nav-tabs" role="tablist">
-            <li class="nav-item">
-              <a class="nav-link active" data-bs-toggle="tab" href="#correct">Correct <span class="badge text-bg-secondary">${data_obj.correct}</span></a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" data-bs-toggle="tab" href="#incorrect">Incorrect <span class="badge text-bg-secondary">${data_obj.incorrect}</span></a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" data-bs-toggle="tab" href="#unanswered">Unanswered <span class="badge text-bg-secondary">${data_obj.unanswered}</span></a>
-            </li>
-          </ul>
-        
-          <!-- Tab panes -->
-          <div class="tab-content">
-            <div id="correct" class="container tab-pane active"><br>
-                ${students(data_obj, "correct_student")}                 
-            </div>
+					 <p class="fs-6 text-justify" >${data_obj.question}</p>
+					
+					 <hr>
+					 <ul class="nav nav-tabs" role="tablist">
+						<li class="nav-item">
+							<a class="nav-link active" data-bs-toggle="tab" href="#correct">Correct <span class="badge text-bg-secondary">${data_obj.correct}</span></a>
+						</li>
+						<li class="nav-item">
+							<a class="nav-link" data-bs-toggle="tab" href="#incorrect">Incorrect <span class="badge text-bg-secondary">${data_obj.incorrect}</span></a>
+						</li>
+						<li class="nav-item">
+							<a class="nav-link" data-bs-toggle="tab" href="#unanswered">Unanswered <span class="badge text-bg-secondary">${data_obj.unanswered}</span></a>
+						</li>
+					</ul>
+				
+					<!-- Tab panes -->
+					<div class="tab-content">
+						<div id="correct" class="container tab-pane active"><br>
+								${students(data_obj, "correct_student")}                 
+						</div>
 
-            <div id="incorrect" class="container tab-pane fade"><br>
-                ${students(data_obj, "incorrect_student")}
-            </div>
-            <div id="unanswered" class="container tab-pane fade"><br>
-                ${students(data_obj, "unanswered_student")}
-            </div>
-          </div>
-           
-           `)
-          
-       })   
-    }
+						<div id="incorrect" class="container tab-pane fade"><br>
+								${students(data_obj, "incorrect_student")}
+						</div>
+						<div id="unanswered" class="container tab-pane fade"><br>
+								${students(data_obj, "unanswered_student")}
+						</div>
+					</div>
+					 
+					 `)
+					
+			 })   
+		}
 </script>
 {% endblock js %}
