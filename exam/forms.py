@@ -84,6 +84,14 @@ class ExamForm(forms.ModelForm):
             raise ValidationError("Duration can't be less than 5minutes")
         else:
             return duration
+        
+    def clean_end_date(self):
+        start_date= self.cleaned_data.get("start_date")
+        end_date= self.cleaned_data.get("end_date")
+        
+        if start_date >= end_date:
+            raise ValidationError("The exam end date should be after the start date. Please adjust the end date to be a later date.")
+        return end_date
     
     # def clean_start_date(self):
     #     start_date= self.cleaned_data.get("start_date")

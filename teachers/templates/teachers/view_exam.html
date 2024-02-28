@@ -25,15 +25,15 @@
 <h2 class="mt-2">{{exam.subject.name}} | <code>{{exam.name}}</code></h2>
 
 <div class="d-grid gap-2 d-md-block">
-    <button id="add" class="btn btn-primary {% if exam.get_exam_status == "active" %} d-none {% endif %}" disabled onclick="addQuestionToExam()">
+    <button id="add" class="btn btn-primary {% if exam.get_exam_status != "pending" %} d-none {% endif %}" disabled onclick="addQuestionToExam()">
         <i class="fa fa-plus"></i> Add
     </button>
-    <button id="remove" class="btn btn-secondary {% if exam.get_exam_status == "active" %} d-none {% endif %}" disabled onclick="removeQuestionFromExam()">
+    <button id="remove" class="btn btn-secondary {% if exam.get_exam_status != "pending" %} d-none {% endif %}" disabled onclick="removeQuestionFromExam()">
         <i class="fa fa-minus"></i> Remove
     </button>
 </div>
 
-<div id="toolbar" class="{% if exam.get_exam_status == "active" %} d-none {% endif %}">
+<div id="toolbar" class="{% if exam.get_exam_status != "pending" %} d-none {% endif %}">
     <label class="mt-2">
         <input type="checkbox" name="iconSize" value="0" id="id_unassigned">
         <code>Unassigned</code>

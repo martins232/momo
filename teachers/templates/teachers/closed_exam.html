@@ -3,5 +3,78 @@
 
 
 {% block content %}
+<nav aria-label="breadcrumb" class="main-breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="javascript:void(0)">Home</a></li>
+        <li class="breadcrumb-item"><a href="javascript:void(0)">Teacher</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Closed exams</li>
+    </ol>
+</nav>
 
+
+
+{% for grade in grades %}
+        
+<h3 class="card-head text-center">{{grade}}</h3>
+<div class="table-responsive">
+    <table class="table table-sm table-hover table-bordered">
+        <thead class="table-secondary">
+          <tr>
+            <th scope="col">#</th>
+            <th scope="col">Name of exam</th>
+            <th scope="col">Subject</th>
+            <th scope="col">Duration</th>
+            <th scope="col" >Questions</th>
+            <th  scope="col" >End Date</th>
+            <th  scope="col" class= "text-center">STATUS</th>
+            <th  scope="col" class="table-dark text-center align-middle" colspan="3">ACTION</th>
+            {% comment %} <th colspan="2" scope="col">Action</th> {% endcomment %}
+          </tr>
+        </thead>
+        <tbody>
+            {% for exam in exams %}
+            
+                {% if exam.grade == grade %}
+                    <tr>
+                        <th scope="row">{{forloop.counter}}</th>
+                        <td class="user-select-all" style="min-width: 150px;"><a href="{% url "exam-dashboard" exam.id %}">{{exam.name}}</a></td>
+                        <td>{{exam.subject}}</td>
+                        {% comment %} <td>{{exam.duration }}</td> {% endcomment %}
+                        <td>{{exam.seconds_to_hms }}</td>
+                        <td class= "text-center">{{exam.get_no_question }}</td>
+                        <td style="min-width: 180px;">{{exam.end_date }}</td>
+                        
+                        <td class="text-center 
+                            {% if exam.get_exam_status == "active" %} text-success
+                            {% elif exam.get_exam_status == "pending" %} text-warning
+                            {% endif %} ">
+                                <i class="fas fa-circle fa-sm"></i>
+                                <span class="d-none d-md-inline-block"> {{exam.get_exam_status}}</span>
+                        </td>
+
+                        
+                        
+                        
+                        
+                        <td>
+                            <a 
+                                href="{% if exam.get_exam_status == "pending" %} {% url "edit-exam" exam.id %} {% else %} # {% endif %}" 
+                                {% if exam.get_exam_status == "active" %} onclick="examActiveMsg('{{exam.name}}')" {% endif %}
+                                class="btn btn-success btn-sm" ><i class="fas fa-pencil-alt"></i>
+                            </a>
+                        </td>
+                        
+                        <td><a href="#" class="btn btn-danger btn-sm delete" data-id="{{exam.id}}" data-name="{{exam.name}}" 
+                            data-url = "{% url "delete-exam" exam.id %}" data-bs-toggle="modal" data-bs-target="#delete_modal">
+                            <i class="fas fa-trash-alt"></i>
+                        </a></td>
+                  </tr>
+                {% endif %}
+            
+            {% endfor %}
+        </tbody>
+      </table>
+
+</div>
+{% endfor %}
 {% endblock content %}

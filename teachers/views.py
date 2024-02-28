@@ -17,6 +17,8 @@ from django.core.paginator import Paginator, EmptyPage
 from django.http.response import JsonResponse
 from django.db.models import Count, Avg
 
+from django.core.serializers import serialize
+
 
 from django.utils import timezone
 
@@ -81,12 +83,10 @@ def scheduledExam(request):
     
     #get all the exams by this teacher
     # exams = Exam.objects.filter(teacher=request.user, )
-    exams = Exam.objects.filter( Q(start_date__gt=timezone.now()) | Q(start_date__lte=timezone.now(), end_date__gt=timezone.now()), teacher=request.user
-)
+    exams = Exam.objects.filter( Q(start_date__gt=timezone.now()) | Q(start_date__lte=timezone.now(), end_date__gt=timezone.now()), teacher=request.user)
     
     #all the classes 
-    grades = Grade.objects.all()
-    
+    grades = Grade.objects.filter(Q(exam__start_date__gt=timezone.now()) | Q(exam__start_date__lte=timezone.now(), exam__end_date__gt=timezone.now()), ).distinct("grade")
     if request.method == "POST":
         form = ExamForm(request, request.POST)
         if form.is_valid():
@@ -106,7 +106,14 @@ def scheduledExam(request):
     return render(request, "teachers/schedule_exam.html", context)
 
 def closedExam(request):
-    return render(request, "teachers/closed_exam.html")
+    grades = Grade.objects.filter(Q(exam__end_date__lt=timezone.now())).distinct("grade")
+    exams = Exam.objects.filter(Q(end_date__lt=timezone.now()), teacher=request.user)
+    
+    context = {
+        "exams": exams,
+        "grades": grades
+        }
+    return render(request, "teachers/closed_exam.html", context)
 
 @teacher
 @receiver(post_save, sender=Subject)
@@ -146,6 +153,8 @@ def editExam(request, pk):
     if request.method == "POST":
         form = ExamForm(request, request.POST, instance=exam) 
         if form.is_valid():
+            name= form.cleaned_data["name"]
+            print(name)
             form.save()
             messages.add_message(request, messages.SUCCESS, "Exam saved")
             return redirect("scheduled-exam")
@@ -380,13 +389,28 @@ def examDashboardData(request, pk):
     
     
     return JsonResponse({"rows":data})
+
+def newExamDashboard(request, pk):
+    exam = Exam.objects.get(id = pk)
+    sessions = Session.objects.filter(exam= exam).order_by("-score")
+    context ={
+        "exam":exam,
+        "sessions":sessions,
+    }
+    return render(request, "teachers/new_exam_dashboard.html", context)
   
     
 #dashboard after exams has been taken  
 def examDashboard(request, pk):
+    exam = Exam.objects.get(id = pk)
+    sessions = Session.objects.filter(exam= exam).order_by("-score")
+    context ={
+        "exam":exam,
+        "sessions":sessions,
+        "pk": pk
+    }
     
-    
-    context = {"pk": pk}    
+       
     return render(request, "teachers/exam_dashboard.html", context)
 
 

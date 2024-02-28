@@ -24,7 +24,7 @@ class Exam(models.Model):
     pass_mark = models.FloatField(verbose_name="Pass mark", default=60)
     start_date = models.DateTimeField()
     end_date = models.DateTimeField()
-    status = models.CharField(max_length=25, choices=STATUS, default="Pending")
+    # status = models.CharField(max_length=25, choices=STATUS, default="Pending")
     retake = models.BooleanField( default=False)
     review = models.BooleanField(default=False)
     updated = models.DateTimeField(auto_now=True)
@@ -73,7 +73,7 @@ class Exam(models.Model):
         minutes = int((duration % 3600) // 60)
         seconds = int(duration % 60)
         
-        return f"{str(hours) + 'hr(s): ' if hours > 0 else ''} {str(minutes) + 'min(s): ' if minutes > 0 else ''} {str(seconds) + 'sec(s)' if seconds > 0 else ''}"
+        return f"{str(hours) + 'hr' if hours > 0 else ''} {'s' if hours>1 else ''} {str(minutes) + 'min ' if minutes > 0 else ''} {str(seconds) + 'sec(s)' if seconds > 0 else ''}"
     
     class Meta:
         ordering = [ "created"]

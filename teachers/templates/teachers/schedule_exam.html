@@ -3,7 +3,6 @@
 
 {% block content %}
 
-
     <nav aria-label="breadcrumb" class="main-breadcrumb">
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a href="javascript:void(0)">Home</a></li>
@@ -53,7 +52,6 @@
     </div>
     <div class="card my-3 mx-auto">
 
-
         {% for grade in grades %}
         
         <h3 class="card-head text-center">{{grade}}</h3>
@@ -67,6 +65,7 @@
                     <th scope="col">Duration</th>
                     <th scope="col" >Questions</th>
                     <th  scope="col" >Start Date</th>
+                    <th  scope="col" >End Date</th>
                     <th  scope="col" class= "text-center">STATUS</th>
                     <th  scope="col" class="table-dark text-center align-middle" colspan="3">ACTION</th>
                     {% comment %} <th colspan="2" scope="col">Action</th> {% endcomment %}
@@ -80,9 +79,10 @@
                             <th scope="row">{{forloop.counter}}</th>
                             <td class="user-select-all" style="min-width: 150px;"><a href="{% url "session-dashboard" exam.id %}">{{exam.name}}</a></td>
                             <td>{{exam.subject}}</td>
-                            <td>{{exam.duration }}</td>
+                            <td>{{exam.seconds_to_hms }}</td>
                             <td class= "text-center">{{exam.get_no_question }}</td>
                             <td style="min-width: 180px;">{{exam.start_date }}</td>
+                            <td style="min-width: 180px;">{{exam.end_date }}</td>
                             
                             <td class="text-center 
                                 {% if exam.get_exam_status == "active" %} text-success
