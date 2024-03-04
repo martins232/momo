@@ -3,7 +3,16 @@
 
 {% block additional_head_css %}
 <link rel="stylesheet" href="https://unpkg.com/bootstrap-table@1.22.1/dist/bootstrap-table.min.css">
-
+<style>
+	
+	#nav_status  .nav-link{
+		min-width: 150px;
+	} 
+	#nav_status  .nav-link.active{
+		color: white;
+		background-color: #0d6efd;
+	} 
+</style>
 {% endblock additional_head_css %}
 
 {% block content %}
@@ -32,7 +41,6 @@
                             <td><a href="{% url "student-performance" exam.id %}?student={{session.user.get_full_name}}&id={{session.user.id}}" target="_blank" rel=noopener>{{session.user.get_full_name}}</a></td>
                             <td>{{session.score}}</td>
                         </tr>
-                        
                         {% endfor %}
                     </tbody>
 				</table>
@@ -42,7 +50,7 @@
 		</div>
 	  </div>
 	</div>
-	<div class="accordion-item">
+	{% comment %} <div class="accordion-item">
 	  <h2 class="accordion-header" id="headingTwo">
 		<button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo"  >
 		  Accordion Item #2
@@ -53,7 +61,7 @@
 		  <strong>This is the second item's accordion body.</strong> It is hidden by default, until the collapse plugin adds the appropriate classes that we use to style each element. These classes control the overall appearance, as well as the showing and hiding via CSS transitions. You can modify any of this with custom CSS or overriding our default variables. It's also worth noting that just about any HTML can go within the <code>.accordion-body</code>, though the transition does limit overflow.
 		</div>
 	  </div>
-	</div>
+	</div> {% endcomment %}
 	<div class="accordion-item">
 	  <h2 class="accordion-header" id="headingThree">
 		<button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree"  >
@@ -71,7 +79,7 @@
 			<thead>
 				
 				<tr>
-					<th data-field="question" >Question</th>
+					<th data-field="question">Question</th>
 					<th data-field="pattern" data-formatter="patternFormatter" data-align="center">Answer Pattern</th>
 					<th data-field="details" data-formatter="detailsFormatter" data-align="center">Details</th>
 					<th data-field="difficulty" data-formatter="difficultyFormatter" data-align="center">Difficulty</th>
@@ -154,6 +162,20 @@
 			
 		}
 
+		//function to show options and option choice forloop.counter
+		const option_choice_count =(x) =>{
+			let question_option = ``
+
+			for (let keys in x){
+				
+
+				question_option += `<div class="d-flex border p-1 justify-content-between mb-1">
+					<span> ${keys} </span> ${x[keys]}
+					</div>`
+			}
+			return question_option
+		}
+
 		var  student_detail= document.getElementById("studentDetail")
 		if (student_detail){
 				student_detail.addEventListener('show.bs.modal', event => {
@@ -165,15 +187,17 @@
 					
 					 $(".modal-footer").css("display", "none");
 					 console.log(data_obj)
+					 console.log(data_obj.option_count)
 					 //var obj = JSON.parse(x)
 					 $(".modal-title").text("Question details")
 					 $(".modal-body").html(`
 					
 
 					 <p class="fs-6 text-justify" >${data_obj.question}</p>
-					
+					 
 					 <hr>
-					 <ul class="nav nav-tabs" role="tablist">
+					 ${option_choice_count(data_obj.option_count)}
+					 <ul id="nav_status" class="nav nav-tabs flex-nowrap overflow-scroll " role="tablist">
 						<li class="nav-item">
 							<a class="nav-link active" data-bs-toggle="tab" href="#correct">Correct <span class="badge text-bg-secondary">${data_obj.correct}</span></a>
 						</li>

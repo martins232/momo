@@ -4,6 +4,8 @@ from . forms import StudentRequestForm
 from django.utils.html import format_html
 from django.utils.translation import ngettext
 from django.contrib import messages
+from django.contrib.auth.admin import UserAdmin as DjangoUserAdmin
+
 
 # Register your models here.
 
@@ -136,8 +138,25 @@ class TeacherAdmin(admin.ModelAdmin):
                     delete = obj.delete()
                     self.message_user(request,ngettext("%d teacher role was succesfully declined. Teacher deleted",
                                    "%d teacher role were successfully declined. Objects deleted", delete) % delete[0], level=messages.SUCCESS)
+@admin.register(User)
+class MyUserAdmin(DjangoUserAdmin):
+    list_display = ["name","username", "role"]
+    # list_filter = ("role",)
+    # fieldsets = (
+    #     (None, {'fields': ('username', 'password')}),
+    #     ('Permissions', {'fields': ('is_staff', 'is_active', 'is_superuser', 'groups', 'user_permissions')}),
+    # )
+    
+    
+    def role(self, obj):
+        if obj.is_student != None:
+            return "Student"
+        else:
+            return "Teacher"
+    
+    def name(self, obj):
+        return obj.get_full_name()
 
 admin.site.register(Student, StudentAdmin)
 admin.site.register(Teacher, TeacherAdmin)
-admin.site.register(User)
 admin.site.register(Grade)

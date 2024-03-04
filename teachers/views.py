@@ -1,5 +1,4 @@
 import json
-from operator import le
 from django.shortcuts import render, redirect, get_object_or_404
 from users.models import User, Teacher, Grade
 from main . decorators import teacher
@@ -33,7 +32,7 @@ def userProfile(request):
     context = {
         "user": user,
         "subjects":subjects,
-        "count_course" : len(user.subject_set.all())
+        "count_course" : user.subject_set.all().count()
     }
     return render(request, "teachers/profile.html", context)
 @teacher
@@ -362,18 +361,23 @@ def examDashboardData(request, pk):
         incorrect_student = {}
         unanswered_student = {}
         
-        options = {"A" :question.option_A, "B" :question.option_B, "C" :question.option_C, "D" :question.option_D,}
+        options = {"A" :question.option_A, "B" :question.option_B, "C" :question.option_C, "D" :question.option_D,} #{"A":"........"}
+        #dict to get number of student that chose an option
+        option_choice_nos={question.option_A:0, question.option_B:0, question.option_C:0, question.option_D:0} #{"......":0}
         
         for session in sessions:
-            if session.choices[question.question][0] == "":
+            student_choice = session.choices[question.question][0]
+            if student_choice == "":
                 unanswered_count += 1
                 unanswered_student[str(session.user.id)] = str(session.user.get_full_name())
-            elif session.choices[question.question][0] == options[question.answer]:
-                correct_count +=1
-                correct_student[str(session.user.id)] = str(session.user.get_full_name())
-            elif session.choices[question.question][0] != options[question.answer]:
-                incorrect_count +=1
-                incorrect_student[str(session.user.id)] = session.user.get_full_name()
+            else:
+                option_choice_nos[student_choice]+=1
+                if student_choice == options[question.answer]:
+                    correct_count +=1
+                    correct_student[str(session.user.id)] = str(session.user.get_full_name())
+                if student_choice != options[question.answer]:
+                    incorrect_count +=1
+                    incorrect_student[str(session.user.id)] = session.user.get_full_name()
             
         data.append({
             "question": question.question, 
@@ -382,7 +386,8 @@ def examDashboardData(request, pk):
             "unanswered": unanswered_count,
             "correct_student": correct_student,
             "incorrect_student": incorrect_student,
-            "unanswered_student": unanswered_student
+            "unanswered_student": unanswered_student,
+            "option_count" : option_choice_nos
             })
       
             
@@ -434,7 +439,7 @@ def questionData(request):
         subject_list = list(subject)
     
 
-    length = len(Question.objects.filter(subject__in=subject_list)) #get all the questions by the logged in teacher
+    length = Question.objects.filter(subject__in=subject_list).count() #get all the questions by the logged in teacher
     questions = Question.objects.filter(subject__in=subject_list).filter(Q(subject__name__icontains=search) | Q(question__icontains=search)).values("id", "question","option_A", "option_B","option_C","option_D", "answer", "exam","subject", "subject__name", )
     
     
@@ -442,25 +447,27 @@ def questionData(request):
     
     
     if search:
-        length =  len(questions)
+        length =  questions.count()
         
     if unassigned is not None: # if the teacher wants filter between unassigned  and assigned questions
         unassigned = bool(int(unassigned))
         if unassigned:
             questions = questions.filter(exam__isnull = unassigned)
-            length =  len(questions)
+            length =  questions.count()
         else:
             questions = questions.filter(exam__isnull = unassigned)
-            length =  len(questions) 
+            length =  questions.count()
     
     if exam_id != None and unassigned==False: #to get just assigned topic to a particular exam
         questions = questions.filter(exam = exam_id)
-        length =  len(questions)
+        length =  questions.count()
        
     questions = questions[offset:limit+offset]
     return JsonResponse({"total":length, "offset": offset, "rows":list(questions)})
 
 
+@teacher
+@login_required(login_url="login")
 def allQuestions(request):
     
     
@@ -480,11 +487,13 @@ def is_ajax(request): #check if a call is an ajax call
 def createQuestion(request):  
     if is_ajax(request=request):
         form = QuestionForm(request, request.POST)
-        if form.is_valid:
+        if form.is_valid():
             form.save()
             return JsonResponse({"message":"added"})
         else:
-            return JsonResponse({"message":form.errors})
+            errors = form.errors 
+            return JsonResponse({"message": "Validation errors", "errors": errors})
+            
         
 def deleteQuestion(request):
     if is_ajax(request=request):
@@ -498,11 +507,12 @@ def editQuestion(request):
         id = request.POST.get("id")
         question = Question.objects.get(id=id)
         form = QuestionForm(request, request.POST, instance=question)
-        if form.is_valid:
+        if form.is_valid():
             form.save()
             return JsonResponse({"res":"added"})
         else:
-            return JsonResponse({"res":form.errors})
+            errors = form.errors 
+            return JsonResponse({"message": "Validation errors", "errors": errors})
         
         
         
@@ -518,6 +528,10 @@ def assignQuestionToExam(request, pk):
         ids = json.loads(request.POST.get("id"))
         questions = Question.objects.filter(id__in = ids)
         questions.update(exam=pk)
+        
+        if exam.get_no_question > 0:
+            exam.ready = True
+            exam.save()
         return JsonResponse({"message": f"{len(ids)} Question(s) added to {exam.name}. <br>Total questions: <span class='fw-bold'>{exam.get_no_question}</span>"})
     
 def removeQuestionFromExam(request, pk):
@@ -526,6 +540,12 @@ def removeQuestionFromExam(request, pk):
         ids = json.loads(request.POST.get("id"))
         questions = Question.objects.filter(id__in = ids)
         questions.update(exam=None)
+        
+        if exam.get_no_question < 1:
+            exam.ready = False
+            exam.save()
+        
+        
         return JsonResponse({"message": f"{len(ids)} Question(s) removed from {exam.name}. <br>Total questions: <span class='fw-bold'>{exam.get_no_question}</span>"})
 
 def topicsData(request):
@@ -586,4 +606,4 @@ def deleteTopic(request):
             return JsonResponse({"message":"Something went wrong"})
         
 
-    
+ 

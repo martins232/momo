@@ -57,7 +57,9 @@ INSTALLED_APPS = [
     "crispy_forms",
     "crispy_bootstrap5",
     "django_cleanup",
-    "tinymce",
+    "django_summernote",
+    
+    
     
 ]
 
@@ -172,13 +174,23 @@ MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 # USE_L10N = True
 # USE_TZ = True
 
-TINYMCE_DEFAULT_CONFIG = {
-    # 'height': 360,
-    # 'width': 900,
-    'cleanup_on_startup': True,
-    'custom_undo_redo_levels': 20,
-    'selector': 'textarea',
-    'plugins': 'paste',
-    'paste_as_text': True,
-    'toolbar': 'undo redo | formatselect | bold italic underline backcolor | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | removeformat',
+
+SUMMERNOTE_THEME = 'bs4'
+
+SUMMERNOTE_CONFIG = {
+    
+    'toolbar': [
+            # ['style', ['style']],
+            ['font', ['bold', 'italic', 'underline',"fontname" ]],
+            ['superscript', ['superscript', 'subscript', ]],
+            ['insert', ['link', 'picture',"table"]],
+            ['paragraph', ['paragraph', 'ul', 'ol', 'height']],
+            ['view', ["undo","redo", "fullscreen", "clear", "codeview"]],
+            
+        ],
+    
+    "fontNames": ['Arial', 'Arial Black', 'Comic Sans MS', 'Courier New'],
+    "tabDisable": False
+    
 }
+

@@ -96,9 +96,10 @@
         <!-- Modal body -->
         <div class="modal-body" id="modal-body-confirm">
 
-            <form id="question-data">
+            <form id="question-data" novalidate>
                 {% csrf_token %}
                 {{form | crispy}}
+                
 
 
         </div>
@@ -229,19 +230,17 @@ $($remove.click(function () {
         },
         success: function (success){
             notify("success", "Question(s) deleted")
-			$table.bootstrapTable('remove', {
-				field: 'id',
-				values: getIdSelections()
-			  })
-			  $remove.prop('disabled', true)
-            //$table.bootstrapTable('refresh')
-            const autoCloseElements = [...$(".auto-close")]
-            setTimeout(function () {
-                autoCloseElements.forEach(el => fadeAndSlide(el));
-            }, 5000);
+            //$table.bootstrapTable('remove', {field: 'id',values: getIdSelections()})
+              $table.bootstrapTable("refresh")
+              $remove.prop('disabled', true)
+              //$table.bootstrapTable('refresh')
+              const autoCloseElements = [...$(".auto-close")]
+              setTimeout(function () {
+                  autoCloseElements.forEach(el => fadeAndSlide(el));
+              }, 5000);
         },
         error: function (error){
-            alert("No")
+          notify("danger", "Something went wrong")
         }
     })
   })
@@ -320,31 +319,33 @@ $(document).ready(function(){
 			type: "POST",
 			url : "create-question",
 			data: data_,
-			success: function (success){
-                $("#question-data")[0].reset()
-				
-                //close after adding a question
-                if ($('button[type="submit"]:focus').hasClass('once')){
-                    $(".modal").modal("hide")
-                }
-
-                $table.bootstrapTable('refresh')
-
-                if (success.message == "added"){
-                  	notify("success", "Question added");
-                }else{
-                    notify("danger", "Something went wrong");
-                }
-                //close the alert element
-                const autoCloseElements = [...$(".auto-close")]
-                setTimeout(function () {
-                    autoCloseElements.forEach(el => fadeAndSlide(el));
-                }, 5000);
+			success: function (response){
+          //close after adding a question
+          if ($('button[type="submit"]:focus').hasClass('once')){
+            $(".modal").modal("hide")
+          }
+          if (response.errors) {
+            $("#alert").empty(); // Clear any previous errors
+              var errorMessage = "";
+              for (let keys in response.errors){
+                errorMessage += "<ul><li>" + keys + "</li>" + "<ul><li>" +response.errors[keys] + "</li></ul></ul>";
+              }
+              notify("danger", errorMessage);
+          }else{
+              $("#question-data")[0].reset()
+              $table.bootstrapTable('refresh')
+              notify("success", "Question added");
+          }
+          //close the alert element
+          const autoCloseElements = [...$(".auto-close")]
+          setTimeout(function () {
+              autoCloseElements.forEach(el => fadeAndSlide(el));
+          }, 5000);
 
 
 			},
 			error: function (error){
-				alert("Something went wrong")
+				notify("danger", "Something went wrong")
 			}
 
 		})
@@ -367,18 +368,26 @@ $(document).ready(function(){
       type: "POST",
 			url : "edit-question",
 			data: formDataObj,
-			success: function (success){
-        console.log(formDataObj)
-        
-        notify("success", "Saved successfully")
-        $(".modal").modal("hide")
+			success: function (response){       
+        if (response.errors) {
+          $("#alert").empty(); // Clear any previous errors
+            var errorMessage = "";
+            for (let keys in response.errors){
+              errorMessage += "<ul><li>" + keys + "</li>" + "<ul><li>" +response.errors[keys] + "</li></ul></ul>";
+            }
+            notify("danger", errorMessage);
+        }else{
+          $(".modal").modal("hide")
+            $table.bootstrapTable('refresh')
+            notify("success", "Saved successfully")
+        }
 
         $table.bootstrapTable("collapseAllRows")
         $table.bootstrapTable("refresh")
         const autoCloseElements = [...$(".auto-close")]
         setTimeout(function () {
             autoCloseElements.forEach(el => fadeAndSlide(el));
-        }, 5000);
+        }, 7000);
 
       },
 			error: function (error){
@@ -420,7 +429,7 @@ function notify(color, msg){
 
 function fadeAndSlide(element) {
     const fadeDuration = 500;
-    const slideDuration = 500;
+    const slideDuration = 100;
 
     // Step 1: Fade out the element
     let opacity = 1;

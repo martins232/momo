@@ -1,10 +1,15 @@
 
+from wsgiref.validate import validator
 from django import forms
 from .models import Exam, Question
 from users.models import Grade
 from datetime import date, timedelta, datetime
 from django.core.exceptions import ValidationError
-from tinymce.widgets import TinyMCE
+
+
+
+from django_summernote.fields import SummernoteTextFormField, SummernoteTextField
+from django_summernote.widgets import SummernoteWidget, SummernoteInplaceWidget
 
 
 class ExamForm(forms.ModelForm):
@@ -35,7 +40,7 @@ class ExamForm(forms.ModelForm):
         time_attrs={
             'type':'time',
             "style": "font-size:14px; cursor:pointer",
-            "class": "mt-3 w-25"
+            "class": "mt-3 w-50"
             },
         time_format='%H:%M',
         ))
@@ -53,7 +58,7 @@ class ExamForm(forms.ModelForm):
         time_attrs={
             'type':'time',
             "style": "font-size:14px; cursor:pointer",
-            "class": "mt-3 w-25"
+            "class": "mt-3 w-50"
             },
         time_format='%H:%M',
         ))
@@ -65,13 +70,14 @@ class ExamForm(forms.ModelForm):
         self.fields["retake"].label = "Allow students retake exam"
         self.fields["review"].label = "Allow students view correction after exam"
         self.fields["duration"].initial = "00:60:00"
+        
         # This will work but when the form selects all teachers that have an active session
         # self.fields['teacher'].initial = request.user
         # self.fields['teacher'].widget.attrs['readonly'] = True
         
     class Meta:
         model = Exam
-        exclude = ["teacher"]
+        exclude = ["teacher", "ready"]
         
         help_text={"duration": "Duration (H:M:S)"}
         
@@ -107,7 +113,8 @@ class QuestionForm(forms.ModelForm):
         ("C", "C"),
         ("D", "D"),
     ]
-
+    # question =SummernoteTextField()
+    question =forms.CharField(widget=SummernoteWidget(attrs={'summernote': {'width': '100%', "height":"220px"}}))
     answer = forms.ChoiceField(widget=forms.RadioSelect,
         choices=answer_choice,)   
     
@@ -116,12 +123,12 @@ class QuestionForm(forms.ModelForm):
         model = Question
         exclude = ("exam", 'updated', 'created')
         # widgets = {
-        #     'question': TinyMCE(attrs={'cols': 20, 'rows': 20}),
+        #     'question': SummernoteWidget(),
         # }
         
     def __init__(self,request,  *args, **kwargs):
         super(QuestionForm, self).__init__(*args, **kwargs)
-        self.fields["question"].widget.attrs.update({"rows":5,}) 
+        # self.fields["question"].widget.attrs.update({"rows":5,}) 
         self.fields['subject'].queryset = request.user.subject_set.all()
         self.fields["subject"].widget.attrs.update({'id': 'subject'})
         fields= ('option_A', 'option_B', 'option_C', 'option_D', )
@@ -131,5 +138,7 @@ class QuestionForm(forms.ModelForm):
             "rows":2,
             "style":"border-radius: 9px;"}) 
             
-        
+    # def clean_question(self):
+    #     if len(self.cleaned_data.get("question"))> 10:
+    #         raise validator("I am testing things out bro")
     

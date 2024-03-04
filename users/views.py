@@ -17,7 +17,10 @@ def loginPage(request):
         if user is not None:
             login(request, user)
             messages.success(request, f"Welcome {user}")
-            return redirect("lobby")
+            if request.GET.get("next") is None:
+                return redirect("lobby")
+            else:
+                return redirect(request.GET.get("next")) #if the teacher bookmarked this page
         else:
             messages.error(request, "Username or Password is not correct")
         
@@ -145,5 +148,5 @@ def register(request):
 def accessDenied(request):
     return render(request, "403.html")
 
-def pageNotFound(request):
+def pageNotFound(request, exception):
     return render(request, "404.html")
