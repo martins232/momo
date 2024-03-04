@@ -50,8 +50,10 @@
                         <span class="d-none d-md-inline-block"> START EXAM</span>
                     </a></td>
                   </tr>
-                
+                {% empty%}
+                <tr><td class="text-center" colspan="6">No exam at the moment</td></tr>
                 {% endfor %}
+                
             </tbody>
           </table>
 

@@ -1,3 +1,5 @@
+from email.policy import default
+from enum import unique
 from django.db import models
 from users. models import User, Grade
 from teachers. models import Subject
@@ -16,7 +18,7 @@ STATUS = [
     
 # Create your models here.
 class Exam(models.Model):
-    name = models.CharField(max_length=100)
+    name = models.CharField(max_length=100, unique=True)
     grade = models.ForeignKey(Grade, on_delete=models.SET_NULL, null=True)
     teacher = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, limit_choices_to={"is_teacher":True})
     subject = models.ForeignKey(Subject, on_delete=models.SET_NULL, null=True)
@@ -24,7 +26,7 @@ class Exam(models.Model):
     pass_mark = models.FloatField(verbose_name="Pass mark", default=60)
     start_date = models.DateTimeField()
     end_date = models.DateTimeField()
-    # status = models.CharField(max_length=25, choices=STATUS, default="Pending")
+    ready = models.BooleanField(default=False)
     retake = models.BooleanField( default=False)
     review = models.BooleanField(default=False)
     updated = models.DateTimeField(auto_now=True)
@@ -42,13 +44,13 @@ class Exam(models.Model):
         endExam = timezone.localtime(self.end_date)
 
         if now < startExam:
-            self.status = "pending"
+            return "pending"
             
         if now> startExam  and now< endExam:
-            self.status ="active"
+            return "active"
             
         if now> startExam and now> endExam:
-            self.status= "ended"
+            return "ended"
 
         #####################debuging###############################################
         # print("Current tz: ",timezone.get_current_timezone())
@@ -60,7 +62,7 @@ class Exam(models.Model):
         # print("The Exam end date is UTC: ",self.end_date)
         #####################debuging###############################################
         
-        return f"{self.status}"                 
+                      
                                                     
     @property
     def get_no_question(self):
@@ -129,7 +131,7 @@ class Session(models.Model):
         seconds = int(self.elapsed_time % 60)
         
         
-        return f"{str(hours) + 'h: ' if hours > 0 else ''} {str(minutes) + 'm: ' if minutes > 0 else ''} {str(seconds) + 's' if seconds > 0 else ''}"
+        return f"{str(hours) + 'h ' if hours > 0 else ''} {str(minutes) + 'm: ' if minutes > 0 else ''} {str(seconds) + 's' if seconds > 0 else ''}"
     
     
    

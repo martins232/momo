@@ -59,7 +59,7 @@
             <table class="table table-sm table-hover table-bordered">
                 <thead class="table-secondary">
                   <tr>
-                    <th scope="col">#</th>
+                    <th scope="col"></th>
                     <th scope="col">Name of exam</th>
                     <th scope="col">Subject</th>
                     <th scope="col">Duration</th>
@@ -76,7 +76,9 @@
                     
                         {% if exam.grade == grade %}
                         <tr>
-                            <th scope="row">{{forloop.counter}}</th>
+                            <th scope="row" class="text-danger">{% if exam.ready is False %}
+                                    <i class="fas fa-exclamation-triangle fa-sm"></i>
+                                {% endif %}</th>
                             <td class="user-select-all" style="min-width: 150px;"><a href="{% url "session-dashboard" exam.id %}">{{exam.name}}</a></td>
                             <td>{{exam.subject}}</td>
                             <td>{{exam.seconds_to_hms }}</td>
@@ -85,11 +87,22 @@
                             <td style="min-width: 180px;">{{exam.end_date }}</td>
                             
                             <td class="text-center 
-                                {% if exam.get_exam_status == "active" %} text-success
-                                {% elif exam.get_exam_status == "pending" %} text-warning
-                                {% endif %} ">
+                            {% if exam.get_exam_status == "active" %}text-success
+                            {% elif exam.get_exam_status == "pending" %} text-warning
+                            {% endif %}">
+
+                                
                                     <i class="fas fa-circle fa-sm"></i>
                                     <span class="d-none d-md-inline-block"> {{exam.get_exam_status}}</span>
+                                
+                                {% comment %} {% if exam.get_no_question == 0 %}
+                                    <i class="fas fa-exclamation-triangle fa-sm"></i>
+                                    <span class="d-none d-md-inline-block"> No Question</span>
+                                {% else %}
+                                    <i class="fas fa-circle fa-sm"></i>
+                                    <span class="d-none d-md-inline-block"> {{exam.get_exam_status}}</span>
+                                {% endif %} {% endcomment %}
+                                    
                             </td>
 
                             
