@@ -1,0 +1,28 @@
+{% load static %}
+{% load crispy_forms_tags %}
+
+<form method="POST"  class="js-question-delete-form">
+    <!-- Modal Header -->
+    <div class="modal-header ">
+        <h4 class="modal-title text-center">Delete</h4>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+    </div>
+
+    <!-- Modal body -->
+    <div class="modal-body" id="modal-body-confirm">
+        <p>Are you sure you want to delete the selected question? All of the following question and their related items will be deleted:</p>
+            {% csrf_token %}
+            <ul>
+                {% for question in questions  %}
+                    <li><a href="#">{{question.question | safe}}</a></li>
+                {% endfor %}
+            </ul>
+            
+    </div>
+
+    <!-- Modal footer -->
+    <div class="modal-footer d-flex justify-content-between">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button type="submit" class="btn btn-danger">Delete</button>
+    </div>
+</form>

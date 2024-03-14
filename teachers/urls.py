@@ -8,7 +8,7 @@ urlpatterns = [
     path("exam/", views.scheduledExam, name="scheduled-exam"),
     path("closed-exam/", views.closedExam, name="closed-exam"),
     path("exam/<str:pk>/edit/", views.editExam, name="edit-exam"),
-    path("exam/<str:pk>/delete/", views.deleteExam, name="delete-exam"),
+    path("exam/delete/", views.deleteExam, name="delete-exam"),
     # path("exam/<str:pk>/", views.viewExam, name="view-exam"),
     # path("exam/<str:pk>/question/edit/", views.editQuestion, name="view-question"),
     path("exam/<str:pk>/question/delete/", views.deleteQuestion, name="delete-question"),
@@ -30,6 +30,14 @@ urlpatterns = [
     path("create-question", views.createQuestion, name="create-question"),
     path("delete-question", views.deleteQuestion, name="delete-question"),
     path("edit-question", views.editQuestion, name="edit-question"),
+    
+    
+    #debugging-------------------------------------------
+    path("create-myquestion", views.question_create, name="create-myquestion"),
+    path("edit-myquestion/<str:pk>/", views.question_edit, name="edit-myquestion"),
+    path("delete-myquestion/", views.question_delete, name="delete-myquestion"),
+    #debugging-------------------------------------------
+    
     
     path("session-data/<str:pk>/", views.sessionDashboardData, name="session-data"),
     path("exam-data/<str:pk>/", views.examDashboardData, name="exam-data"),

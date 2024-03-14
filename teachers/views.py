@@ -8,7 +8,7 @@ from exam.forms import ExamForm, QuestionForm
 from django.contrib import messages
 from exam .models import Exam, Question, Session
 from teachers.models import Subject, Topic
-from django.core.exceptions import ObjectDoesNotExist
+from django.core.exceptions import ObjectDoesNotExist,PermissionDenied
 from django.db.models import Q
 from django.db.models.signals import post_save
 from django.dispatch import receiver
@@ -16,12 +16,13 @@ from django.core.paginator import Paginator, EmptyPage
 from django.http.response import JsonResponse
 from django.db.models import Count, Avg
 
-from django.core.serializers import serialize
 
 
 from django.utils import timezone
 
 
+from django.core.serializers import serialize
+from django.template.loader import render_to_string
 
 
 # Create your views here.
@@ -85,7 +86,7 @@ def scheduledExam(request):
     exams = Exam.objects.filter( Q(start_date__gt=timezone.now()) | Q(start_date__lte=timezone.now(), end_date__gt=timezone.now()), teacher=request.user)
     
     #all the classes 
-    grades = Grade.objects.filter(Q(exam__start_date__gt=timezone.now()) | Q(exam__start_date__lte=timezone.now(), exam__end_date__gt=timezone.now()), ).distinct("grade")
+    grades = Grade.objects.filter(Q(exam__start_date__gt=timezone.now()) | Q(exam__start_date__lte=timezone.now(), exam__end_date__gt=timezone.now()), exam__teacher=request.user).distinct()
     if request.method == "POST":
         form = ExamForm(request, request.POST)
         if form.is_valid():
@@ -105,8 +106,9 @@ def scheduledExam(request):
     return render(request, "teachers/schedule_exam.html", context)
 
 def closedExam(request):
-    grades = Grade.objects.filter(Q(exam__end_date__lt=timezone.now())).distinct("grade")
-    exams = Exam.objects.filter(Q(end_date__lt=timezone.now()), teacher=request.user)
+    """Exams that have been completed"""
+    grades = Grade.objects.filter(exam__end_date__lt=timezone.now(), exam__teacher=request.user).distinct()
+    exams = Exam.objects.filter(end_date__lt=timezone.now(), teacher=request.user)
     
     context = {
         "exams": exams,
@@ -126,21 +128,25 @@ def set_exam_teacher_null(sender, instance, **kwargs):
     # # # loop through the exams and set their teacher to null
     for exam in exams:
         exam.teacher = instance.teacher
-        questions =exam.question_set.filter(exam=exam)
         exam.save()
-        for question in questions:
-            question.teacher = instance.teacher
-            question.save()
+        
+        # for question in questions:
+        #     question.teacher = instance.teacher
+        #     question.save()
+        #     print(question)
         
 @teacher
 @login_required(login_url="login")
-def deleteExam(request, pk):
-    exam = get_object_or_404(Exam, id=pk)
-    if request.user != exam.teacher:
-        return redirect("404")
-    exam.delete()
-    messages.add_message(request, messages.SUCCESS, "Exam deleted")
-    return redirect("exam")
+def deleteExam(request):
+    if is_ajax(request=request):
+        id = request.POST.get("id")
+        exam = get_object_or_404(Exam, id=id)
+        exam.delete()
+        return JsonResponse({"message": "deleted"})
+        
+    else:
+        raise PermissionDenied
+        
     
 @teacher
 @login_required(login_url="login")
@@ -153,7 +159,6 @@ def editExam(request, pk):
         form = ExamForm(request, request.POST, instance=exam) 
         if form.is_valid():
             name= form.cleaned_data["name"]
-            print(name)
             form.save()
             messages.add_message(request, messages.SUCCESS, "Exam saved")
             return redirect("scheduled-exam")
@@ -473,10 +478,9 @@ def allQuestions(request):
     
     form = QuestionForm(request)
     subjects = Subject.objects.filter(teacher= request.user)
-    
     context = {
         "form":form,
-        "subjects": subjects
+        "subjects": subjects, 
     }
     
     return render(request, "teachers/all_questions.html", context)
@@ -606,4 +610,59 @@ def deleteTopic(request):
             return JsonResponse({"message":"Something went wrong"})
         
 
- 
+#-------------------------------------------------------------
+def question_create(request):
+    data = dict()
+    
+    form = form = QuestionForm(request, request.POST or None)
+    if request.method == 'POST':
+        if form.is_valid():
+            form.save()
+            data['form_is_valid'] = True
+        else:
+            data['form_is_valid'] = False
+
+    
+    context = {'form': form}
+    data['html_form'] = render_to_string('teachers/includes/create_question.html',context,request=request)
+    return JsonResponse(data)
+
+def question_edit(request, pk):
+    question = Question.objects.get(id=pk)
+    data = dict()
+    
+    form = form = QuestionForm(request, request.POST or None, instance=question)
+    if request.method == 'POST':
+        if form.is_valid():
+            form.save()
+            data['form_is_valid'] = True
+        else:
+            data['form_is_valid'] = False
+
+    
+    context = {'form': form}
+    data['html_form'] = render_to_string('teachers/includes/edit_question.html',context,request=request)
+    return JsonResponse(data)
+
+def question_delete(request):
+    data= dict()
+    
+   
+    # data = quest.delete()
+    
+    
+    if is_ajax(request=request):
+        if request.method == "POST":
+            ids = json.loads(request.POST.get("id"))
+            questions = Question.objects.filter(id__in =ids)
+            deleted_question = questions.delete()
+            print(deleted_question)
+            data["deleted"] = True
+            return JsonResponse(data)
+        else:
+            ids = request.GET.get("id").split(',')
+            questions = Question.objects.filter(id__in =ids)
+            context = {'questions': questions}
+            data['html_form'] = render_to_string('teachers/includes/delete_question.html',context, request=request)
+            return JsonResponse(data)
+    

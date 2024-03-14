@@ -35,7 +35,8 @@ class ExamForm(forms.ModelForm):
             "type":"date",
             # "onkeydown":"return false", # Javascript prevent typing
             # "min": str(date.today())
-            },
+            }
+        ,
        date_format='%Y-%m-%d',      
         time_attrs={
             'type':'time',
@@ -71,6 +72,13 @@ class ExamForm(forms.ModelForm):
         self.fields["review"].label = "Allow students view correction after exam"
         self.fields["duration"].initial = "00:60:00"
         
+        if self.instance:
+            if self.instance.get_exam_status == "active":
+                fields = ('grade',  'subject', 'duration', 'pass_mark', 'start_date','retake', 'review',)
+                for field in fields:
+                    self.fields[field].disabled = True
+                
+                self.fields["end_date"].widget.attrs.update({"min":str(date.today())})
         # This will work but when the form selects all teachers that have an active session
         # self.fields['teacher'].initial = request.user
         # self.fields['teacher'].widget.attrs['readonly'] = True
@@ -80,6 +88,9 @@ class ExamForm(forms.ModelForm):
         exclude = ["teacher", "ready"]
         
         help_text={"duration": "Duration (H:M:S)"}
+    
+    def clean_name(self):  
+        return self.cleaned_data["name"].title()   
         
         
     def clean_duration(self):

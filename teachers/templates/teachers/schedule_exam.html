@@ -2,7 +2,6 @@
 {% load crispy_forms_tags %}
 
 {% block content %}
-
     <nav aria-label="breadcrumb" class="main-breadcrumb">
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a href="javascript:void(0)">Home</a></li>
@@ -110,16 +109,10 @@
                             <td><a href="{% url "view-exam" exam.id %}" class="btn btn-warning btn-sm" ><i class="fas fa-eye"></i></a></td>
                             
                             <td>
-                                <a 
-                                    href="{% if exam.get_exam_status == "pending" %} {% url "edit-exam" exam.id %} {% else %} # {% endif %}" 
-                                    {% if exam.get_exam_status == "active" %} onclick="examActiveMsg('{{exam.name}}')" {% endif %}
-                                    class="btn btn-success btn-sm" ><i class="fas fa-pencil-alt"></i>
-                                </a>
+                                <a href="{% url "edit-exam" exam.id %}" class="btn btn-success btn-sm" ><i class="fas fa-pencil-alt"></i></a>
                             </td>
                             
-                            <td><a href="#" class="btn btn-danger btn-sm delete" data-id="{{exam.id}}" data-name="{{exam.name}}" 
-                                data-url = "{% url "delete-exam" exam.id %}" data-bs-toggle="modal" data-bs-target="#delete_modal">
-                                <i class="fas fa-trash-alt"></i>
+                            <td><a class="btn btn-danger btn-sm deleteBtn" data-id="{{exam.id}}" data-bs-toggle="modal" data-bs-target="#delete"><i class="fas fa-trash-alt"></i>
                             </a></td>
                           </tr>
                         {% endif %}
@@ -190,15 +183,54 @@
         }, fadeDuration / 10);
       }
     // *****************************************************************************************************************
+    
+    
 
 
-    function examActiveMsg(examName){
-        notify("warning", `${examName} cannot be edited because it is already active`)
-        const autoCloseElements = [...$(".auto-close")]
+    let delBtns = $(".deleteBtn")
+    let id
+
+    delBtns.on("click", function(event){
+        id = event.currentTarget.getAttribute("data-id")
+        
+    })
+
+    let form = $("#deleteForm")
+
+    form.on("submit" ,function(event){
+        event.preventDefault()
+        let csrf_token = $("#deleteForm input[type=hidden]").val()
+        data ={csrfmiddlewaretoken: csrf_token, id :id}
+        $.ajax({
+            type:"POST",
+            url: window.origin+`/teacher/exam/delete/`,
+            data: data,
+            success: function (response){
+                if(response.message =="deleted"){
+                        // Redirect to the same page with a query parameter to indicate success
+                        window.location.href = window.origin+"/teacher/exam/?deleted=true";                                    
+                }
+            },
+            error: function(error){
+                console.log(error)
+            }
+        })
+        
+    })
+
+
+// Code to execute after refresh, only if the deletion was successful
+$(document).ready(function () {
+    if (window.location.search.includes("deleted=true")) {
+        notify("success", "Exam deleted");
+
+        const autoCloseElements = [...$(".auto-close")];
         setTimeout(function () {
             autoCloseElements.forEach(el => fadeAndSlide(el));
         }, 5000);
     }
+});
+    
 </script>
 
 {% endblock js %}

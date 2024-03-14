@@ -87,12 +87,12 @@
 </div>
 
 <div class="row mt-2 ms-1 me-1">
-    <div class="col-4 col-md-2" style="border: 1px solid black;">
+    {% comment %} <div class="col-4 col-md-2" style="border: 1px solid black;">
         <div class=" py-2">
-            <h6>Time Spent</h6>
-            <p class="fw-bold">25 <br> <span class="text-secondary">in {{exam.get_no_question}}</span></p>
+            <h6>Attempts</h6>
+            <p class="fw-bold"> <br> <span class="text-secondary"> {% if exam.retake is not True %}1 {% else %} {{session.attempts}}{% endif %}</span></p>
         </div>
-    </div>
+    </div> {% endcomment %}
     <div class="col-4 col-md-2" style="border: 1px solid black;">
         <div class=" py-2">
             <h6>Correct</h6>
@@ -261,26 +261,24 @@
 
 <script>
     var max = "{{exam.get_no_question}}"
-    var xValues = ["Total", "Correct"];
-    var yValues = ["{{exam.get_no_question}}", "{{no_correct}}" ];
-    var barColors = ["Blue", "green"];
+
 
     new Chart("myChart", {
         type: "bar",
     data: {
-        labels: xValues,
+        labels: ["Total question", "Correct answers"], //Y-axis label
         datasets: [{
-        backgroundColor: barColors,
-        data: yValues
+            label: 'Total questions vs Correct answer', //labelling the graph
+            backgroundColor: ["#0d6efd", "green"], //colors for the bars
+            data: ["{{exam.get_no_question}}", "{{no_correct}}" ] //data to plot the graph
         }]
     },
     options: {
-        maintainAspectRatio: false,
-        legend: {display: true},
+        maintainAspectRatio: false, //make it fit into the box
+        legend: {display: false}, //display legend on the graph
         scales: {
-          xAxes: [{ticks: {min: 0, max:15}}],
-          yAxes: [{ticks: {min: 0, max:15}}],
-        //   yAxes: [{ticks: {min: 6, max:16}}],
+          yAxes: [{ticks: {min: 0, max:{{exam.get_no_question}}}}],
+          
         }
     }
     });

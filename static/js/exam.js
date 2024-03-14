@@ -400,13 +400,27 @@ let correction = () =>{
 
 
 
-warning = 3
+warning = 4
+function getOrdinal(n) {
+	let ord = 'th';
+  
+	if (n % 10 == 1 && n % 100 != 11){
+	  ord = 'st';
+	}
+	else if (n % 10 == 2 && n % 100 != 12){
+	  ord = 'nd';
+	}
+	else if (n % 10 == 3 && n % 100 != 13){
+	  ord = 'rd';
+	}
+	return ord;
+  }
+ 
 let warningFunc = () =>{
 	try {
 		document.getElementById("warning").innerHTML = `
 	  <div class="alert alert-danger">
-	  <strong>Warning</strong> You are not to leave this site, while in session. <br> You are on your ${warning} warning. The final warning shall 
-	  result in an abrupt termination of this session.
+	  <strong><i class="fas fa-exclamation-triangle"></i></strong>: This is the <strong>${warning>1 ? warning : ""}${warning>1 ? getOrdinal(warning) : "last"}</strong> warning. Continued session inactivity or attempts to leave this page will result in termination of your current session.
 	</div> 
 	  `
 	} catch (error) {

@@ -79,9 +79,22 @@ class StudentAdmin(admin.ModelAdmin):
 class TeacherAdmin(admin.ModelAdmin):
     actions = ["mark_pending", "mark_approved", "mark_rejected", "remove_rejected"] 
     list_filter = ["status"]
-    list_display = ('name', 'email',"phone", 'gender', 'image', "action", "_") #Tables you will see
+    list_display = ( 'name', 'email',"phone", 'gender', 'image', "action", "_","status",) #Tables you will see
+    list_display_links = None
+    list_editable = ["status"]
     fields =['email',"phone", 'gender', 'image', "status", ] # forms that could be filled in the admin
     search_fields = ["first_name", "last_name","email", "status"]
+    
+    
+    def save_model(self, request, obj, form, change):
+        if obj.status == "Approved":
+            obj.user.is_staff = True
+            obj.user.save()
+        else:
+            obj.user.is_staff = False
+            obj.user.save()
+        super().save_model(request, obj, form, change)
+
     def name(self, obj):
         return obj.user.first_name + " " + obj.user.last_name
 
@@ -115,11 +128,20 @@ class TeacherAdmin(admin.ModelAdmin):
     @admin.action(description="Mark selected teacher as approved")
     def mark_approved(self, request, queryset):
         queryset.update(status="Approved")
+        for obj in queryset:
+            # make the admin area accessible to the teachers
+            obj.user.is_staff= True
+            obj.user.save()
         self.message_user(request, "Teacher(s) approved", level=messages.SUCCESS)
+        
         
     @admin.action(description="Mark selected teacher as rejected")
     def mark_rejected(self, request, queryset):
         queryset.update(status="Rejected")
+        for obj in queryset:
+            # make the admin area not accessible to the teachers
+            obj.user.is_staff= False
+            obj.user.save()
         self.message_user(request, "Teacher(s) rejected", level=messages.SUCCESS)
     @admin.action(description="Remove rejected teachers")
     def remove_rejected(self, request, queryset):
@@ -141,11 +163,12 @@ class TeacherAdmin(admin.ModelAdmin):
 @admin.register(User)
 class MyUserAdmin(DjangoUserAdmin):
     list_display = ["name","username", "role"]
-    # list_filter = ("role",)
-    # fieldsets = (
-    #     (None, {'fields': ('username', 'password')}),
-    #     ('Permissions', {'fields': ('is_staff', 'is_active', 'is_superuser', 'groups', 'user_permissions')}),
-    # )
+    list_filter = ("is_teacher",)
+    fieldsets = (
+        (None, {'fields': [("first_name", "last_name"),'username', 'password']}),
+        ('Permissions', {'fields': ('is_staff', 'is_active', 'is_superuser', 'groups', 'user_permissions')}),
+        ("Important dates", {"fields":("date_joined", "last_login")})
+    )
     
     
     def role(self, obj):

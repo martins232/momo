@@ -11,6 +11,9 @@
     </ol>
 </nav>
 
+<div id="alert">
+    {% comment %} notification {% endcomment %}
+</div>
 
 
 {% for grade in grades %}
@@ -64,9 +67,11 @@
                             </a>
                         </td>
                         
-                        <td><a href="#" class="btn btn-danger btn-sm delete" data-id="{{exam.id}}" data-name="{{exam.name}}" 
+                        {% comment %} <td><a href="#" class="btn btn-danger btn-sm delete" data-id="{{exam.id}}" data-name="{{exam.name}}" 
                             data-url = "{% url "delete-exam" exam.id %}" data-bs-toggle="modal" data-bs-target="#delete_modal">
                             <i class="fas fa-trash-alt"></i>
+                        </a></td> {% endcomment %}
+                        <td><a class="btn btn-danger btn-sm deleteBtn" data-id="{{exam.id}}" data-bs-toggle="modal" data-bs-target="#delete"><i class="fas fa-trash-alt"></i>
                         </a></td>
                   </tr>
                 {% endif %}
@@ -77,4 +82,95 @@
 
 </div>
 {% endfor %}
+{% include "modal.html" %}
 {% endblock content %}
+
+{% block js %}
+    <script>
+        function notify(color, msg){
+            $("#alert").html(`
+                <div class="auto-close alert alert-${color} alert-dismissible fade show py-1" role="alert" >
+                    ${msg}
+                </div>
+            `)
+        }
+    
+    
+        function fadeAndSlide(element) {
+            const fadeDuration = 500;
+            const slideDuration = 500;
+        
+            // Step 1: Fade out the element
+            let opacity = 1;
+            const fadeInterval = setInterval(function () {
+              if (opacity > 0) {
+                opacity -= 0.1;
+                element.style.opacity = opacity;
+              } else {
+                clearInterval(fadeInterval);
+                // Step 2: Slide up the element
+                let height = element.offsetHeight;
+                const slideInterval = setInterval(function () {
+                  if (height > 0) {
+                    height -= 10;
+                    element.style.height = height + "px";
+                  } else {
+                    clearInterval(slideInterval);
+                    // Step 3: Remove the element from the DOM
+                    element.parentNode.removeChild(element);
+                  }
+                }, slideDuration / 10);
+              }
+            }, fadeDuration / 10);
+          }
+        // *****************************************************************************************************************
+        
+        
+    
+    
+        let delBtns = $(".deleteBtn")
+        let id
+    
+        delBtns.on("click", function(event){
+            id = event.currentTarget.getAttribute("data-id")
+            
+        })
+    
+        let form = $("#deleteForm")
+    
+        form.on("submit" ,function(event){
+            event.preventDefault()
+            let csrf_token = $("#deleteForm input[type=hidden]").val()
+            data ={csrfmiddlewaretoken: csrf_token, id :id}
+            $.ajax({
+                type:"POST",
+                url: window.origin+`/teacher/exam/delete/`,
+                data: data,
+                success: function (response){
+                    if(response.message =="deleted"){
+                            // Redirect to the same page with a query parameter to indicate success
+                            window.location.href = window.origin+"?deleted=true";                                    
+                    }
+                },
+                error: function(error){
+                    console.log(error)
+                }
+            })
+            
+        })
+    
+    
+    // Code to execute after refresh, only if the deletion was successful
+    $(document).ready(function () {
+        if (window.location.search.includes("deleted=true")) {
+            notify("success", "Exam deleted");
+    
+            const autoCloseElements = [...$(".auto-close")];
+            setTimeout(function () {
+                autoCloseElements.forEach(el => fadeAndSlide(el));
+            }, 5000);
+        }
+    });
+        
+    </script>
+{% endblock js %}
