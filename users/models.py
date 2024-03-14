@@ -63,3 +63,8 @@ class Teacher(models.Model):
     
     def __str__(self):
         return self.user.username
+    
+    # def save(self, *args, **kwargs):
+    #     if self.status == "Approved":
+    #         self.user.is_staff = True
+    #     super(Teacher, self).save(*args, **kwargs)

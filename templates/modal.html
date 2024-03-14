@@ -1,23 +1,25 @@
-<div class="modal" id="{{type_of_modal}}">
+<div class="modal" id="{{type_of_modal |default:"delete"}}">
     <div class="modal-dialog modal-dialog-scrollable">
       <div class="modal-content">
   
         <!-- Modal Header -->
         <div class="modal-header ">
-          <h4 class="modal-title text-center">Are you sure?</h4>
+          <h4 class="modal-title text-center">Delete</h4>
           <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
         </div>
   
         <!-- Modal body -->
         <div class="modal-body" id="modal-body-confirm">
-         
+            <p>{{message | default:"Are you sure you want to delete?"}}</p>
         </div>
   
         <!-- Modal footer -->
         <div class="modal-footer">
               <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-          
-              <button type="submit" class="btn btn-danger" id="confirmDelete">Delete</button>
+              <form id="deleteForm">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-danger" id="confirmDelete">Delete</button>
+              </form>
           
         </div>
   

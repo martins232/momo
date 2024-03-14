@@ -1,9 +1,9 @@
-from email.policy import default
-from enum import unique
 from django.db import models
 from users. models import User, Grade
 from teachers. models import Subject
 from django.utils import timezone
+
+from django.contrib import admin
 
 
 
@@ -36,6 +36,8 @@ class Exam(models.Model):
     
     def __str__(self):
         return self.name
+    
+    
     
     @property
     def get_exam_status(self):
@@ -103,7 +105,8 @@ class Question(models.Model):
     
 class Session(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    exam = models.ForeignKey(Exam, on_delete=models.SET_NULL, null=True)
+    exam = models.ForeignKey(Exam, on_delete=models.CASCADE)
+    # exam = models.ForeignKey(Exam, on_delete=models.SET_NULL, null=True)
     score = models.FloatField(default=0.0)
     elapsed_time = models.FloatField(null=True)
     attempts = models.IntegerField(default=0)

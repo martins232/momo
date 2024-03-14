@@ -64,6 +64,7 @@ def editStudentProfileImage(request, pk):
     return render(request, "teachers/image.html", context)
 
 def exams(request):
+    """Exams that are ready and students are eligible to see and write"""
     exams = Exam.objects.filter(Q(start_date__lte=timezone.now(), end_date__gt=timezone.now()), ready=True, grade=request.user.student.grade).order_by("end_date")
     
      
