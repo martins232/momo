@@ -29,7 +29,7 @@ class UserRegistrationForm(UserCreationForm):
         min_length=3,
         max_length=50,
         # required=False,
-        validators=[RegexValidator(r"^[a-zA-Z]*$", message="Only letters are allowed")], 
+        validators=[RegexValidator(r"^[a-zA-Z]*$", message="Only letters and numbers are allowed")], 
         error_messages= {"required": "Firstname cannot be empty"},
         widget=forms.TextInput(attrs={
             "placeholder":"Enter First name",
@@ -42,7 +42,7 @@ class UserRegistrationForm(UserCreationForm):
         min_length=3,
         max_length=50,
         # required=False,
-        validators=[RegexValidator(r"^[a-zA-Z]*$", message="Only letters are allowed")], 
+        validators=[RegexValidator(r"^[a-zA-Z]*$", message="Only letters and numbers are allowed")], 
         error_messages= {"required": "Lastname cannot be empty"},
         widget=forms.TextInput(attrs={
             "placeholder":"Enter Last name",

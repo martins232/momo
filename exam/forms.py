@@ -71,6 +71,7 @@ class ExamForm(forms.ModelForm):
         self.fields["retake"].label = "Allow students retake exam"
         self.fields["review"].label = "Allow students view correction after exam"
         self.fields["duration"].initial = "00:60:00"
+        self.fields["name"].widget.attrs.update({"placeholder":"Enter exam name","style": "text-transform: capitalize;"})
         
         if self.instance:
             if self.instance.get_exam_status == "active":

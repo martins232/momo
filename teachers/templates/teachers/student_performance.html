@@ -72,7 +72,7 @@
                 <div class="card" >
                     <div class="card-header"><h4>Answered vs Not answered</h4></div>
                     <div class="card-body" style="height: 250px;">
-                        <canvas id="myChart"></canvas>
+                        <canvas id="myChart"><p>Your browser doesn't suppport canvas</p></canvas>
                     </div>
                 </div>
             </div>
@@ -143,7 +143,7 @@
             {% for data in data_ %}
             <tr>
                 <th scope="row">{{forloop.counter}}</th>
-                <td >{{data.question}}</td>
+                <td >{{data.question | truncatewords_html:10 | safe}}</td>
                 <td class="text-center"> <span class="btn seeDetails" data-bs-toggle="modal" data-bs-target="#staticBackdrop"
                         data-question = "{{data.question}}"
                         data-no = "{{forloop.counter}}"
@@ -269,11 +269,13 @@
         labels: ["Total question", "Correct answers"], //Y-axis label
         datasets: [{
             label: 'Total questions vs Correct answer', //labelling the graph
-            backgroundColor: ["#0d6efd", "green"], //colors for the bars
-            data: ["{{exam.get_no_question}}", "{{no_correct}}" ] //data to plot the graph
+            backgroundColor: ["#0d6efd80", "#00FF0080"], //colors for the bars
+            data: ["{{exam.get_no_question}}", "{{no_correct}}" ], //data to plot the graph
+            barPercentage: .7
         }]
     },
     options: {
+        
         maintainAspectRatio: false, //make it fit into the box
         legend: {display: false}, //display legend on the graph
         scales: {
