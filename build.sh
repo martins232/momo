@@ -12,7 +12,10 @@ python manage.py collectstatic --no-input
 
 # Create Django superuser if the CREATE_SUPERUSER environment variable is set to True
 # Create Django superuser with hardcoded credentials (for development only)
-python manage.py createsuperuser --username mekus --email mekus@gmail.com --password 123
+if [[ $CREATE_SUPERUSER ]];
+then
+  python manage.py createsuperuser --no-input
+fi
 
 # Apply database migrations
 python manage.py migrate
