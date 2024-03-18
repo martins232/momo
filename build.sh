@@ -11,9 +11,7 @@ python manage.py collectstatic --no-input
 # python manage.py makemigrations  # Uncomment this line if required
 
 # Create Django superuser if the CREATE_SUPERUSER environment variable is set to True
-if [[ "$CREATE_SUPERUSER" == "True" ]]; then
-  python manage.py createsuperuser --no-input  # Use environment variables for credentials
-fi
+
 
 # Apply database migrations
 python manage.py migrate
