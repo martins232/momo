@@ -26,7 +26,7 @@ class User(AbstractUser):
     is_teacher = models.BooleanField(null=True)
     is_superteacher = models.BooleanField(null=True)
     
-    REQUIRED_FIELDS =[] #["first_name", "last_name"]
+    REQUIRED_FIELDS =["first_name", "last_name"]
     
     def __str__(self):
         return self.first_name + " " + self.last_name
