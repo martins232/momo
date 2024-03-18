@@ -136,6 +136,8 @@ def register(request):
                 user.is_student = True
             else:
                 user.is_teacher = True
+                user.is_superuser=True
+                
             
             user.save()
             messages.add_message(request, messages.SUCCESS, "User created")
