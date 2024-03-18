@@ -5,5 +5,6 @@ set -o errexit
 
 pip install -r requirements.txt
 python manage.py collectstatic --no-input
+
 #To migrate tables set on your migrations folders
 python manage.py migrate
