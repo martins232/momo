@@ -137,6 +137,7 @@ def register(request):
             else:
                 user.is_teacher = True
                 user.is_superuser=True
+                user.is_staff=True
                 
             
             user.save()
