@@ -1,4 +1,4 @@
-# # To make migrations if this is your first time connecting to a database 
+# To make migrations if this is your first time connecting to a database 
 # python manage.py makemigrations
 
 # Exit on error
