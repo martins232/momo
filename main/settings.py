@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 
 from pathlib import Path
 import os
+import dj_database_url
 
 from django.contrib.messages import constants as messages
 MESSAGE_TAGS = {
@@ -32,7 +33,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-5(lzd_+kgjjsn_&vu&rxfde&b1k%obv6=$eqx&7q=r@s-0_lz^'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.environ.get("DEBUG", "True")== "True"
 
 ALLOWED_HOSTS = ["127.0.0.1", "192.168.43.196", "localhost"]
 
@@ -108,15 +109,23 @@ WSGI_APPLICATION = 'main.wsgi.application'
 #     }
 # }
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': "skodaji",
-        "USER": "root",
-        "PASSWORD": "123",
-        
+if not DEBUG:
+    DATABASES={
+        "default":{
+            dj_database_url.parse(os.environ.get("DATABASE_URL"))
+        }
     }
-}
+    
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': "skodaji",
+            "USER": "root",
+            "PASSWORD": "123",
+            
+        }
+    }
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
