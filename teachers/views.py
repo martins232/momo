@@ -12,7 +12,7 @@ from django.core.exceptions import ObjectDoesNotExist,PermissionDenied
 from django.db.models import Q
 from django.db.models.signals import post_save
 from django.dispatch import receiver
-from django.core.paginator import Paginator, EmptyPage
+
 from django.http.response import JsonResponse
 from django.db.models import Count, Avg
 
@@ -21,7 +21,7 @@ from django.db.models import Count, Avg
 from django.utils import timezone
 
 
-from django.core.serializers import serialize
+
 from django.template.loader import render_to_string
 
 
@@ -170,63 +170,7 @@ def editExam(request, pk):
     return render(request, "teachers/edit.html", context) 
 
 
-# @teacher
-# @login_required(login_url="login")
-# def viewExam(request, pk):
-#     try:
-#         exam = Exam.objects.get(id=pk)
-#         questions= exam.question_set.all()
-#     except ObjectDoesNotExist:
-#         return redirect("404")
-    
-#     if request.user != exam.teacher:
-#         return redirect("404")
-    
-    
-#     form = QuestionForm(request, request.POST or None)
-    
-#     if request.method == "POST":
-#         form = QuestionForm(request, request.POST)
-#         if form.is_valid():
-#            question = form.save(commit=False)
-#            question.subject = exam.subject
-#            question.exam = exam
-#            question.save()
-#            return redirect("view-exam", pk=exam.id)
-#         else:
-#             print(form.errors)
-        
-        
-    
-#     context = {
-#         "exam": exam,
-#         "form": form,
-#         "questions":questions
-#     }
-#     return render(request, "teachers/view_exam.html", context)
-# @teacher
-# @login_required(login_url="login")
-# def editQuestion(request, pk):
-#     try:
-#         question= Question.objects.get(id=pk)
-#     except ObjectDoesNotExist:
-#         return redirect("404")
-    
-#     form = QuestionForm(instance=question)
-    
-#     if request.method == "POST":
-#         form = QuestionForm(request.POST, instance=question) 
-#         if form.is_valid():
-#             form.save()
-#             messages.add_message(request, messages.SUCCESS, "Exam saved")
-#             # return redirect(request.META.get('HTTP_REFERER', '/'))
-#             return redirect("view-exam", pk = question.exam.id)
-        
-#     context = {
-#         "form": form,
-#         "obj_name": "QUESTION"
-#     }  
-#     return render(request, "teachers/edit.html", context) 
+
     
 
 @teacher 
