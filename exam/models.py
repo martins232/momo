@@ -1,3 +1,4 @@
+from email.policy import default
 from django.db import models
 from users. models import User, Grade
 from teachers. models import Subject
@@ -105,7 +106,7 @@ class Question(models.Model):
     
 class Session(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    exam = models.ForeignKey(Exam, on_delete=models.CASCADE)
+    exam = models.ForeignKey(Exam, on_delete=models.CASCADE, default=1)
     # exam = models.ForeignKey(Exam, on_delete=models.SET_NULL, null=True)
     score = models.FloatField(default=0.0)
     elapsed_time = models.FloatField(null=True)
