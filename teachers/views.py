@@ -23,7 +23,7 @@ from django.utils import timezone
 
 
 from django.template.loader import render_to_string
-
+from django.views.decorators.cache import cache_page
 
 # Create your views here.
 @login_required(login_url="login")
@@ -389,7 +389,7 @@ def questionData(request):
     
 
     length = Question.objects.filter(subject__in=subject_list).count() #get all the questions by the logged in teacher
-    questions = Question.objects.filter(subject__in=subject_list).filter(Q(subject__name__icontains=search) | Q(question__icontains=search)).values("id", "question","option_A", "option_B","option_C","option_D", "answer", "exam","subject", "subject__name", )
+    questions = Question.objects.filter(subject__in=subject_list).filter(Q(subject__name__icontains=search) | Q(question__icontains=search)).values("id", "question","option_A", "option_B","option_C","option_D", "answer", "exam","exam__name","subject", "subject__name", )
     
     
     
@@ -555,6 +555,7 @@ def deleteTopic(request):
         
 
 #-------------------------------------------------------------
+@cache_page(60*15)
 def question_create(request):
     data = dict()
     
@@ -571,6 +572,7 @@ def question_create(request):
     data['html_form'] = render_to_string('teachers/includes/create_question.html',context,request=request)
     return JsonResponse(data)
 
+@cache_page(60*15)
 def question_edit(request, pk):
     question = Question.objects.get(id=pk)
     data = dict()

@@ -87,8 +87,8 @@
     <tr>
       <th data-field="check" data-checkbox="true"></th>
       <th data-field="#" data-formatter="numberingFormatter">#</th>
-      <th data-field="question">Question</th>
-      <th data-field="exam">Exam</th>
+      <th data-field="question" data-cell-style="questionCellStyle">Question</th>
+      <th data-field="exam__name" data-cell-style="examCellStyle">Exam</th>
       <th data-field="answer">Answer</th>
       <th data-field="subject__name" >Subject</th>
       <th data-field="operate" data-formatter="operateFormatter"   data-events="operateEvents" data-align="center"></th> 
@@ -113,7 +113,7 @@
 <script src="https://unpkg.com/bootstrap-table@1.22.2/dist/bootstrap-table.min.js"></script>
 
 
-<script src="{% static "js/questions.js" %}?kite=1234122" defer></script>
+<script src="{% static "js/questions.js" %}?_=1234122" defer></script>
 
 
 {% endblock js %}

@@ -293,3 +293,22 @@ function fadeAndSlide(element) {
   }, fadeDuration / 10);
 }
 // *****************************************************************************************************************
+
+
+
+function examCellStyle(value, row, index) {
+  
+  return {
+    css: {
+      "min-width": "150px"
+    },
+    // classes: "text-center"
+  }
+}
+function questionCellStyle(value, row, index) {
+  return {
+    css: {
+      "min-width": "300px"
+    }
+  }
+}
