@@ -1,7 +1,9 @@
+from urllib import request
 from django.shortcuts import render, redirect
 from main.decorators import teacher
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from main.decorators import student, teacher
 from . forms import *
 from . models import User, Student
 from django.contrib.auth import authenticate, login, logout
@@ -32,6 +34,7 @@ def loginPage(request):
 def logoutUser(request):
     logout(request)
     return redirect("login")
+
 
 @login_required(login_url="login")
 def lobby(request):

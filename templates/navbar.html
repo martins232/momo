@@ -1,7 +1,7 @@
 {% load static %}
 <nav class="sb-topnav navbar navbar-expand navbar-dark bg-dark"> 
     <!-- Navbar Brand-->
-    <a class="navbar-brand ps-3"  {% if request.user.is_teacher %} href="{% url "home" %}" {% endif %}><img src="{% static "images/logo.svg" %}" alt="Logo" style="width:65%;" ></a>
+    <a class="navbar-brand ps-3"  ><img src="{% static "images/logo.svg" %}" alt="Logo" style="width:65%;" ></a>
     <!-- Sidebar Toggle-->
     <button class="btn btn-link btn-sm order-1 order-lg-0 me-4 me-lg-0" id="sidebarToggle" href="#!"><i class="fas fa-bars"></i></button>
     <!-- Navbar Search-->
@@ -18,8 +18,8 @@
     <a href="#" class=" position-relative me-2 mt-2 text-secondary">
         <i class="fas fa-bell fa-2x"></i>
         <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
-          1
-          <span class="visually-hidden">unread messages</span>
+          10
+          <span class="visually-hidden">unread messagessss</span>
         </span>
     </a>                                                
     {% endif %}

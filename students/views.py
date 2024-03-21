@@ -13,12 +13,16 @@ from django.core.exceptions import PermissionDenied
 from django.utils import timezone
 from django.db.models import Q
 
+from django.contrib.auth.decorators import login_required
+from main.decorators import student
+
 
 
 
 
 # Create your views here.
-
+@student
+@login_required
 def profile(request):
     user = User.objects.get(username = request.user.username)
     context = {
@@ -29,6 +33,8 @@ def profile(request):
     }
     return render(request, "students/profile.html", context)
 
+@student
+@login_required
 def editProfile(request, pk):
     user = User.objects.get(id=pk)
     p_form = UserUpdateForm(request, instance = user,)
@@ -49,6 +55,8 @@ def editProfile(request, pk):
     }
     return render(request, "students/edit_profile.html", context)
 
+@student
+@login_required
 def editStudentProfileImage(request, pk):
     student = Student.objects.get(id=pk)
     form = ChangeProfilePicture(instance=student)
@@ -63,6 +71,8 @@ def editStudentProfileImage(request, pk):
     
     return render(request, "teachers/image.html", context)
 
+@student
+@login_required
 def exams(request):
     """Exams that are ready and students are eligible to see and write"""
     exams = Exam.objects.filter(Q(start_date__lte=timezone.now(), end_date__gt=timezone.now()), ready=True, grade=request.user.student.grade).order_by("end_date")
@@ -73,6 +83,8 @@ def exams(request):
     }
     return render(request, "students/available_exam.html", context)
 
+@student
+@login_required
 def session(request):  #this is the exam page
     if request.method == "POST":  #if the student clicks the start button on the modal in the available exam page
         value = request.POST.get("exam")
@@ -194,7 +206,10 @@ def session_save(request, pk):
            # return JsonResponse({"pass": False, "score": score_, "result":results}) # create a json response for this user to display data
     else:
         raise PermissionDenied
-    
+
+
+@student
+@login_required  
 def examResult(request):
     return render(request, "students/exam_result.html")
                 
