@@ -415,20 +415,6 @@ def questionData(request):
     return JsonResponse({"total":length, "offset": offset, "rows":list(questions)})
 
 
-@teacher
-@login_required(login_url="login")
-def allQuestions(request):
-    
-    
-    form = QuestionForm(request)
-    subjects = Subject.objects.filter(teacher= request.user)
-    context = {
-        "form":form,
-        "subjects": subjects, 
-    }
-    
-    return render(request, "teachers/all_questions.html", context)
-
 def is_ajax(request): #check if a call is an ajax call
     return request.META.get('HTTP_X_REQUESTED_WITH') == 'XMLHttpRequest'
 
@@ -555,6 +541,20 @@ def deleteTopic(request):
         
 
 #-------------------------------------------------------------
+@teacher
+@login_required(login_url="login")
+def allQuestions(request):
+    
+    
+    form = QuestionForm(request)
+    subjects = Subject.objects.filter(teacher= request.user)
+    context = {
+        "form":form,
+        "subjects": subjects, 
+    }
+    
+    return render(request, "teachers/all_questions.html", context)
+
 @cache_page(60*15)
 def question_create(request):
     data = dict()
