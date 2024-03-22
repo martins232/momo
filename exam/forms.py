@@ -10,6 +10,7 @@ from django.core.exceptions import ValidationError
 
 from django_summernote.fields import SummernoteTextFormField, SummernoteTextField
 from django_summernote.widgets import SummernoteWidget, SummernoteInplaceWidget
+from django_ckeditor_5.widgets import CKEditor5Widget
 
 
 class ExamForm(forms.ModelForm):
@@ -135,12 +136,18 @@ class QuestionForm(forms.ModelForm):
         model = Question
         exclude = ("exam", 'updated', 'created')
         # widgets = {
+        #       "text": CKEditor5Widget(
+        #           attrs={"class": "django_ckeditor_5"}, config_name="extends"
+        #       )
+        #   }
+        # widgets = {
         #     'question': SummernoteWidget(),
         # }
         
     def __init__(self,request,  *args, **kwargs):
         super(QuestionForm, self).__init__(*args, **kwargs)
-        self.fields["question"].widget.attrs.update({"rows":5,}) 
+        # self.fields["question"].widget.attrs.update({"rows":5,}) 
+        self.fields["question"].required = False
         self.fields['subject'].queryset = request.user.subject_set.all()
         self.fields["subject"].widget.attrs.update({'id': 'subject'})
         fields= ('option_A', 'option_B', 'option_C', 'option_D', )

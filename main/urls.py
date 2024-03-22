@@ -17,6 +17,7 @@ urlpatterns = [
     path("teacher/", include("teachers.urls")),
     path("student/", include("students.urls")),
     path('summernote/', include('django_summernote.urls')),
+    path("ckeditor5/", include('django_ckeditor_5.urls'), name="ck_editor_5_upload_file"),
 ]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 admin.site.site_header  =  "Skodaji Admin"  

@@ -9,7 +9,7 @@ from django.contrib import admin
 
 
 from datetime import date
-
+from django_ckeditor_5.fields import CKEditor5Field
   
 
 STATUS = [
@@ -88,7 +88,8 @@ class Question(models.Model):
     # teacher = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, limit_choices_to={"is_teacher":True})
     subject = models.ForeignKey(Subject, on_delete=models.RESTRICT, blank=False)
     exam = models.ForeignKey(Exam, on_delete=models.SET_NULL, null=True, blank=True)
-    question = models.TextField()
+    question = CKEditor5Field('Text', config_name='extends')
+    # question = models.TextField()
     option_A = models.TextField()
     option_B = models.TextField()
     option_C = models.TextField()
