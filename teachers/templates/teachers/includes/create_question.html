@@ -11,6 +11,7 @@
     <!-- Modal body -->
     <div class="modal-body" id="modal-body-confirm">
             {% csrf_token %}
+            {{form.media}}
             {{form | crispy}}
     </div>
 

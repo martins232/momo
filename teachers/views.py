@@ -555,7 +555,7 @@ def allQuestions(request):
     
     return render(request, "teachers/all_questions.html", context)
 
-@cache_page(60*15)
+# @cache_page(60*15)
 def question_create(request):
     data = dict()
     
@@ -572,7 +572,7 @@ def question_create(request):
     data['html_form'] = render_to_string('teachers/includes/create_question.html',context,request=request)
     return JsonResponse(data)
 
-@cache_page(60*15)
+# @cache_page(60*15)
 def question_edit(request, pk):
     question = Question.objects.get(id=pk)
     data = dict()
