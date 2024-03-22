@@ -125,8 +125,8 @@ class QuestionForm(forms.ModelForm):
         ("C", "C"),
         ("D", "D"),
     ]
-    question =SummernoteTextField()
-    # question =forms.CharField(widget=SummernoteWidget(attrs={'summernote': {'width': '100%', "height":"220px"}}))
+    # question =SummernoteTextField()
+    question =forms.CharField(widget=SummernoteWidget(attrs={'summernote': {'width': '100%', "height":"220px"}}))
     answer = forms.ChoiceField(widget=forms.RadioSelect,
         choices=answer_choice,)   
     

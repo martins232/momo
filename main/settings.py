@@ -195,13 +195,21 @@ SUMMERNOTE_CONFIG = {
     
     'toolbar': [
             # ['style', ['style']],
-            ['font', ['bold', 'italic', 'underline',"fontname" ]],
-            ['superscript', ['superscript', 'subscript', ]],
-            ['insert', ['link', 'picture',"table"]],
-            ['paragraph', ['paragraph', 'ul', 'ol', 'height']],
-            ['view', ["undo","redo", "fullscreen", "clear", "codeview"]],
-            
+            ['font', ['bold', 'italic', 'underline' ]],
+            # ['superscript', ['superscript', 'subscript', ]],
+            ['insert', ["table", "fullscreen"]],
+            ['paragraph', ['paragraph', 'ul', 'ol', "codeview"]],
+
         ],
+    # 'toolbar': [
+    #         # ['style', ['style']],
+    #         ['font', ['bold', 'italic', 'underline',"fontname" ]],
+    #         ['superscript', ['superscript', 'subscript', ]],
+    #         ['insert', ['link', 'picture',"table"]],
+    #         ['paragraph', ['paragraph', 'ul', 'ol', 'height']],
+    #         ['view', ["undo","redo", "fullscreen", "clear", "codeview"]],
+            
+    #     ],
     
     "fontNames": ['Arial', 'Arial Black', 'Comic Sans MS', 'Courier New'],
     "tabDisable": False
