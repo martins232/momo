@@ -126,7 +126,7 @@ class QuestionForm(forms.ModelForm):
         ("D", "D"),
     ]
     # question =SummernoteTextField()
-    question =forms.CharField(widget=SummernoteWidget(attrs={'summernote': {'width': '100%', "height":"220px"}}))
+    # question =forms.CharField(widget=SummernoteWidget(attrs={'summernote': {'width': '100%', "height":"220px"}}))
     answer = forms.ChoiceField(widget=forms.RadioSelect,
         choices=answer_choice,)   
     
@@ -140,7 +140,7 @@ class QuestionForm(forms.ModelForm):
         
     def __init__(self,request,  *args, **kwargs):
         super(QuestionForm, self).__init__(*args, **kwargs)
-        # self.fields["question"].widget.attrs.update({"rows":5,}) 
+        self.fields["question"].widget.attrs.update({"rows":5,}) 
         self.fields['subject'].queryset = request.user.subject_set.all()
         self.fields["subject"].widget.attrs.update({'id': 'subject'})
         fields= ('option_A', 'option_B', 'option_C', 'option_D', )
