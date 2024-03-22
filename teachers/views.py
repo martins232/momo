@@ -555,7 +555,7 @@ def allQuestions(request):
     
     return render(request, "teachers/all_questions.html", context)
 
-# @cache_page(60*15)
+@cache_page(60*15)
 def question_create(request):
     data = dict()
     
