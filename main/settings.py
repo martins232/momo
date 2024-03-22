@@ -115,18 +115,18 @@ if not DEBUG:
 	"default": dj_database_url.parse(os.environ.get("DATABASE_URL"))
     }
 else:
-    DATABASES = {
-	"default": dj_database_url.parse(os.environ.get("DATABASE_URL"))
-    }
     # DATABASES = {
-    #     'default': {
-    #         'ENGINE': 'django.db.backends.postgresql',
-    #         'NAME': "skodaji",
-    #         "USER": "root",
-    #         "PASSWORD": "123",
-            
-    #     }
+	# "default": dj_database_url.parse(os.environ.get("DATABASE_URL"))
     # }
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': "skodaji",
+            "USER": "root",
+            "PASSWORD": "123",
+            
+        }
+    }
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
@@ -195,21 +195,13 @@ SUMMERNOTE_CONFIG = {
     
     'toolbar': [
             # ['style', ['style']],
-            ['font', ['bold', 'italic', 'underline' ]],
-            # ['superscript', ['superscript', 'subscript', ]],
-            ['insert', ["table", "fullscreen"]],
-            ['paragraph', ['paragraph', 'ul', 'ol', "codeview"]],
-
-        ],
-    # 'toolbar': [
-    #         # ['style', ['style']],
-    #         ['font', ['bold', 'italic', 'underline',"fontname" ]],
-    #         ['superscript', ['superscript', 'subscript', ]],
-    #         ['insert', ['link', 'picture',"table"]],
-    #         ['paragraph', ['paragraph', 'ul', 'ol', 'height']],
-    #         ['view', ["undo","redo", "fullscreen", "clear", "codeview"]],
+            ['font', ['bold', 'italic', 'underline',"fontname" ]],
+            ['superscript', ['superscript', 'subscript', ]],
+            ['insert', ['link', 'picture',"table"]],
+            ['paragraph', ['paragraph', 'ul', 'ol', 'height']],
+            ['view', ["undo","redo", "fullscreen", "clear", "codeview"]],
             
-    #     ],
+        ],
     
     "fontNames": ['Arial', 'Arial Black', 'Comic Sans MS', 'Courier New'],
     "tabDisable": False
