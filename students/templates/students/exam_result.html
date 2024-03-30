@@ -2,5 +2,7 @@
 {% load static %}
 {% block content %}
 <h4>Yes iam the one</h4>
-
+{% for quest in questions %}
+    {{quest.question | safe}}
+{% endfor %}
 {% endblock content %}

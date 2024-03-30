@@ -555,39 +555,38 @@ def allQuestions(request):
     
     return render(request, "teachers/all_questions.html", context)
 
-@cache_page(60*15)
+# @cache_page(60*15)
 def question_create(request):
     data = dict()
-    
-    form = form = QuestionForm(request, request.POST or None)
-    if request.method == 'POST':
+    form = QuestionForm(request, request.POST or None)
+    if request.method == "POST":
         if form.is_valid():
             form.save()
             data['form_is_valid'] = True
         else:
+            print(form.errors)
             data['form_is_valid'] = False
-
-    
+            data['html_form'] = form
     context = {'form': form}
     data['html_form'] = render_to_string('teachers/includes/create_question.html',context,request=request)
     return JsonResponse(data)
 
-# @cache_page(60*15)
+    
+
+# # @cache_page(60*15)
 def question_edit(request, pk):
     question = Question.objects.get(id=pk)
     data = dict()
-    
     form = form = QuestionForm(request, request.POST or None, instance=question)
-    if request.method == 'POST':
+    if request.method == "POST":
         if form.is_valid():
             form.save()
             data['form_is_valid'] = True
         else:
             data['form_is_valid'] = False
-
-    
+            data['html_form'] = form
     context = {'form': form}
-    data['html_form'] = render_to_string('teachers/includes/edit_question.html',context,request=request)
+    data['html_form'] = render_to_string('teachers/includes/create_question.html',context,request=request)
     return JsonResponse(data)
 
 def question_delete(request):

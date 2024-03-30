@@ -7,8 +7,9 @@
 {% block additional_head_css %}
 <link rel="stylesheet" href="https://unpkg.com/bootstrap-table@1.22.2/dist/bootstrap-table.min.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
-<link href="{% static 'django_ckeditor_5/dist/styles.css' %}" type="text/css" media="all" rel="stylesheet">
-<script src="{% static 'django_ckeditor_5/dist/bundle.js' %}"></script>
+
+{{form.media}}
+
 {% endblock additional_head_css %}
 
 {% block content %}
@@ -28,33 +29,6 @@
         <i class="fas fa-plus fa-lg"></i> Add Question
     </button>
 </div>
-
-<!--<table class="table" id="book-table">
-  <thead>
-    <tr>
-      <th>Question</th>
-      <th>Exam</th>
-      <th>Answer</th>
-      <th>Subject</th>
-      <th>Action</th>
-    </tr>
-  </thead>
-  <tbody>
-      {% for question in questions %}
-      <tr>
-        <td>{{ question.question | safe }}</td>
-        <td>{{ question.exam }}</td>
-        <td>{{ question.answer }}</td>
-        <td>{{ question.subject }}</td>
-        <td><button type="button" class="btn btn-info js-edit-question" data-id="{{question.id}}">Edit</button></td>
-      </tr>
-    {% empty %}
-      <tr>
-        <td colspan="5" class="text-center bg-warning">No book</td>
-      </tr>
-    {% endfor %}
-  </tbody>
-</table> -->
 
 
 <div id="toolbar">
@@ -99,13 +73,45 @@
 </table>
 
 
-<div class="modal" id="addQuestion">
+{% comment %} <div class="modal" id="addQuestion">
     <div class="modal-dialog modal-lg">
       <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="exampleModalLabel">Add question</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+            
+        </div>
       </div>
     </div>
-</div>
+</div> {% endcomment %}
 
+{% comment %} <form method="POST" id="question-data" action="{% url "create-myquestion" %}" class="js-question-create-form" novalidate> {% endcomment %}
+<form method="POST" id="question-data" class="js-question-create-form" novalidate>
+  {% csrf_token %}
+	<div class="modal fade" id="addQuestion" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true" data-bs-backdrop="static">
+		<div class="modal-dialog modal-lg">
+			<div class="modal-content">
+				<div class="modal-header ">
+					<h4 class="modal-title text-center">Add Question</h4>
+					<button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+				</div>
+				<div class="modal-body">
+					{{form | crispy}}
+          
+				</div>
+				<!-- Modal footer -->
+				<div class="modal-footer d-flex justify-content-between">
+					<button type="submit" class="btn btn-success"  value="false">Save</button>
+					<button type="submit" class="btn btn-success"  value="true">Save and add another</button>
+				</div>
+
+        
+			</div>
+		</div>
+	</div>
+</form>
 
 {% endblock content %}
 
@@ -114,7 +120,9 @@
 <script src="https://unpkg.com/bootstrap-table@1.22.2/dist/bootstrap-table.min.js"></script>
 
 
-<script src="{% static "js/questions.js" %}?_=1234122" defer></script>
 
+
+<script src="{% static 'tinymce/tinymce.min.js' %}"></script>
+<script src="{% static "js/questions.js" %}?dfs=419" defer></script>
 
 {% endblock js %}

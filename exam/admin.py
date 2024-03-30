@@ -32,4 +32,4 @@ class SessionAdmin(admin.ModelAdmin):
     
 admin.site.register(Session, SessionAdmin)
 admin.site.register(Exam, ExamAdmin)
-# admin.site.register(Question, QuestionAdmin)
+admin.site.register(Question)
