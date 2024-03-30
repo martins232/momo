@@ -211,7 +211,11 @@ def session_save(request, pk):
 @student
 @login_required  
 def examResult(request):
-    return render(request, "students/exam_result.html")
+    questions = Question.objects.filter(subject=2)
+    context={
+        "questions": questions
+    }
+    return render(request, "students/exam_result.html", context)
                 
             
 

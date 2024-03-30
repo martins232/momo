@@ -8,9 +8,11 @@ from django.core.exceptions import ValidationError
 
 
 
-from django_summernote.fields import SummernoteTextFormField, SummernoteTextField
-from django_summernote.widgets import SummernoteWidget, SummernoteInplaceWidget
-from django_ckeditor_5.widgets import CKEditor5Widget
+# from django_summernote.fields import SummernoteTextFormField, SummernoteTextField
+# from django_summernote.widgets import SummernoteWidget, SummernoteInplaceWidget
+# from django_ckeditor_5.widgets import CKEditor5Widget
+
+from tinymce.widgets import TinyMCE
 
 
 class ExamForm(forms.ModelForm):
@@ -140,14 +142,14 @@ class QuestionForm(forms.ModelForm):
         #           attrs={"class": "django_ckeditor_5"}, config_name="extends"
         #       )
         #   }
-        # widgets = {
-        #     'question': SummernoteWidget(),
-        # }
+        widgets = {
+            'question': TinyMCE(attrs={"cols":80, "rows":30}),
+        }
         
     def __init__(self,request,  *args, **kwargs):
         super(QuestionForm, self).__init__(*args, **kwargs)
         # self.fields["question"].widget.attrs.update({"rows":5,}) 
-        self.fields["question"].required = False
+        self.fields["question"].required = True
         self.fields['subject'].queryset = request.user.subject_set.all()
         self.fields["subject"].widget.attrs.update({'id': 'subject'})
         fields= ('option_A', 'option_B', 'option_C', 'option_D', )
