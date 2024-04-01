@@ -23,12 +23,25 @@ function operateFormatter(value, row, index) {
 	return `<button type="button" class="btn btn-light js-edit-question" data-id="${row.id}"><i class="fas fa-pencil"></i></i></button>`;
 }
 
+function clearForm(){
+	$("#question-data").get(0).reset()
+	$("#question-data .invalid-feedback").remove();
+	$("#question-data .is-invalid").removeClass("is-invalid");
+	console.log($("#question-data").get(0))
+	
+	
+
+}
 
 //edtiting a question view
 window.operateEvents = {
 	"click .js-edit-question": function (e, value, row, index) {
 		let btn = $(e.currentTarget);
+
+		$("#addQuestion .modal-title").text("Edit Question")
+
 		// $(".modal-footer :button:nth-child(2)").hasClass( "d-none" )
+		// hiding save and add another button
 		if (!$(".modal-footer :button:nth-child(2)").hasClass( "d-none" )){
 			$(".modal-footer :button:nth-child(2)").addClass( "d-none" )
 		}
@@ -70,6 +83,7 @@ $(function () {
 		if ($(".modal-footer :button:nth-child(2)").hasClass( "d-none" )){
 			$(".modal-footer :button:nth-child(2)").removeClass( "d-none" )
 		}
+		$("#addQuestion .modal-title").text("Add Question")
 		$("#addQuestion").modal("show");
 		
 		// $.ajax({
@@ -92,6 +106,7 @@ $(function () {
 
 
 $("#question-data").on("submit", function (event) {
+	$(".spinner").toggleClass("d-none")
 	event.preventDefault();
 	let subBtn  = event.originalEvent.submitter.value
 	var form = $(this);
@@ -102,7 +117,9 @@ $("#question-data").on("submit", function (event) {
 		url: sub_url,
 		data: data, 
 		success: function (data) {
+			$(".spinner").toggleClass("d-none")
 			if (data.form_is_valid) {
+				
 				notify("success", "Question created succesfully");  // <-- This is just a placeholder for now for testing
 				$("#question-data").get(0).reset()
 				if (subBtn =="false"){
