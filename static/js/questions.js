@@ -24,10 +24,18 @@ function operateFormatter(value, row, index) {
 }
 
 function clearForm(){
-	$("#question-data").get(0).reset()
+	// $("#question-data").get(0).reset()
+	$("#question-data select[name=subject]").val()
+	$("#question-data textarea[name=option_A]").val()
+	$("#question-data textarea[name=option_B]").val()
+	$("#question-data textarea[name=option_C]").val()
+	$("#question-data textarea[name=option_D]").val()
+	$("#question-data input[name=answer]").prop( "checked", false )
+	
 	$("#question-data .invalid-feedback").remove();
 	$("#question-data .is-invalid").removeClass("is-invalid");
-	console.log($("#question-data").get(0))
+	
+	
 	
 	
 
@@ -40,7 +48,7 @@ window.operateEvents = {
 
 		$("#addQuestion .modal-title").text("Edit Question")
 
-		// $(".modal-footer :button:nth-child(2)").hasClass( "d-none" )
+
 		// hiding save and add another button
 		if (!$(".modal-footer :button:nth-child(2)").hasClass( "d-none" )){
 			$(".modal-footer :button:nth-child(2)").addClass( "d-none" )
@@ -53,26 +61,12 @@ window.operateEvents = {
 		$("#question-data textarea[name=option_B]").val(row.option_B)
 		$("#question-data textarea[name=option_C]").val(row.option_C)
 		$("#question-data textarea[name=option_D]").val(row.option_D)
-		$(`#question-data input[value=${row.answer}]`).attr('checked', 'checked')
+		$(`#question-data input[value=${row.answer}]`).prop( "checked", true )
 		// $("#question-data textarea[name=question]").val(row.question)
 		tinymce.activeEditor.setContent(row.question)
 		$("#addQuestion").modal("show");
 		
 		
-
-		// $("#addQuestion .modal-content").html("");
-		// $.ajax({
-		// 	url: `edit-myquestion/${btn.attr("data-id")}`,
-		// 	type: "get",
-		// 	dataType: "json",
-		// 	beforeSend: function () {
-		// 		$("#addQuestion").modal("show");
-		// 	},
-		// 	success: function (data) {
-		// 		$("#addQuestion .modal-content").html(data.html_form);
-		// 	},
-		// 	error: function (error) { },
-		// });
 	},
 };
 
@@ -85,6 +79,7 @@ $(function () {
 		}
 		$("#addQuestion .modal-title").text("Add Question")
 		$("#addQuestion").modal("show");
+		
 		
 		// $.ajax({
 		//     url: 'create-myquestion',
@@ -119,7 +114,6 @@ $("#question-data").on("submit", function (event) {
 		success: function (data) {
 			$(".spinner").toggleClass("d-none")
 			if (data.form_is_valid) {
-				
 				notify("success", "Question created succesfully");  // <-- This is just a placeholder for now for testing
 				$("#question-data").get(0).reset()
 				if (subBtn =="false"){
@@ -136,6 +130,8 @@ $("#question-data").on("submit", function (event) {
 				notify("danger", "Question not created");  // <-- This is just a placeholder for now for testing
 				$("#addQuestion   .modal-body").html(data.html_form)
 				
+				
+				
 				const autoCloseElements = [...$(".auto-close")]
 				setTimeout(function () {
 					autoCloseElements.forEach(el => fadeAndSlide(el));
@@ -147,6 +143,7 @@ $("#question-data").on("submit", function (event) {
 		}
 	})
 });
+
 
 // //submiting a new question
 // $("#addQuestion").on("submit", ".js-question-create-form",function  () {
@@ -387,5 +384,8 @@ function questionCellStyle(value, row, index) {
 		},
 	};
 }
+
+
+
 
 

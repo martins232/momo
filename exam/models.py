@@ -28,7 +28,7 @@ class Exam(models.Model):
     pass_mark = models.FloatField(verbose_name="Pass mark", default=60)
     start_date = models.DateTimeField()
     end_date = models.DateTimeField()
-    ready = models.BooleanField(default=False)
+    ready = models.BooleanField(default=False) #to make sure exam satisfy every requirements like no. of quest etc before students can see it
     retake = models.BooleanField( default=False)
     review = models.BooleanField(default=False)
     updated = models.DateTimeField(auto_now=True)

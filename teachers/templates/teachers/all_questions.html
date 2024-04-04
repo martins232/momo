@@ -5,7 +5,6 @@
 {% block title %}All questions{% endblock title %}
 
 {% block additional_head_css %}
-<link href="{% static "css/mystyles.css" %}" rel="stylesheet" />
 <link rel="stylesheet" href="https://unpkg.com/bootstrap-table@1.22.2/dist/bootstrap-table.min.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
 
@@ -88,7 +87,7 @@
 </div> {% endcomment %}
 
 {% comment %} <form method="POST" id="question-data" action="{% url "create-myquestion" %}" class="js-question-create-form" novalidate> {% endcomment %}
-<form method="POST" id="question-data" class="js-question-create-form" novalidate>
+<form method="POST" id="question-data" class="js-question-create-form">
   {% csrf_token %}
 	<div class="modal fade" id="addQuestion" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true" data-bs-backdrop="static">
 		<div class="modal-dialog modal-lg">
@@ -98,7 +97,7 @@
         
 				<div class="modal-header ">
 					<h4 class="modal-title text-center">Add Question</h4>
-					<button type="button" class="btn-close" data-bs-dismiss="modal" onclick="clearForm()"></button>
+					<button type="reset" class="btn-close" data-bs-dismiss="modal" onclick="clearForm()"></button>
 				</div>
 				<div class="modal-body">
 					{{form | crispy}}
@@ -125,7 +124,7 @@
 
 
 
-<script src="{% static 'tinymce/tinymce.min.js' %}"></script>
-<script src="{% static "js/questions.js" %}?pk=19" defer></script>
+
+<script src="{% static "js/questions.js" %}?hsgh=1eet9" defer></script>
 
 {% endblock js %}
