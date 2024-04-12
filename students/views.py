@@ -77,6 +77,33 @@ def exams(request):
     """Exams that are ready and students are eligible to see and write"""
     exams = Exam.objects.filter(Q(start_date__lte=timezone.now(), end_date__gt=timezone.now()), ready=True, grade=request.user.student.grade).order_by("end_date")
     
+    if request.method == "POST": #if the student clicks the start button on the modal in the available exam page
+        id = request.POST.get("exam")
+        if Session.objects.filter(user=request.user, exam=id).exists(): #check if the user has written this test before
+            student_session = Session.objects.get(user=request.user, exam=id)
+            if student_session.attempts < 2 or student_session.completed == False: # check if the student completed this exam even in his last attempt or how many times the user wrote this test (this student is eligible)
+                request.session['id'] = id # add the exam.id to the session header because student is eligible to write
+                if student_session.completed: # user wants to retake this test
+                    request.session['check_storage_for_data'] = 0 # tell Javascript whether to check storage
+                else: # user didn't finish the test
+                    request.session['check_storage_for_data'] = 1 # tell Javascript whether to check storage
+                return JsonResponse({"message": True})# True meaning you can open a new window
+            
+            else: #user has exceeded maximum attempts (this student is not eligible)
+                # delete session variables if it exist to prevent accessing exam
+                
+                if request.session.get("check_storage_for_data", None) != None:
+                    if request.session['check_storage_for_data'] != None: 
+                        del request.session['check_storage_for_data'] 
+                if request.session.get("id", None) != None:
+                    if request.session['id'] != None:
+                        del request.session['id']
+                return JsonResponse({"message": False}) # True meaning you can open a new window
+            
+        else: #first time writers
+            request.session['id'] = id # add the exam.id to the session header
+            request.session['check_storage_for_data'] = 0 # tell Javascript whether to check storage
+            return JsonResponse({"message": True})
      
     context ={
         "exams": exams
@@ -86,31 +113,45 @@ def exams(request):
 @student
 @login_required
 def session(request):  #this is the exam page
-    if request.method == "POST":  #if the student clicks the start button on the modal in the available exam page
-        value = request.POST.get("exam")
-        request.session['value'] = value # add the exam.id to the session header
-        if Session.objects.filter(user=request.user, exam=value).exists():
-            if  Session.objects.get(user=request.user, exam=value).attempts == 2:
-                del request.session['value']
-                return redirect("available-exam")
-    else:
-        value = request.session.get('value')  #-------------------- bug -------------------- if student hard refreshes the page, the exam will be lost
-        if not value: #if the user copied the url, the user is without a value id, hence raise a permission error
-            raise PermissionDenied
+    id = request.session.get('id')  #-------------------- bug -------------------- if student hard refreshes the page, the exam will be lost
+    check_storage_for_data = request.session.get('check_storage_for_data')  #-------------------- bug -------------------- if student hard refreshes the page, the exam will be lost
+    
+    
+    if id ==None or check_storage_for_data==None: #if the user copied the url, the user is without a value id, hence raise a permission error
+        return redirect("available-exam")
+        # raise PermissionDenied
+    
+    exam = Exam.objects.get(id= id)
         
-        if Session.objects.filter(user=request.user, exam=value).exists(): # if the user has a pk in the db and refreshes the page, run this code
-            if  Session.objects.get(user=request.user, exam=value).attempts == 2: # if no. of attempt == 2 del the exam.id from session header
-                del request.session['value']
-                return redirect("available-exam")
-    return render(request, "students/exam_page.html")
+    if Session.objects.filter(user=request.user, exam=id).exists(): # if the user has a pk in the db and refreshes the page, run this code
+        student_session = Session.objects.get(user=request.user, exam=id)
+        if  student_session.attempts <2 or student_session.completed == False: # if no. of attempt == 2 del the exam.id from session header
+            
+            if student_session.completed: # user wants to retake this test
+                request.session['check_storage_for_data'] = 0 # tell Javascript whether to check storage
+            else: # user didn't finish the test
+                request.session['check_storage_for_data'] = 1 # tell Javascript whether to check storage
+            
+        else:
+            del request.session['id']
+            del request.session['check_storage_for_data']
+            return redirect("available-exam")
+        
+    
+            
+    context = {
+        "exam": exam
+    }
+    return render(request, "students/exam_page.html", context)
 
 def session_data(request, pk):
+    # student questions
     exam = get_object_or_404(Exam, pk=pk)
     if is_ajax(request=request):
         session , created = Session.objects.get_or_create(user= request.user, exam=exam)
                 
         if session.attempts < 2:
-            questions = exam.question_set.all().values()
+            questions = Question.objects.filter(exam=exam).values()
             
             data_ =[]
             
@@ -128,7 +169,9 @@ def session_data(request, pk):
                    "allow_correction":exam.review,
                    "user": request.user.get_full_name()}
             
-            # session.attempts = session.attempts +1
+            session.attempts = session.attempts +1
+            session.time_started = timezone.now()
+            session.completed = False
             session.save()
             
             return JsonResponse(data)
