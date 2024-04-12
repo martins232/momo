@@ -78,11 +78,11 @@ aria-labelledby="staticBackdropLabel" aria-hidden="true">
             
                 <div class="modal-footer">
                    <div class="d-grid gap-2 d-md-block">
-                    <form action="{% url "exam-session" %}" method="POST" autocomplete="OFF"  target="_blank" >
+                    <form id="startExam" action="{% url "exam-session" %}" method="POST" autocomplete="OFF"  target="_blank" >
                         {% csrf_token %}
                       <input type="hidden" name="exam" value=""> <!-- value will be added by js-->
                       <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                      <button type="submit" class="btn btn-success" onclick="alert("me")"><i class="fas fa-hourglass-start"></i> Start</button>
+                      <button type="submit" class="btn btn-success" ><i class="fas fa-hourglass-start"></i> Start</button>
                     </form>
                    </div>
 
@@ -163,6 +163,69 @@ aria-labelledby="staticBackdropLabel" aria-hidden="true">
       
     })
   });
+
+
+  let form = $("#startExam")
+  form.on("submit", function(event){
+    event.preventDefault()
+    data = form.serialize()
+    $.ajax({
+      method: "POST",
+      url: '{% url "available-exam" %}',
+      data: data,
+      success: function (success){
+          $(".modal").modal("hide")
+          
+          if (success.message){
+            window.open('{% url "exam-session" %}', "Session","menubar=yes,location=yes,resizable=no,scrollbars=yes,status=yes,height=" +screen.availHeight +",width="+screen.availWidth )
+          }else{
+            alert("No exam at the moment")
+            window.location = location.origin + '{% url "available-exam" %}'
+          }
+      },
+      error: function(error){
+        console.log(error)
+      }
+    })
+  })
+
+
+  function notify(color, msg) {
+    $("#alert").html(`
+        <div class="auto-close alert alert-${color} alert-dismissible fade show py-1" role="alert" >
+            ${msg}
+        </div>
+    `);
+  }
+  
+  function fadeAndSlide(element) {
+    const fadeDuration = 500;
+    const slideDuration = 100;
+  
+    // Step 1: Fade out the element
+    let opacity = 1;
+    const fadeInterval = setInterval(function () {
+      if (opacity > 0) {
+        opacity -= 0.1;
+        element.style.opacity = opacity;
+      } else {
+        clearInterval(fadeInterval);
+        // Step 2: Slide up the element
+        let height = element.offsetHeight;
+        const slideInterval = setInterval(function () {
+          if (height > 0) {
+            height -= 10;
+            element.style.height = height + "px";
+          } else {
+            clearInterval(slideInterval);
+            // Step 3: Remove the element from the DOM
+            element.parentNode.removeChild(element);
+          }
+        }, slideDuration / 10);
+      }
+    }, fadeDuration / 10);
+  }
+  // *****************************************************************************************************************
 </script>
 {% endblock js %}
 

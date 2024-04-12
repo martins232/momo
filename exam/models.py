@@ -114,7 +114,7 @@ class Session(models.Model):
     elapsed_time = models.FloatField(null=True)
     attempts = models.IntegerField(default=0)
     misconduct = models.BooleanField(default=False)
-    time_started = models.DateTimeField(auto_now_add=True)
+    time_started = models.DateTimeField(null=True)
     time_ended = models.DateTimeField(auto_now=True)
     completed = models.BooleanField(default=False)
     choices = models.JSONField(default=dict)
