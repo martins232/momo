@@ -60,6 +60,7 @@ INSTALLED_APPS = [
     "crispy_bootstrap5",
     "django_cleanup",
     "tinymce",
+    'mailer',
     
     
     
@@ -115,18 +116,18 @@ if not DEBUG:
 	"default": dj_database_url.parse(os.environ.get("DATABASE_URL"))
     }
 else:
-    DATABASES = {
-	"default": dj_database_url.parse(os.environ.get("DATABASE_URL"))
-    }
     # DATABASES = {
-    #     'default': {
-    #         'ENGINE': 'django.db.backends.postgresql',
-    #         'NAME': "skodaji",
-    #         "USER": "root",
-    #         "PASSWORD": "123",
-            
-    #     }
+	# "default": dj_database_url.parse(os.environ.get("DATABASE_URL"))
     # }
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': "skodaji",
+            "USER": "root",
+            "PASSWORD": "123",
+            
+        }
+    }
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
@@ -202,3 +203,17 @@ TINYMCE_DEFAULT_CONFIG= {
     "promotion": False,
     
 }
+
+# EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+# EMAIL_HOST = 'localhost'
+# EMAIL_PORT = 1025
+
+
+
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'maduekemartins21@gmail.com'
+EMAIL_HOST_PASSWORD = "phgz wcis bgnl wwxw"
+DEFAULT_FROM_EMAIL = 'maduekemartins21@gmail.com'

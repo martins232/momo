@@ -2,9 +2,11 @@ from django import forms
 from django.core.validators import RegexValidator
 from django.core.exceptions import ValidationError
 from . models import User, Student, Teacher, Grade
-from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.forms import UserCreationForm, PasswordResetForm
 from datetime import date # used in birthday validation
 # import datetime # used to prevent future date
+
+# import unicodedata
 
 
 
@@ -51,6 +53,7 @@ class UserRegistrationForm(UserCreationForm):
         ) 
     
     
+    
     class Meta:
         
         model = User
@@ -59,6 +62,7 @@ class UserRegistrationForm(UserCreationForm):
         
         widgets ={
             "username": forms.TextInput(attrs={"class": "form-control","autofocus": False,}),
+            
         }
 
     
@@ -203,23 +207,16 @@ class StudentRequestForm(forms.ModelForm):
 
     def clean_image(self):
         image = self.cleaned_data.get("image")
-        ext = str(image).split(".")[-1]
         
-        if image:
-            if "photo/" in image.name:
-                raise forms.ValidationError("Please select an image")
+        
+        if image is not None:
             if image.size <= 2*1048576:
-                try:
-                    new_name = (self.request.user.first_name+"_"+self.request.user.last_name+"."+ext).lower() 
-                except KeyError:
-                    return image
-                else:
-                    image.name = new_name
-                    return image
+                return image
             else:
                 raise forms.ValidationError("Max. Upload: 2MB")
         else:
-            print("No image")
+            pass
+            # raise forms.ValidationError("Image is required")
         
         
 class LowerCase(forms.CharField):
@@ -277,27 +274,17 @@ class TeacherRequestForm(forms.ModelForm):
         super().__init__(*args, **kwargs) # Call the parent class constr
         # if request.user:
         #     if request.user.pk:
-        #         self.fields["gender"].disabled=True
-        #         # self.fields.pop("image")
+        #         # self.fields["gender"].disabled=True
+        #         self.fields.pop("email")
     def clean_image(self):
         image = self.cleaned_data.get("image")
-        ext = str(image).split(".")[-1]
         
-        if image:
-            if "photo/" in image.name:
-                raise forms.ValidationError("Please select an image")
-            if image.size <= 2*1048576:
-                try:
-                    new_name = (self.request.user.first_name+"_"+self.request.user.last_name+"."+ext).lower() 
-                except KeyError:
-                    return image
-                else:
-                    image.name = new_name
-                    return image
-            else:
-                raise forms.ValidationError("Max. Upload: 2MB")
+        
+        if image.size <= 2*1048576:
+            return image
         else:
-            print("No image")
+            raise forms.ValidationError("Max. Upload: 2MB")
+       
     
     def clean_phone(self):
         phone = self.cleaned_data.get("phone")
@@ -307,14 +294,42 @@ class TeacherRequestForm(forms.ModelForm):
     
     def clean_email(self):
         email = self.cleaned_data.get("email")
-        if Teacher.objects.filter(email=email).exists():
-            if email == self.request.user.teacher.email:
+        if User.objects.filter(email=email).exists():
+            if email == self.request.user.email:
                 return email
             else:
                 raise forms.ValidationError("Denied! " + email + " is already registered")
         return email
     
-    
 
+# def _unicode_ci_compare(s1, s2):
+#     """
+#     Perform case-insensitive comparison of two identifiers, using the
+#     recommended algorithm from Unicode Technical Report 36, section
+#     2.11.2(B)(2).
+#     """
+#     return (
+#         unicodedata.normalize("NFKC", s1).casefold()
+#         == unicodedata.normalize("NFKC", s2).casefold()
+#     )
+# class CustomPasswordResetForm(PasswordResetForm):
+#     def get_users(self, email):
+#         """
+#         Retrieve users based on the provided email address.
+#         Override this method to handle unusable passwords.
+#         """
+#         active_users = Teacher.objects.filter(
+#             **{
+#                 "%s__iexact" % "email": email,
+#                 "user__is_active": True,
+#             }
+#         )
+#         print(active_users)
+#         return (
+#             u
+#             for u in active_users
+#             if u.user.has_usable_password()
+#             and _unicode_ci_compare(email, getattr(u, "email"))
+#         )
         
     

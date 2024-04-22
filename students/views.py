@@ -1,7 +1,11 @@
+import imp
+from logging import exception
+from urllib import request
 from django.shortcuts import render, redirect, get_object_or_404, HttpResponse
+import exam
 from users . models import User, Student
 from teachers. forms import UserUpdateForm, ChangeProfilePicture
-from students.forms import StudentUpdateForm
+from students.forms import StudentUpdateForm, studentPasswordReset
 from django.contrib import messages
 from django.contrib.auth import authenticate, login
 from exam . models import Exam
@@ -15,6 +19,9 @@ from django.db.models import Q
 
 from django.contrib.auth.decorators import login_required
 from main.decorators import student
+from django.contrib.auth.hashers import make_password
+
+
 
 
 
@@ -25,11 +32,21 @@ from main.decorators import student
 @login_required
 def profile(request):
     user = User.objects.get(username = request.user.username)
+    changePassword = studentPasswordReset(request.user, request.POST or None)
+    if request.method == "POST":
+        changePassword = studentPasswordReset(request.user, request.POST)
+        if changePassword.is_valid():
+            password = request.POST.get("new_password1")
+            user.set_password(password)
+            user.save()
+            messages.success(request, "Password successfully changed. Please login to confirm password")
+            return redirect("login")
+        else:
+            messages.error(request, "Password wasn't changed. Please check form for errors")
+            print("I am not valid")
     context = {
         "user": user,
-    }
-    context = {
-        
+        "changePassword": changePassword
     }
     return render(request, "students/profile.html", context)
 
@@ -37,12 +54,13 @@ def profile(request):
 @login_required
 def editProfile(request, pk):
     user = User.objects.get(id=pk)
-    p_form = UserUpdateForm(request, instance = user,)
+    p_form = UserUpdateForm(request, instance = user)
     s_form = StudentUpdateForm(instance= user.student)
     
     if request.method == "POST":
-        p_form = UserUpdateForm(request, request.POST, instance = user,)
+        p_form = UserUpdateForm(request, request.POST, instance = user)
         s_form = StudentUpdateForm(request.POST, instance= user.student)
+        
         
         if p_form.is_valid() and s_form.is_valid():
             p_form.save()
@@ -51,7 +69,7 @@ def editProfile(request, pk):
             return redirect("student-profile")
     context ={
         "p_form":p_form,
-        "s_form":s_form
+        "s_form":s_form, 
     }
     return render(request, "students/edit_profile.html", context)
 
@@ -75,7 +93,9 @@ def editStudentProfileImage(request, pk):
 @login_required
 def exams(request):
     """Exams that are ready and students are eligible to see and write"""
-    exams = Exam.objects.filter(Q(start_date__lte=timezone.now(), end_date__gt=timezone.now()), ready=True, grade=request.user.student.grade).order_by("end_date")
+    exams = Exam.objects.filter(Q(start_date__lte=timezone.now(), end_date__gt=timezone.now()),
+                                 ready=True, grade=request.user.student.grade).order_by("end_date")
+    
     
     if request.method == "POST": #if the student clicks the start button on the modal in the available exam page
         id = request.POST.get("exam")
@@ -154,8 +174,10 @@ def session_data(request, pk):
             questions = Question.objects.filter(exam=exam).values()
             
             data_ =[]
+            prechoices = {} #to avoid getting keyerror if a student doesn't complete the exam and the exam has ended
             
             for question in questions:
+                prechoices[question["question"]] = [""]
                 options = [ question["option_A"], question["option_B"], question["option_C"], question["option_D"] ]
                 zipper =dict(list( zip(['A', 'B', 'C', 'D'], options)))
                 answer_Abbrv =  question["answer"] # the answer in the database e.g "C"
@@ -169,9 +191,10 @@ def session_data(request, pk):
                    "allow_correction":exam.review,
                    "user": request.user.get_full_name()}
             
-            session.attempts = session.attempts +1
+            session.choices = prechoices
             session.time_started = timezone.now()
             session.completed = False
+            # session.attempts = session.attempts +1
             session.save()
             
             return JsonResponse(data)
@@ -188,7 +211,7 @@ def session_save(request, pk):
         user = request.user
         exam = Exam.objects.get(id=pk) 
         user_session = Session.objects.get(user=user, exam = exam)
-        db_attempts = user_session.attempts
+        db_attempts = user_session.attempts #attempts before the session ended
         questions = []
         data =  request.POST
         data_ =dict(data.lists()) #lists() is only available for request.POST method-->, The lists method returns a list of tuples containing the names and values of the input fields.
@@ -197,10 +220,10 @@ def session_save(request, pk):
         elapsed = data_.pop("elapsedTime")[0]
         # attempts= int(data_.pop("attempts")[0])
         misconduct = True if data_.pop("misconduct")[0] == "true" else False
-        attempts_= 2 if misconduct | exam.review else db_attempts
+        attempts_= 2 if misconduct else db_attempts
         # attempts_ = 2 if (attempts+ db_attempts) > 2 else attempts + db_attempts
         ######################################
-       
+        
         for k in data_.keys():
             question = Question.objects.get(question = k)
             questions.append(question) # appending question object in a list
@@ -212,18 +235,21 @@ def session_save(request, pk):
         correct_answer = []
         
         for q in questions:  # q is the question instance
-            a_selected = request.POST.get(q.question) #from the question instance get the question key from the request.POST method
+            a_selected = data_.get(q.question) #from the question instance get the question key from the request.POST method
             answer  = {"A" :q.option_A, "B":q.option_B, "C":q.option_C, "D":q.option_D} # represent the options as "A", "B", "C", "D" to correspond to the correct answer from the db
-            
-            if a_selected != "": # if what the user selected is not empty
+    
+            if a_selected[0] != "": # if what the user selected is not empty
                 for option, value in answer.items(): # from the answers in the db as dictionary
-                    if a_selected in value: # if the student_answer in list of answers (value)
+                    if a_selected[0] in value: # if the student_answer in list of answers (value)
                         if option == q.answer: # if the option is == the teacher answer
+                            data_.get(q.question).append({"status": "correct"}) #---------------
                             score += 1  # add a mark
                             correct_answer.append(value) # the student was correct
                         else:
+                            data_.get(q.question).append({"status": "incorrect"}) #---------------
                             correct_answer.append(answer[str(q.answer)]) #the student answer was not correct. Put the correct answer
             else:
+                data_.get(q.question).append({"status": "unanswered"}) #---------------
                 correct_answer.append(answer[str(q.answer)])
             #     results.append({str(q):{"correct_answer": correct_answer, "answered": a_selected}}) # create dictionary of correct and not correct answer
             # else:
@@ -254,12 +280,44 @@ def session_save(request, pk):
 @student
 @login_required  
 def examResult(request):
-    questions = Question.objects.filter(subject=2)
+    exams = Exam.objects.filter(end_date__lt=timezone.now(), grade=request.user.student.grade).order_by("end_date")
+    
+    sessions = Session.objects.filter(Q(exam__end_date__lt=timezone.now(), exam__grade=request.user.student.grade), user = request.user)
+    
     context={
-        "questions": questions
+        "exams":exams, 
+        "sessions":sessions
     }
     return render(request, "students/exam_result.html", context)
-                
+
+
+def examAnalysis(request, pk):
+    session = Session.objects.get(id=pk)
+    context ={
+        "session": session,
+        "pk": session.id,
+        "score": session.score,
+        "no_quest": len(session.choice)
+    }
+    return render(request, "students/exam_analysis.html", context)
+
+
+def  sessionCorrectionData(request, pk):
+    session = Session.objects.get(id=pk)
+    questions = Question.objects.filter(exam=session.exam.id)
+    # questions = serializers.serialize("json", questions, fields=("question", "option_A", "option_B", "option_C", "option_D"))
+    
+    data = []
+    for question in questions:
+        question_and_options = {}
+        options = {"A":question.option_A, "B": question.option_B, "C":question.option_C, "D": question.option_D}
+        question_and_options["question"] = question.question
+        question_and_options["options"] = [options]
+        question_and_options["answer"] = options[question.answer]
+        question_and_options["choice"] = session.choices[question.question][0]
+        data.append(question_and_options)
+    return JsonResponse({"data": data})
+              
             
 
         

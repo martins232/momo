@@ -37,7 +37,7 @@ class QuestionFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Question
     
-    subject = factory.Iterator(Subject.objects.filter(id=4)) # Create a teacher user for each question
+    subject = factory.Iterator(Subject.objects.filter(id=1)) # Create a teacher user for each question
     # exam = factory.Iterator(Exam.objects.filter(id=5)) # Create an exam for each question
     question = factory.Faker('paragraph')
     option_A = factory.Faker('sentence')

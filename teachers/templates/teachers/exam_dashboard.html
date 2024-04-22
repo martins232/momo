@@ -180,14 +180,14 @@
 		if (student_detail){
 				student_detail.addEventListener('show.bs.modal', event => {
 
+
 						// Button that triggered the modal
 					 const button = event.relatedTarget
 					 var data = button.getAttribute("data-index")
 					 var data_obj = JSON.parse(data)
 					
 					 $(".modal-footer").css("display", "none");
-					 console.log(data_obj)
-					 console.log(data_obj.option_count)
+					 $(".modal-dialog").addClass("modal-fullscreen")
 					 //var obj = JSON.parse(x)
 					 $(".modal-title").text("Question details")
 					 $(".modal-body").html(`

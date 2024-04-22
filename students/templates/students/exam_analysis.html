@@ -1,0 +1,180 @@
+{% extends "main.html" %}
+{% load static %}
+
+
+{% block content %}
+<nav aria-label="breadcrumb" class="main-breadcrumb">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item"><a href="javascript:void(0)">Home</a></li>
+      <li class="breadcrumb-item"><a href="javascript:void(0)">Student</a></li>
+      <li class="breadcrumb-item active" aria-current="page">{{session.exam.name}} analysis</li>
+    </ol>
+  </nav>
+               
+  <div class="card">
+    <div class="card-header">
+        <h2>{{request.user}}</h2>
+        <h6 class="bg-dark text-light p-2">Exam Summary</h6>
+
+        <div class="row">
+            <div class="col-md-5 bg-light">
+                <div class="row">
+                    <div class="col-4"><p class="fw-bold">Subject: </p></div>
+                    <div class="col-6"><p>{{session.exam.subject.name}}</p></div>
+                 </div>
+                <div class="row">
+                    <div class="col-4"><p class="fw-bold">Test name: </p></div>
+                    <div class="col-6"><p>{{session.exam.name}}</p></div>
+                 </div>
+                <div class="row">
+                    <div class="col-4"><p class="fw-bold">Grade: </p></div>
+                    <div class="col-6"><p>{{session.exam.grade}}</p></div>
+                 </div>
+            </div>
+
+            <div class="col-md-5  ms-auto bg-light" >
+                <div class="row">
+                    <div class="col-4"><p class="fw-bold">Start Time:</p></div>
+                    <div class="col-6"><p>{{session.time_started}}</p></div>
+                 </div>
+                <div class="row">
+                    <div class="col-4"><p class="fw-bold">End Time: </p></div>
+                    <div class="col-6"><p>{{session.time_ended}}</p></div>
+                </div>
+                <div class="row">
+                    <div class="col-4"><p class="fw-bold">Time Spent: </p></div>
+                    <div class="col-6"><p>{{session.seconds_to_hms}}</p></div>
+                </div>
+            </div>
+        </div>
+    </div> 
+  </div>
+
+  <ul class="mt-2 nav nav-pills nav-fill gap-2 p-1 small bg-dark rounded-2 shadow-sm" id="pillNav2" role="tablist" style="--bs-nav-link-color: var(--bs-white); --bs-nav-pills-link-active-color: var(--bs-dark); --bs-nav-pills-link-active-color: var(--bs-dark); --bs-nav-pills-link-active-bg: var(--bs-white); nav-link:hover">
+    <li class="nav-item" role="presentation">
+      <button class="nav-link active rounded-2" id="question-tab2" data-bs-toggle="tab" type="button" role="tab" aria-selected="true" data-bs-target="#questionCorrection"><i class="bi-journal-bookmark-fill"></i> Question</button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link rounded-2" id="summary-tab2" data-bs-toggle="tab" type="button" role="tab" aria-selected="false" data-bs-target="#summary">Exam Summary</button>
+    </li>
+  </ul>
+
+  <div class="tab-content" id="nav-tabContent">
+    <div class="tab-pane fade show active" id="questionCorrection" role="tabpanel" aria-labelledby="question" tabindex="0">
+        <div class="mt-2 spinner-border d-block mx-auto" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        <div id="question-container">
+
+        </div>
+    </div>
+    <div class="tab-pane fade" id="summary" role="tabpanel" aria-labelledby="summary" tabindex="0">
+        <div class="table-responsive">
+          <table class="table table-hover table-bordered caption-top">
+            <caption><h1><span class="fw-bold text-decoration-underline">{{request.user}}</span> exam result:</h1></caption>
+            <tbody>
+              <tr>
+                <th scope="row">Total number of answered Questions</th>
+                <td class="text-center">10 </td>
+              </tr>
+              <tr>
+                <th scope="row">Total number of unanswered Questions</th>
+                <td class="text-center">13</td>
+              </tr>
+  
+              <tr>
+                <th scope="row">No of correct Answers</th>
+                <td class="text-center"><sup class="fw-bold">15</sup>/<sub>30</sub></td>
+              </tr>
+              <tr>
+                <th scope="row">No of wrong answers</th>
+                <td class="text-center"><sup class="fw-bold">23</sup>/<sub>30</sub></td>
+              </tr>
+              <tr>
+                <th scope="row">Time spent </th>
+                <td class="text-center">30</td>
+              </tr>
+              <tr>
+                <th scope="row">Score</th>
+                <td class="text-center"><b>50%</b></td>
+              </tr>
+              <tr>
+                <th scope="row">Teacher's remark</th>
+                <td class="text-center">Pass</td>
+              </tr>
+  
+            </tbody>
+          </table>
+        </div>
+    </div>
+    
+  </div>
+{% endblock content %}
+
+{% block js %}
+  <script>
+            $.ajax({
+                type: "GET",
+                url : `{% url "session-correction-data" pk %}`,
+                cache: true,
+                success: function(success){
+                  $(".spinner-border").addClass("d-none")
+                  data = success.data
+                  data.forEach((question, index) => {
+                    let tag = ""
+                    mark_icon = ""
+                    if (question.choice){
+                        if (question.choice == question.answer){
+                            tag = "correct"
+                          }
+                        else{
+                          tag = "wrong"
+                        }
+                    }else{
+                      mark_icon = "<i class='bi-exclamation fs-3 text-danger'></i>"
+                    }
+                    const questionHTML = `
+                      <div class="question mt-3">
+                        
+                        <div class="row">
+                          <div class="col-11">
+                            <h5>${index + 1}). ${question.question}</h5>
+                          </div>
+                          <div class="col-1 text-end">${mark_icon}</div>
+                        </div>
+                       
+                        <div class="mt-1 ms-3">
+                          <div class="d-flex justify-content-between">
+                            <span class="${question.choice? question.options[0].A ==question.choice ? tag : question.options[0].A ==question.answer ? "correct": "": question.options[0].A ==question.answer ? "correct": ""}">
+                              A: ${question.options[0].A} </span> 
+                          </div>				
+                          <div class="d-flex justify-content-between">
+                            <span class="${question.choice? question.options[0].B ==question.choice ? tag : question.options[0].B ==question.answer ? "correct": "": question.options[0].B ==question.answer ? "correct": ""}">
+                              B: ${question.options[0].B} </span> 
+                          </div>				
+                          <div class="d-flex justify-content-between">
+                            <span class="${question.choice? question.options[0].C ==question.choice ? tag : question.options[0].C ==question.answer ? "correct": "": question.options[0].C ==question.answer ? "correct": ""}">
+                              C: ${question.options[0].C} </span> 
+                          </div>				
+                          <div class="d-flex justify-content-between">
+                            <span class="${question.choice? question.options[0].D ==question.choice ? tag : question.options[0].D ==question.answer ? "correct": "": question.options[0].D ==question.answer ? "correct": ""}">
+                              D: ${question.options[0].D} </span> 
+                          </div>				
+                          
+                        </div>
+                  
+                      </div>
+                    `;
+                    document.getElementById("question-container").innerHTML += questionHTML;
+                    
+                  });
+                    
+                }, 
+                error: function(error){
+                    alert("Error fetching data data")
+                }
+            })
+   
+  </script>
+{% endblock js %}
+

@@ -18,16 +18,23 @@
         <h6 class="bg-dark text-light p-2">Exam Summary</h6>
 
         <div class="row">
-            <div class="col-4"><p class="fw-bold">Exam Name: </p></div>
-            <div class="col-6"><p>{{exam.name}}</p></div>
+            <div class="col-10">
+                <div class="row">
+                    <div class="col-4"><p class="fw-bold">Exam Name: </p></div>
+                    <div class="col-6"><p>{{exam.name}}</p></div>
+                    </div>
+                <div class="row">
+                    <div class="col-4"><p class="fw-bold">Scheduled Start Time:</p></div>
+                    <div class="col-6"><p>{{exam.start_date}}</p></div>
+                    </div>
+                <div class="row">
+                    <div class="col-4"><p class="fw-bold">Scheduled End Time:</p></div>
+                    <div class="col-6"><p>{{exam.end_date}}</p></div>
+                </div>
             </div>
-        <div class="row">
-            <div class="col-4"><p class="fw-bold">Scheduled Start Time:</p></div>
-            <div class="col-6"><p>{{exam.start_date}}</p></div>
+            <div class="col-2">
+                <img src="{% if student.student.image %}{{student.student.image.url}}{% else %}/media/photo/avatar.jpg{% endif %}" width="100px" height="100px" class="border border-3 img-fluid rounded float-end" alt="{{student.first_name}} img">
             </div>
-        <div class="row">
-            <div class="col-4"><p class="fw-bold">Scheduled End Time:</p></div>
-            <div class="col-6"><p>{{exam.end_date}}</p></div>
         </div>
     </div>
 

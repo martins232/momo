@@ -108,7 +108,7 @@ class Question(models.Model):
     
 class Session(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    exam = models.ForeignKey(Exam, on_delete=models.CASCADE, default=1)
+    exam = models.ForeignKey(Exam, on_delete=models.CASCADE,)
     # exam = models.ForeignKey(Exam, on_delete=models.SET_NULL, null=True)
     score = models.FloatField(default=0.0)
     elapsed_time = models.FloatField(null=True)
@@ -132,12 +132,15 @@ class Session(models.Model):
         
     def seconds_to_hms(self):
       
-        hours = int(self.elapsed_time // 3600)
-        minutes = int((self.elapsed_time % 3600) // 60)
-        seconds = int(self.elapsed_time % 60)
-        
-        
-        return f"{str(hours) + 'h ' if hours > 0 else ''} {str(minutes) + 'm: ' if minutes > 0 else ''} {str(seconds) + 's' if seconds > 0 else ''}"
+        if self.elapsed_time > 0:
+            hours = int(self.elapsed_time // 3600)
+            minutes = int((self.elapsed_time % 3600) // 60)
+            seconds = int(self.elapsed_time % 60)
+            
+            
+            return f"{str(hours) + 'h ' if hours > 0 else ''} {str(minutes) + 'm: ' if minutes > 0 else ''} {str(seconds) + 's' if seconds > 0 else ''}"
+        else:
+            return "-"
     
     
    
