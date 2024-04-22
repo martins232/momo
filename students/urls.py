@@ -9,5 +9,7 @@ urlpatterns = [
     path("session/", views.session, name="exam-session"),
     path("session/<str:pk>/data", views.session_data, name="exam-data"),
     path("session/<str:pk>/save", views.session_save, name="exam-save"),
-    path("exam-results/", views.examResult, name="exam-results"),
+    path("completed-session/", views.examResult, name="completed-session"),
+    path("session-analysis/<str:pk>/", views.examAnalysis, name="session-analysis"),
+    path("session-correction-data/<str:pk>/", views.sessionCorrectionData, name="session-correction-data"), #correction data for students
 ]

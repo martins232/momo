@@ -1,8 +1,50 @@
 {% extends "main.html" %}
 {% load static %}
 {% block content %}
-<h4>Yes iam the one</h4>
-{% for quest in questions %}
-    {{quest.question | safe}}
-{% endfor %}
+
+<nav aria-label="breadcrumb" class="main-breadcrumb">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item"><a href="javascript:void(0)">Home</a></li>
+      <li class="breadcrumb-item"><a href="javascript:void(0)">Student</a></li>
+      <li class="breadcrumb-item active" aria-current="page">Completed tests</li>
+    </ol>
+  </nav>
+  
+
+<div class="card my-3 mx-auto">
+    <div class="table-responsive">
+      <table class="table table-sm table-hover">
+        <thead class="table-secondary">
+          <tr>
+            <th scope="col">Name of exam</th>
+            <th scope="col">Subject</th>
+            <th scope="col">Status</th>
+            <th scope="col" class="table-dark text-center align-middle">ACTION</th>
+  
+          </tr>
+        </thead>
+        <tbody>
+          {% for session in sessions %}
+
+          <tr>
+            <td class="user-select-all" style="min-width: 150px;">{{session.exam.name}}</td>
+            <td>{{session.exam.subject}}</td>
+            <td>Ended</td>
+            
+  
+            <td class="text-center">
+                <a href="{% url "session-analysis" session.id %}" class="btn btn-success"><i class="fas fa-tasks"></i> Info</a></td>
+          </tr>
+          {% empty%}
+          <tr>
+            <td class="text-center" colspan="6">No completed Session at the moment</td>
+          </tr>
+          {% endfor %}
+  
+        </tbody>
+      </table>
+  
+    </div>
+
+   
 {% endblock content %}

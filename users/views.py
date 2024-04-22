@@ -1,4 +1,7 @@
 from urllib import request
+import django
+from django.contrib.sites.shortcuts import get_current_site
+import django.core.mail
 from django.shortcuts import render, redirect
 from main.decorators import teacher
 from django.contrib import messages
@@ -9,6 +12,14 @@ from . models import User, Student
 from django.contrib.auth import authenticate, login, logout
 from django.db import IntegrityError
 from django.core.exceptions import ObjectDoesNotExist
+
+from django.conf import settings
+from django.core.mail import send_mail
+from django.template.loader import render_to_string
+# from django.contrib.auth.tokens import default_token_generator 
+
+
+
 
 # Create your views here.
 def loginPage(request):
@@ -83,11 +94,11 @@ def lobby(request):
                 image = form.cleaned_data["image"]
                 
                 try:
-                    student = Student.objects.create(user = request.user,birth = birth,gender = gender, grade=grade)
+                    student = Student.objects.create(user = request.user,birth = birth,gender = gender, grade=grade, image=image)
                 except IntegrityError:
                     messages.info(request, "Profile already submitted, which is now pending admin verification")  
                 else:
-                    student.image=image
+                    
                     student.save()  
                     messages.success(request, "Created successfully") 
                 return redirect("lobby")
@@ -96,19 +107,34 @@ def lobby(request):
         if request.method =="POST":
             form = TeacherRequestForm(request, request.POST, request.FILES)
             if form.is_valid():
+                
                 phone = form.cleaned_data["phone"]
                 gender = form.cleaned_data["gender"]
                 email = form.cleaned_data["email"]
                 image = form.cleaned_data["image"]
                 
+                
+                
                 try:
-                    teacher = Teacher.objects.create(user = request.user,phone = phone,gender = gender, email=email)
+                    teacher = Teacher.objects.create(user = request.user,phone = phone,gender = gender, image=image)
                 except IntegrityError:
                     messages.info(request, "Profile already submitted, which is now pending admin verification")  
                 else:
-                    teacher.image=image
-                    teacher.save()  
+                    user = request.user
+                    user.email = email
+                    user.save()  
                     messages.success(request, "Created succesful") 
+                
+                # subject = "Verify teacher email address"
+                # message = render_to_string('verify_email.html', {
+                #     'user': request.user,                    
+                #     # 'uid': urlsafe_base64_encode(force_bytes(user.pk)),
+                #     # 'token': default_token_generator.make_token(user)    
+                #     })
+                # email_from = settings.EMAIL_HOST_USER
+                # recipient_list = [email]
+                # send_mail(subject, message, email_from, recipient_list, fail_silently=False)
+                
                 return redirect("lobby")
     
     

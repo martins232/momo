@@ -1,3 +1,4 @@
+import email
 from django import forms
 from django.core.validators import RegexValidator
 from teachers.models import Topic, Subject
@@ -6,76 +7,92 @@ from  django.core.files.base import File
 
 
 
-
+class LowerCase(forms.CharField):
+    def to_python(self, value):
+        return value.lower()
 class UserUpdateForm(forms.ModelForm):
-        first_name = forms.CharField(
-        label="First name",
+    
+    email = LowerCase(
+    label="Email",
+    min_length=10,
+    max_length=50,
+    # required=False,
+    validators=[RegexValidator(r"^[a-zA-Z0-9.+-_]+@[a-zA-Z0-9.+-_]+\.[a-zA-Z]*$", message="Enter a valid email address")], 
+    widget=forms.TextInput(attrs={
+        "placeholder":"Email Address",
+        "style": "font-size : 13px; text-transform: lowercase;",
+        # "autocomplete": "off" -----already done in supr func
+            }
+        )
+    )
+    first_name = forms.CharField(
+    label="First name",
+    help_text="<p>Space and numbers are not acceptable</p>",
+    min_length=3,
+    max_length=50,
+    # required=False,
+    validators=[RegexValidator(r"^[a-zA-Z]*$", message="Only letters are allowed")], 
+    error_messages= {"required": "Firstname cannot be empty"},
+    widget=forms.TextInput(attrs={
+        "placeholder":"Enter First name",
+        "style": "text-transform: capitalize;"            
+        })
+    ) 
+    last_name = forms.CharField(
+        label="Last name",
         help_text="<p>Space and numbers are not acceptable</p>",
         min_length=3,
         max_length=50,
         # required=False,
         validators=[RegexValidator(r"^[a-zA-Z]*$", message="Only letters are allowed")], 
-        error_messages= {"required": "Firstname cannot be empty"},
+        error_messages= {"required": "Lastname cannot be empty"},
         widget=forms.TextInput(attrs={
-            "placeholder":"Enter First name",
+            "placeholder":"Enter Last name",
             "style": "text-transform: capitalize;"            
             })
         ) 
-        last_name = forms.CharField(
-            label="Last name",
-            help_text="<p>Space and numbers are not acceptable</p>",
-            min_length=3,
-            max_length=50,
-            # required=False,
-            validators=[RegexValidator(r"^[a-zA-Z]*$", message="Only letters are allowed")], 
-            error_messages= {"required": "Lastname cannot be empty"},
-            widget=forms.TextInput(attrs={
-                "placeholder":"Enter Last name",
-                "style": "text-transform: capitalize;"            
-                })
-            ) 
-        class Meta:
-            model = User
-            fields = ["first_name", "last_name","username"]
-            
-            widgets ={
-                    "username": forms.TextInput(attrs={"class": "form-control","autofocus": False,}),
-                }    
-        def __init__(self,request,*args, **kwargs):
-            self.request = request
-            super().__init__(*args, **kwargs)
-            self.fields['username'].widget.attrs.update({'autofocus': False})
-            self.fields["username"].error_messages.update({"unique": "Denied! User already exist. You may want to login?"})
+    class Meta:
+        model = User
+        fields = ["first_name", "last_name","username", "email"]
         
-        def clean_username(self):
-            """This is to make sure a user can updaate his/her **username** without getting an error"""
-            username = self.cleaned_data.get('username')
-            current_user = self.request.user
+        widgets ={
+                "username": forms.TextInput(attrs={"class": "form-control","autofocus": False,}),
+            }    
+    def __init__(self,request,*args, **kwargs):
+        self.request = request
+        super().__init__(*args, **kwargs)
+        self.fields['email'].help_text = "Use a verifiable email, should you want to reset your password"
+        self.fields['username'].widget.attrs.update({'autofocus': False})
+        self.fields["username"].error_messages.update({"unique": "Denied! User already exist. You may want to login?"})
+        
+        if request.user:
+            if request.user.is_student is not None:
+                # If yes, remove the role field
+                self.fields.pop('email')
+    
+    def clean_username(self):
+        """This is to make sure a user can updaate his/her **username** without getting an error"""
+        username = self.cleaned_data.get('username')
+        current_user = self.request.user
 
-            if User.objects.filter(username=username).exclude(pk=current_user.pk).exists():
-                raise forms.ValidationError("Denied! User already exists. You may want to login?")
+        if User.objects.filter(username=username).exclude(pk=current_user.pk).exists():
+            raise forms.ValidationError("Denied! User already exists. You may want to login?")
 
-            return username  
+        return username  
+    
+    def clean_email(self):
+        email = self.cleaned_data.get("email")
+        if User.objects.filter(email=email).exists():
+            if self.request.user.email == email:
+                return email
+            else:
+                raise forms.ValidationError("Denied! " + email + " is already registered to another teacher")    
+        return email
     
 
-class LowerCase(forms.CharField):
-    def to_python(self, value):
-        return value.lower()
+
 
 class TeacherUpdateForm(forms.ModelForm):
-    email = LowerCase(
-        label="Email",
-        min_length=10,
-        max_length=50,
-        # required=False,
-        validators=[RegexValidator(r"^[a-zA-Z0-9.+-_]+@[a-zA-Z0-9.+-_]+\.[a-zA-Z]*$", message="Enter a valid email address")], 
-        widget=forms.TextInput(attrs={
-            "placeholder":"Email Address",
-            "style": "font-size : 13px; text-transform: lowercase;",
-            # "autocomplete": "off" -----already done in supr func
-            }
-        )
-    )
     image = forms.FileField(
         label="Your picture",        
         required= True,
@@ -140,14 +157,7 @@ class TeacherUpdateForm(forms.ModelForm):
             raise forms.ValidationError("Invalid number")
         return phone
     
-    def clean_email(self):
-        email = self.cleaned_data.get("email")
-        if Teacher.objects.filter(email=email).exists():
-            if self.request.user.teacher.email == email:
-                return email
-            else:
-                raise forms.ValidationError("Denied! " + email + " is already registered to another teacher")    
-        return email
+    
     
     
 class ChangeProfilePicture(forms.ModelForm):

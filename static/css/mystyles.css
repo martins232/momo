@@ -35,3 +35,31 @@
     66%  {background-position: -100%  66%,0%   66% ,100% 66% }
     100% {background-position:    0% 100%,100% 100%,200% 100%}
 }
+
+
+button[disabled]{
+  cursor: not-allowed;
+}
+
+#question-container  span{
+  width: 100%;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  padding-left: 10px;
+  border-radius: 3px;
+  margin-bottom: 20px;
+  /* background-color: #dff0d8; */
+  /* color: #3c763d; */
+  border: 1px solid black;
+}
+
+#question-container  .correct{
+  background-color: #dff0d8; 
+  color: #3c763d;
+  border-color: #a6c2a7;
+}
+#question-container  .wrong{
+  color: #a94442;
+  background-color: #f2dede;
+  border-color: #ebccd1;
+}

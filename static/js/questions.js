@@ -20,7 +20,8 @@ function ajaxRequest(params) {
 
 //edit formatter
 function operateFormatter(value, row, index) {
-	return `<button type="button" class="btn btn-light js-edit-question" data-id="${row.id}"><i class="fas fa-pencil"></i></i></button>`;
+	
+	return `<button ${row.exam != null ? "disabled" : "" } type="button" class="btn btn-light js-edit-question" data-id="${row.id}"><i class="fas fa-pencil"></i></i></button>`;
 }
 
 function clearForm(){
@@ -139,7 +140,7 @@ $("#question-data").on("submit", function (event) {
 			}
 		}, 
 		error: function(error){
-			console.log(error)
+			alert("Couldn't fetch data")
 		}
 	})
 });
@@ -278,7 +279,7 @@ $(
 						$("#addQuestion").modal("hide");
 					},
 					error: function (error) {
-						console.log(error);
+						alert("Couldn't fetch data");
 					},
 				});
 			}

@@ -1,6 +1,9 @@
-from users.models import Student
+from urllib import request
+from users.models import Student, User
 from django import forms
 from datetime import date
+from django.contrib.auth.forms import PasswordChangeForm
+
 
 class StudentUpdateForm(forms.ModelForm):
     class Meta:
@@ -48,3 +51,21 @@ class StudentUpdateForm(forms.ModelForm):
         
         return birth
 
+class studentPasswordReset(PasswordChangeForm):
+    def __init__(self, user, *args, **kwargs):
+        super().__init__(user, *args, **kwargs)
+        fields = ["old_password", "new_password1", "new_password2"]
+        for field in fields:
+            self.fields[field].widget.attrs.update({'autofocus': False, "style": "font-size:14px;" })
+            
+        self.fields["old_password"].help_text = "You are to input your old password"
+    
+    
+    def clean_old_password(self):
+        old_password = self.cleaned_data.get("old_password")
+        current_user = self.user
+       
+        if current_user.check_password(old_password):
+            return old_password
+        else:
+            raise forms.ValidationError("Old password doesn't match with what is in the database")

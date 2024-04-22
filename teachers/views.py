@@ -29,11 +29,11 @@ from django.views.decorators.cache import cache_page
 @login_required(login_url="login")
 def userProfile(request):
     user = User.objects.get(username = request.user.username)
-    subjects = user.subject_set.all()
+    subjects = Subject.objects.filter(teacher=user)
     context = {
         "user": user,
         "subjects":subjects,
-        "count_course" : user.subject_set.all().count()
+        "count_course" : subjects.count()
     }
     return render(request, "teachers/profile.html", context)
 @teacher
@@ -42,6 +42,8 @@ def editProfile(request, pk):
     user = User.objects.get(id =pk)
     p_form = UserUpdateForm(request, instance = user,)
     t_form = TeacherUpdateForm(request, instance= user.teacher)
+    
+    
     
     if request.method == "POST":
         p_form = UserUpdateForm(request, request.POST, instance = user)

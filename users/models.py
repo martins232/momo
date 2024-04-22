@@ -54,7 +54,7 @@ class Student(models.Model):
         return self.user.first_name + " " + self.user.last_name
 class Teacher(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    email = models.EmailField(max_length=50)
+    
     phone = models.CharField(max_length=20)
     gender = models.CharField(max_length=10)
     image = models.FileField(upload_to="photo",blank=True, verbose_name="Photo",)

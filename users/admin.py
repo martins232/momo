@@ -79,10 +79,10 @@ class StudentAdmin(admin.ModelAdmin):
 class TeacherAdmin(admin.ModelAdmin):
     actions = ["mark_pending", "mark_approved", "mark_rejected", "remove_rejected"] 
     list_filter = ["status"]
-    list_display = ( 'name', 'email',"phone", 'gender', 'image', "action", "_","status",) #Tables you will see
+    list_display = ( 'name', "phone", 'gender', 'image', "action", "_","status",) #Tables you will see
     list_display_links = None
     list_editable = ["status"]
-    fields =['email',"phone", 'gender', 'image', "status", ] # forms that could be filled in the admin
+    fields =["phone", 'gender', 'image', "status", ] # forms that could be filled in the admin
     search_fields = ["first_name", "last_name","email", "status"]
     
     
@@ -162,7 +162,7 @@ class TeacherAdmin(admin.ModelAdmin):
                                    "%d teacher role were successfully declined. Objects deleted", delete) % delete[0], level=messages.SUCCESS)
 @admin.register(User)
 class MyUserAdmin(DjangoUserAdmin):
-    list_display = ["name","username", "role"]
+    list_display = ["name","username", "role", "email"]
     list_filter = ("is_teacher",)
     fieldsets = (
         (None, {'fields': [("first_name", "last_name"),'username', 'password']}),

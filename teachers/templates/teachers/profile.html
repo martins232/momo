@@ -37,7 +37,13 @@
                             
                             <div class="col-6"><p class="text-secondary"><b>Assigned subjects: </b></p></div>
                             
-                            <div class="col-6">{% for sub in subjects %}<li class="list-unstyled">{{sub.name}}</li>{% endfor %}</div>
+                            <div class="col-6">
+                                {% for sub in subjects %}
+                                    <li class="list-unstyled">{{sub.name}}</li>
+                                {% empty %} 
+                                    <p class="fw-bold ">N/A</p>
+                                    {% endfor %}
+                            </div>
                             
                             
                          </div>
@@ -63,7 +69,7 @@
                                 <h6 class="mb-0">Email</h6>
                             </div>
                             <div class="col-sm-9 text-secondary">
-                                {{user.teacher.email}}
+                                {{user.email}}
                             </div>
                         </div>
                         <hr>
