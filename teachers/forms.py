@@ -199,3 +199,6 @@ class TopicForm(forms.ModelForm):
         self.fields["subject"].queryset = Subject.objects.filter(teacher=request.user)
         self.fields['name'].label = "Topic name"
         
+    def clean_name(self):
+        name = self.cleaned_data.get("name")
+        return name.capitalize()

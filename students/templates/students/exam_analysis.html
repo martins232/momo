@@ -52,15 +52,15 @@
 
   <ul class="mt-2 nav nav-pills nav-fill gap-2 p-1 small bg-dark rounded-2 shadow-sm" id="pillNav2" role="tablist" style="--bs-nav-link-color: var(--bs-white); --bs-nav-pills-link-active-color: var(--bs-dark); --bs-nav-pills-link-active-color: var(--bs-dark); --bs-nav-pills-link-active-bg: var(--bs-white); nav-link:hover">
     <li class="nav-item" role="presentation">
-      <button class="nav-link active rounded-2" id="question-tab2" data-bs-toggle="tab" type="button" role="tab" aria-selected="true" data-bs-target="#questionCorrection"><i class="bi-journal-bookmark-fill"></i> Question</button>
+      <button class="nav-link active rounded-2" id="summary-tab2" data-bs-toggle="tab" type="button" role="tab" aria-selected="false" data-bs-target="#summary">Exam Summary</button>
     </li>
     <li class="nav-item" role="presentation">
-      <button class="nav-link rounded-2" id="summary-tab2" data-bs-toggle="tab" type="button" role="tab" aria-selected="false" data-bs-target="#summary">Exam Summary</button>
+      <button class="nav-link rounded-2" id="question-tab2" data-bs-toggle="tab" type="button" role="tab" aria-selected="true" data-bs-target="#questionCorrection"><i class="bi-journal-bookmark-fill"></i> Question</button>
     </li>
   </ul>
 
   <div class="tab-content" id="nav-tabContent">
-    <div class="tab-pane fade show active" id="questionCorrection" role="tabpanel" aria-labelledby="question" tabindex="0">
+    <div class="tab-pane fade " id="questionCorrection" role="tabpanel" aria-labelledby="question" tabindex="0">
         <div class="mt-2 spinner-border d-block mx-auto" role="status">
             <span class="visually-hidden">Loading...</span>
         </div>
@@ -68,39 +68,39 @@
 
         </div>
     </div>
-    <div class="tab-pane fade" id="summary" role="tabpanel" aria-labelledby="summary" tabindex="0">
+    <div class="tab-pane fade show active" id="summary" role="tabpanel" aria-labelledby="summary" tabindex="0">
         <div class="table-responsive">
           <table class="table table-hover table-bordered caption-top">
             <caption><h1><span class="fw-bold text-decoration-underline">{{request.user}}</span> exam result:</h1></caption>
             <tbody>
               <tr>
                 <th scope="row">Total number of answered Questions</th>
-                <td class="text-center">10 </td>
+                <td class="text-center">{{total_ans}}</td>
               </tr>
               <tr>
                 <th scope="row">Total number of unanswered Questions</th>
-                <td class="text-center">13</td>
+                <td class="text-center">{{unanswered}}</td>
               </tr>
   
               <tr>
                 <th scope="row">No of correct Answers</th>
-                <td class="text-center"><sup class="fw-bold">15</sup>/<sub>30</sub></td>
+                <td class="text-center"><sup class="fw-bold text-success">{{correct}}</sup>/<sub>{{no_quest}}</sub></td>
               </tr>
               <tr>
                 <th scope="row">No of wrong answers</th>
-                <td class="text-center"><sup class="fw-bold">23</sup>/<sub>30</sub></td>
+                <td class="text-center"><sup class="fw-bold text-danger">{{incorrect}}</sup>/<sub>{{no_quest}}</sub></td>
               </tr>
               <tr>
                 <th scope="row">Time spent </th>
-                <td class="text-center">30</td>
+                <td class="text-center">{{session.seconds_to_hms}}</td>
               </tr>
               <tr>
                 <th scope="row">Score</th>
-                <td class="text-center"><b>50%</b></td>
+                <td class="text-center"><b>{{session.score}}</b></td>
               </tr>
               <tr>
                 <th scope="row">Teacher's remark</th>
-                <td class="text-center">Pass</td>
+                <td class="text-center">{% if session.passed %} <span class="text-success">Pass</span>{% else %} <span class="text-danger">Fail</span>{% endif %}</td>
               </tr>
   
             </tbody>

@@ -293,11 +293,16 @@ def examResult(request):
 
 def examAnalysis(request, pk):
     session = Session.objects.get(id=pk)
+    correct, incorrect, unanswered = session.get_correct_count()
     context ={
         "session": session,
         "pk": session.id,
         "score": session.score,
-        "no_quest": len(session.choice)
+        "no_quest": len(session.choices),
+        "correct": correct,
+        "incorrect": incorrect,
+        "unanswered": unanswered,
+        "total_ans": correct + incorrect + unanswered
     }
     return render(request, "students/exam_analysis.html", context)
 

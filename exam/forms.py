@@ -1,10 +1,12 @@
 
+from dataclasses import fields
 from wsgiref.validate import validator
 from django import forms
 from .models import Exam, Question
 from users.models import Grade
 from datetime import date, timedelta, datetime
 from django.core.exceptions import ValidationError
+from teachers.models import Topic
 
 
 
@@ -120,6 +122,9 @@ class ExamForm(forms.ModelForm):
     #     if start_date.timestamp() >two_weeks_from_now.timestamp():
     #         raise ValidationError("The exam start date must be within a two-week window from the current date.")
     #     return start_date
+    
+    
+
 
 class QuestionForm(forms.ModelForm):
     answer_choice =[
@@ -133,9 +138,11 @@ class QuestionForm(forms.ModelForm):
     answer = forms.ChoiceField(widget=forms.RadioSelect,
         choices=answer_choice,)   
     
+    # topics = forms.ModelChoiceField(widget=forms.SelectMultiple, queryset=Topic.objects.filter(grade=2), required=False)
     
     class Meta:
         model = Question
+        # fields = ('subject',  'question', 'question', 'option_A', 'option_B', 'option_C', 'option_D', 'answer','topics', )
         exclude = ("exam", 'updated', 'created')
         # widgets = {
         #       "text": CKEditor5Widget(

@@ -149,7 +149,7 @@
                 success: function (response){
                     if(response.message =="deleted"){
                             // Redirect to the same page with a query parameter to indicate success
-                            window.location.href = window.origin+"?deleted=true";                                    
+                            window.location.href = "{% url 'closed-exam' %}?deleted=true";                                    
                     }
                 },
                 error: function(error){

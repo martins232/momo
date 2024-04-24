@@ -80,22 +80,6 @@ $(function () {
 		}
 		$("#addQuestion .modal-title").text("Add Question")
 		$("#addQuestion").modal("show");
-		
-		
-		// $.ajax({
-		//     url: 'create-myquestion',
-		//     type: 'get',
-		//     dataType: 'json',
-		//     beforeSend: function () {
-		//       $("#addQuestion").modal("show");
-		//     },
-		//     success: function (data) {
-		//         $("#addQuestion .modal-content").html(data.html_form);
-		//     },
-		//     error: function(error){
-
-		//     }
-		//   });
 	});
 });
 
