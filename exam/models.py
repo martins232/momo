@@ -2,7 +2,7 @@ from email.policy import default
 from tabnanny import verbose
 from django.db import models
 from users. models import User, Grade
-from teachers. models import Subject
+from teachers. models import Subject, Topic
 from django.utils import timezone
 
 from django.contrib import admin
@@ -89,6 +89,7 @@ class Question(models.Model):
     # teacher = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, limit_choices_to={"is_teacher":True})
     subject = models.ForeignKey(Subject, on_delete=models.RESTRICT, blank=False)
     exam = models.ForeignKey(Exam, on_delete=models.SET_NULL, null=True, blank=True)
+    # topics = models.ManyToManyField(Topic, blank=True)
     # question = CKEditor5Field('Question')
     question = models.TextField()
     option_A = models.TextField()
@@ -142,5 +143,19 @@ class Session(models.Model):
         else:
             return "-"
     
-    
+    def get_correct_count(self):
+        choices_data = self.choices
+        correct = 0
+        incorrect = 0
+        unanswered = 0
+        for question, options in choices_data.items():
+            for option in options:
+                if isinstance(option, dict) and option.get("status") == "correct":
+                    correct += 1
+                elif isinstance(option, dict) and option.get("status") == "incorrect":
+                    incorrect += 1
+                elif not option:
+                    unanswered += 1
+                    
+        return correct, incorrect, unanswered
    
