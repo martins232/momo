@@ -5,6 +5,7 @@ from django.utils.html import format_html
 from django.utils.translation import ngettext
 from django.contrib import messages
 from django.contrib.auth.admin import UserAdmin as DjangoUserAdmin
+from django.core.mail import send_mail
 
 
 # Register your models here.
@@ -79,9 +80,9 @@ class StudentAdmin(admin.ModelAdmin):
 class TeacherAdmin(admin.ModelAdmin):
     actions = ["mark_pending", "mark_approved", "mark_rejected", "remove_rejected"] 
     list_filter = ["status"]
-    list_display = ( 'name', "phone", 'gender', 'image', "action", "_","status",) #Tables you will see
+    list_display = ( 'name', "phone", 'gender', 'image', "action", "_",) #Tables you will see
     list_display_links = None
-    list_editable = ["status"]
+    # list_editable = ["status"]
     fields =["phone", 'gender', 'image', "status", ] # forms that could be filled in the admin
     search_fields = ["first_name", "last_name","email", "status"]
     
@@ -128,6 +129,13 @@ class TeacherAdmin(admin.ModelAdmin):
     @admin.action(description="Mark selected teacher as approved")
     def mark_approved(self, request, queryset):
         queryset.update(status="Approved")
+        send_mail(
+            "Approved",
+            "Here is the message.",
+            "from@example.com",
+            ["to@example.com"],
+            fail_silently=False,
+        )
         for obj in queryset:
             # make the admin area accessible to the teachers
             obj.user.is_staff= True
