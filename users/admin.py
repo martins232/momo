@@ -129,17 +129,27 @@ class TeacherAdmin(admin.ModelAdmin):
     @admin.action(description="Mark selected teacher as approved")
     def mark_approved(self, request, queryset):
         queryset.update(status="Approved")
+        emails = []
+        # send_mail(
+        #     "Approved",
+        #     "Here is the message.",
+        #     "from@example.com",
+        #     ["to@example.com"],
+        #     fail_silently=False,
+        # )
+        for obj in queryset:
+            emails.append(obj.user.email)
+            # make the admin area accessible to the teachers
+            obj.user.is_staff= True
+            obj.user.save()
         send_mail(
             "Approved",
             "Here is the message.",
             "from@example.com",
-            ["to@example.com"],
+            emails,
             fail_silently=False,
         )
-        for obj in queryset:
-            # make the admin area accessible to the teachers
-            obj.user.is_staff= True
-            obj.user.save()
+        emails
         self.message_user(request, "Teacher(s) approved", level=messages.SUCCESS)
         
         
@@ -173,7 +183,7 @@ class MyUserAdmin(DjangoUserAdmin):
     list_display = ["name","username", "role", "email"]
     list_filter = ("is_teacher",)
     fieldsets = (
-        (None, {'fields': [("first_name", "last_name"),'username', 'password']}),
+        (None, {'fields': [("first_name", "last_name"),'username', 'email', 'password']}),
         ('Permissions', {'fields': ('is_staff', 'is_active', 'is_superuser', 'groups', 'user_permissions')}),
         ("Important dates", {"fields":("date_joined", "last_login")})
     )
