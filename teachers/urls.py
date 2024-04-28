@@ -27,9 +27,10 @@ urlpatterns = [
     
     path("questions", views.allQuestions, name="all-questions"),
     path("question-data", views.questionData, name="question-data"),
-    path("create-question", views.createQuestion, name="create-question"),
-    path("delete-question", views.deleteQuestion, name="delete-question"),
-    path("edit-question", views.editQuestion, name="edit-question"),
+    
+    # path("create-question", views.createQuestion, name="create-question"),
+    # path("delete-question", views.deleteQuestion, name="delete-question"),
+    # path("edit-question", views.editQuestion, name="edit-question"),
     
     
     #debugging-------------------------------------------

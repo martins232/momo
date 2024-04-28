@@ -1,12 +1,12 @@
 from email.policy import default
 from tabnanny import verbose
+from urllib import request
 from django.db import models
 from users. models import User, Grade
 from teachers. models import Subject, Topic
 from django.utils import timezone
 
 from django.contrib import admin
-
 
 
 from datetime import date
@@ -80,6 +80,12 @@ class Exam(models.Model):
         seconds = int(duration % 60)
         
         return f"{str(hours) + 'hr' if hours > 0 else ''} {'s' if hours>1 else ''} {str(minutes) + 'min ' if minutes > 0 else ''} {str(seconds) + 'sec(s)' if seconds > 0 else ''}"
+   
+    def check_status_of_student(self, user):
+        print(user)
+        
+        # print(Session.objects.get(user=request.user))
+        return 1
     
     class Meta:
         ordering = [ "created"]

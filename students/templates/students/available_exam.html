@@ -36,6 +36,7 @@
           <td>{{exam.duration }}</td>
           <td class="text-center">{{exam.question_set.count }}</td>
           <td>{{exam.start_date | date:"d/m/y"}}</td>
+          
 
           <td class="text-center"><button class="btn btn-success btn-sm start" data-id="{{exam.id}}"
               data-name={{request.user}} data-exam="{{exam.name}}" data-duration="{{exam.duration}}"

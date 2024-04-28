@@ -10,7 +10,7 @@ from exam .models import Exam, Question, Session
 from teachers.models import Subject, Topic
 from django.core.exceptions import ObjectDoesNotExist,PermissionDenied
 from django.db.models import Q
-from django.db.models.signals import post_save
+from django.db.models.signals import post_save, pre_delete
 from django.dispatch import receiver
 
 from django.http.response import JsonResponse
@@ -612,4 +612,6 @@ def question_delete(request):
             context = {'questions': questions}
             data['html_form'] = render_to_string('teachers/includes/delete_question.html',context, request=request)
             return JsonResponse(data)
-    
+
+
+   

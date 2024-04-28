@@ -194,7 +194,7 @@ def session_data(request, pk):
             session.choices = prechoices
             session.time_started = timezone.now()
             session.completed = False
-            # session.attempts = session.attempts +1
+            session.attempts = session.attempts +1
             session.save()
             
             return JsonResponse(data)
