@@ -48,4 +48,6 @@ urlpatterns = [
     path("exam/<str:pk>/", views.viewExam, name="view-exam"),
     path("assign-question-to-exam/<str:pk>/", views.assignQuestionToExam, name="assign-question-to-exam"),
     path("remove-question-from-exam/<str:pk>/", views.removeQuestionFromExam, name="remove-question-from-exam"),
+    
+    path("change-students-password", views.changeStudentsPassword, name="change-students-password")
 ]

@@ -1,6 +1,6 @@
 import json
 from django.shortcuts import render, redirect, get_object_or_404
-from users.models import User, Teacher, Grade
+from users.models import Student, User, Teacher, Grade
 from main . decorators import teacher
 from teachers. forms import UserUpdateForm,TeacherUpdateForm, ChangeProfilePicture, TopicForm
 from django.contrib.auth.decorators import login_required
@@ -614,4 +614,18 @@ def question_delete(request):
             return JsonResponse(data)
 
 
-   
+def changeStudentsPassword(request):
+    students = Student.objects.filter(request_password=True)
+    if request.method == "POST":
+        ids = request.POST.get("ids")
+        ids = json.loads(ids)
+        students = Student.objects.filter(id__in = ids)
+        for student in students:
+            student.user.set_password("12345678")
+            student.user.save()
+        students.update(request_password=False)
+        return JsonResponse({"msg": "done"})
+    context = {
+        "students": students
+    }
+    return render(request, "teachers/change_students_password.html", context)

@@ -3,7 +3,7 @@ from urllib import request
 import django
 from django.contrib.sites.shortcuts import get_current_site
 import django.core.mail
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from main.decorators import teacher
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -22,7 +22,13 @@ from django.contrib.auth.views import PasswordResetConfirmView
 
 
 
-
+def requestPasswordStudent(request):
+    if request.method == "POST":
+        username = request.POST.get("username")
+        student = get_object_or_404(User, username=username)
+        student.student.request_password = True
+        student.student.save()
+    return render(request, "reset_password_student.html")
 
 # Create your views here.
 def loginPage(request):
