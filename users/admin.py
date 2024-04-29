@@ -128,28 +128,23 @@ class TeacherAdmin(admin.ModelAdmin):
         
     @admin.action(description="Mark selected teacher as approved")
     def mark_approved(self, request, queryset):
-        queryset.update(status="Approved")
         emails = []
-        # send_mail(
-        #     "Approved",
-        #     "Here is the message.",
-        #     "from@example.com",
-        #     ["to@example.com"],
-        #     fail_silently=False,
-        # )
-        for obj in queryset:
+        pending_teachers = queryset.filter(status="Pending")
+        for obj in pending_teachers:
             emails.append(obj.user.email)
             # make the admin area accessible to the teachers
             obj.user.is_staff= True
             obj.user.save()
-        send_mail(
-            "Approved",
-            "Here is the message.",
-            "from@example.com",
-            emails,
-            fail_silently=False,
-        )
-        emails
+        pending_teachers.update(status="Approved")
+        if len(emails)>0:
+            send_mail(
+                "Approved",
+                "Here is the message.",
+                emails,
+                fail_silently=False,
+            ) 
+        
+       
         self.message_user(request, "Teacher(s) approved", level=messages.SUCCESS)
         
         

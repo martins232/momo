@@ -150,7 +150,7 @@ class StudentRequestForm(forms.ModelForm):
     class Meta:
         model = Student
         # fields = "__all__"
-        exclude = ["status","user"]
+        exclude = ["status","user", "request_password"]
         
         
         GENDER = (
@@ -194,8 +194,8 @@ class StudentRequestForm(forms.ModelForm):
             Your answer will be True because (9, 29) is less than (10, 26) since 9(september) is less than 10(october) you haven't clocked 27 yet. The second elements of the tuples are not compared at all, as the first elements are enough to decide the result. You can think of it as comparing words in a dictionary: "apple" comes before "banana" because "a" comes before "b", regardless of the rest of the letters.
             Therefore (27 - True) is thesame as 27 -1 = 26
         """
-        if age<18 or age >65:
-            raise forms.ValidationError("Age must be between 18 and 65")
+        if age<10 or age >65:
+            raise forms.ValidationError("Age must be between 10 and 65")
         
         return birth
     # def clean_image(self):

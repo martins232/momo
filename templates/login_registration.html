@@ -9,8 +9,8 @@
 <main class="form-signin w-100 m-auto">
     
     <form method="post">
+        <img class="mb-2 mx-auto d-block" src="{% static "images/logo.png" %}" alt="Logo" width="100" height="100">
         {% csrf_token %}
-        <img class="mb-4 mx-auto d-block" src="{% static "images/logo.svg" %}" alt="Logo" width="100" height="57">
         <h3 class="h3 mb-3 fw-normal">Please sign in</h3>
     
         <div class="form-floating">
@@ -27,19 +27,21 @@
             <label class="form-check-label" for="showPassword">Show Password</label>
         </div>
         <div class="d-flex align-items-center justify-content-between mt-4 mb-0">
-            <a class="small" href="{% url "reset_password" %}">Forgot Password?</a>
+            <a class="small" data-bs-toggle="modal" data-bs-target="#status" style="cursor: pointer">Forgot Password?</a>
             <a href="{% url "register" %}"> Sign up!</a>
         </div>
         <button class="btn btn-primary w-100 py-2 mt-2" type="submit" onclick="toggleSubmitBtn()"> Sign in <i class="fas"></i></button>
         
     </form>
-  </main>
+
+
+    
 
 {% else %}
   <main class="form-signin w-100 m-auto" style="max-width:700px">
     <form action="" method="post" novalidate >
         {% csrf_token %}
-        <img class="mb-4 mx-auto d-block" src="{% static "images/logo.svg" %}" alt="" width="100" height="57">
+        <img class="mb-2 mx-auto d-block" src="{% static "images/logo.png" %}" alt="" width="100" height="100">
         <h3 class="h3 mb-3 fw-normal">Register</h3>
         <!-- {{form | crispy}} -->
         <div class="row mb-3">
@@ -80,6 +82,30 @@
     </form>
   </main>
 {% endif %}
+
+
+
+
+<!-- Modal -->
+<div class="modal fade opacity-75" id="status"  data-bs-keyboard="true" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+    <div class="modal-dialog modal-sm modal-dialog-centered">
+    <div class="modal-content">
+        <div class="modal-body">
+            <a class="d-flex justify-content-between bg-light py-2 px-3 text-decoration-none border border-dark rounded-pill " href="{% url "reset_password_student" %}">
+                <span  class="text-decoration-underline fw-bold">Student</span>
+                <i class="mt-1 fas fa-arrow-circle-right fa-beat"></i>
+            </a>
+            <a class=" mt-2 d-flex justify-content-between bg-light py-2 px-3 text-decoration-none border border-dark rounded-pill" href="{% url "reset_password" %}">
+                <span class="text-decoration-underline fw-bold">Teacher</span>
+                <i class="mt-1 fas fa-arrow-circle-right fa-beat"></i>
+            </a>
+        
+        </div>
+        
+    </div>
+    </div>
+</div>
+</main>
 
 {% endblock content %}
 

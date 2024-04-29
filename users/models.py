@@ -1,3 +1,4 @@
+from pyexpat import model
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from datetime import date
@@ -42,6 +43,7 @@ class Student(models.Model):
     gender = models.CharField(max_length=10)
     image = models.FileField(upload_to="photo", verbose_name="Photo", default="/media/photo/avatar.jpg")
     status = models.CharField(max_length=50, null=True, choices=STATUS_CHOICE, default="Pending")
+    request_password = models.BooleanField(null=False, default=False)
     
     @property
     def get_age(self):
