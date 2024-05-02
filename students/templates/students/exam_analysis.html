@@ -55,7 +55,7 @@
       <button class="nav-link active rounded-2" id="summary-tab2" data-bs-toggle="tab" type="button" role="tab" aria-selected="false" data-bs-target="#summary">Exam Summary</button>
     </li>
     <li class="nav-item" role="presentation">
-      <button class="nav-link rounded-2" id="question-tab2" data-bs-toggle="tab" type="button" role="tab" aria-selected="true" data-bs-target="#questionCorrection"><i class="bi-journal-bookmark-fill"></i> Question</button>
+      <button class="nav-link rounded-2" id="question-tab2" data-bs-toggle="tab" type="button" role="tab" aria-selected="true" data-bs-target="#questionCorrection"><i class="fas fa-list"></i> Question</button>
     </li>
   </ul>
 
@@ -131,17 +131,16 @@
                           tag = "wrong"
                         }
                     }else{
-                      mark_icon = "<i class='bi-exclamation fs-3 text-danger'></i>"
+                      
+                      mark_icon = "<i class=' mt-2 bi-exclamation-circle fa-2xl fa-beat text-danger'></i>"
                     }
                     const questionHTML = `
                       <div class="question mt-3">
                         
-                        <div class="row">
-                          <div class="col-11">
-                            <h5>${index + 1}). ${question.question}</h5>
-                          </div>
-                          <div class="col-1 text-end">${mark_icon}</div>
+                        <div class="d-flex p-1 justify-content-between">
+                          <p class="w-100"> ${index + 1}). ${question.question} </p> ${mark_icon}
                         </div>
+                        
                        
                         <div class="mt-1 ms-3">
                           <div class="d-flex justify-content-between">

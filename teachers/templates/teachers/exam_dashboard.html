@@ -16,6 +16,8 @@
 {% endblock additional_head_css %}
 
 {% block content %}
+
+
 <div class="accordion mb-2" id="accordionExample">
 	<div class="accordion-item">
 	  <h2 class="accordion-header" id="headingOne">
@@ -79,10 +81,10 @@
 			<thead>
 				
 				<tr>
-					<th data-field="question">Question</th>
+					<th data-field="question" data-cell-style="questionCellStyle">Question </th>
 					<th data-field="pattern" data-formatter="patternFormatter" data-align="center">Answer Pattern</th>
 					<th data-field="details" data-formatter="detailsFormatter" data-align="center">Details</th>
-					<th data-field="difficulty" data-formatter="difficultyFormatter" data-align="center">Difficulty</th>
+					<th data-field="difficulty" data-formatter="difficultyFormatter" data-align="center">Difficulty <i class="fas fa-question-circle" data-bs-toggle="tooltip" data-bs-placement="left" title="(No. of correct x 100) / (No. attempted) "></i></th>
 				</tr>
 			</thead>
 		</table>
@@ -93,7 +95,30 @@
 
 
 
-		{% include "modal.html" with type_of_modal="studentDetail" %}
+		{% comment %} {% include "modal.html" with type_of_modal="studentDetail" %}
+
+		<div class="modal" id="{{type_of_modal |default:"delete"}}"> {% endcomment %}
+		<div class="modal" id="studentDetail">
+			<div class="modal-dialog modal-lg modal-dialog-scrollable modal-dialog-centered">
+			  <div class="modal-content" style="min-height: 98vh;">
+		  
+				<!-- Modal Header -->
+				<div class="modal-header ">
+				  <h4 class="modal-title text-center">Question details</h4>
+				  <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+				</div>
+		  
+				<!-- Modal body -->
+				<div class="modal-body" id="modal-body-confirm" >
+					
+				</div>
+		  
+				<!-- Modal footer -->
+				
+		  
+			  </div>
+			</div>
+		</div>
 {% endblock content %}
 
 {% block js %}
@@ -102,7 +127,9 @@
 
 
 <script>
+	
 	let id
+	
 		function ajaxRequest(params) {
 				id = "{{pk}}"
 				var url = `${window.origin}/teacher/exam-data/${id}/` 
@@ -163,16 +190,17 @@
 		}
 
 		//function to show options and option choice forloop.counter
-		const option_choice_count =(x) =>{
-			let question_option = ``
+		const option_choice_count =(x, y) =>{
+			let question_option = `<div class="mt-2 ps-1">`
 
 			for (let keys in x){
 				
 
-				question_option += `<div class="d-flex border p-1 justify-content-between mb-1">
-					<span> ${keys} </span> ${x[keys]}
+				question_option += `<div class="d-flex p-1 justify-content-between">
+					<span class=${y? keys == y ? "correct":"":""}> ${keys} </span> ${x[keys]}
 					</div>`
 			}
+			question_option += "</div>"
 			return question_option
 		}
 
@@ -186,19 +214,16 @@
 					 var data = button.getAttribute("data-index")
 					 var data_obj = JSON.parse(data)
 					
-					 $(".modal-footer").css("display", "none");
-					 $(".modal-dialog").addClass("modal-fullscreen")
 					 //var obj = JSON.parse(x)
-					 $(".modal-title").text("Question details")
+					 
 					 $(".modal-body").html(`
 					
+					<div id ="question-container">
+						<p class="fs-6 text-justify" >${data_obj.question}</p>
+						${option_choice_count(data_obj.option_count, data_obj.answer)}
+					</div>
 
-					 <p class="fs-6 text-justify" >${data_obj.question}</p>
-					 
-					 <hr>
-					 ${option_choice_count(data_obj.option_count)}
-
-					 <ul id="nav_status" class="nav nav-tabs flex-nowrap overflow-scroll mt-4" role="tablist">
+					 <ul id="nav_status" class="mt-2 nav nav-pills nav-fill gap-2 p-1 small bg-light rounded-2 shadow-sm border bd-dark" role="tablist" style="flex-wrap: nowrap; overflow-x: auto; overflow-y:hidden;">
 						<li class="nav-item">
 							<a class="nav-link active" data-bs-toggle="tab" href="#correct">Correct <span class="badge text-bg-secondary">${data_obj.correct}</span></a>
 						</li>
@@ -227,6 +252,14 @@
 					 `)
 					
 			 })   
+		}
+
+		function questionCellStyle(value, row, index) {
+			return {
+				css: {
+					"min-width": "360px",
+				},
+			};
 		}
 </script>
 {% endblock js %}

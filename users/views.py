@@ -28,6 +28,7 @@ def requestPasswordStudent(request):
         student = get_object_or_404(User, username=username)
         student.student.request_password = True
         student.student.save()
+        messages.success(request, "A request for a new password has been made")
     return render(request, "reset_password_student.html")
 
 # Create your views here.

@@ -116,6 +116,16 @@ class ExamForm(forms.ModelForm):
             raise ValidationError("The exam end date should be after the start date. Please adjust the end date to be a later date.")
         return end_date
     
+    def clean_review(self):
+        retake = self.cleaned_data.get("retake")
+        review = self.cleaned_data.get("review")
+        
+        if retake:
+            if review == False:
+                raise ValidationError("Allow students view score to decide if they want to retake an exam")
+        else:
+            return review
+    
     # def clean_start_date(self):
     #     start_date= self.cleaned_data.get("start_date")
     #     two_weeks_from_now = datetime.now() + timedelta(days=14)

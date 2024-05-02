@@ -192,6 +192,7 @@ def session_data(request, pk):
                    "user": request.user.get_full_name()}
             
             session.choices = prechoices
+            session.elapsed_time = 0
             session.time_started = timezone.now()
             session.completed = False
             session.attempts = session.attempts +1

@@ -90,7 +90,7 @@ def scheduledExam(request):
     #all the classes 
     grades = Grade.objects.filter(Q(exam__start_date__gt=timezone.now()) | Q(exam__start_date__lte=timezone.now(), exam__end_date__gt=timezone.now()), exam__teacher=request.user).distinct()
     if request.method == "POST":
-        form = ExamForm(request, request.POST)
+        form = ExamForm(request, request.POST, )
         if form.is_valid():
             exam = form.save(commit=False)
             exam.teacher = request.user
@@ -98,7 +98,7 @@ def scheduledExam(request):
             messages.add_message(request, messages.SUCCESS, "Exam created")
             return redirect("scheduled-exam")
         else:
-            messages.add_message(request, messages.ERROR, form.errors.as_ul())   
+            messages.add_message(request, messages.ERROR, "Exam not created, check form for error")  
     context = {
         "form": form,
         "exams": exams,
@@ -107,6 +107,8 @@ def scheduledExam(request):
   
     return render(request, "teachers/schedule_exam.html", context)
 
+@teacher
+@login_required(login_url="login")
 def closedExam(request):
     """Exams that have been completed"""
     grades = Grade.objects.filter(exam__end_date__lt=timezone.now(), exam__teacher=request.user).distinct()
@@ -299,7 +301,7 @@ def studentPerformance(request, pk):
 #JSON data after exams has been taken
 def examDashboardData(request, pk):
     exam = Exam.objects.get(id = pk)
-    sessions = Session.objects.filter(exam= exam)
+    sessions = Session.objects.filter(exam= exam).order_by("score")
     questions = Question.objects.filter(exam =exam)
     
     data = []
@@ -332,6 +334,7 @@ def examDashboardData(request, pk):
             
         data.append({
             "question": question.question, 
+            "answer": options[question.answer],
             "correct": correct_count, 
             "incorrect": incorrect_count, 
             "unanswered": unanswered_count,
@@ -624,7 +627,7 @@ def changeStudentsPassword(request):
             student.user.set_password("12345678")
             student.user.save()
         students.update(request_password=False)
-        return JsonResponse({"msg": "done"})
+        return JsonResponse({"msg": True})
     context = {
         "students": students
     }

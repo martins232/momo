@@ -1,18 +1,37 @@
 import factory
+import factory.fuzzy
+import faker
 from .models import Question, Exam
-from users.models import User
-from teachers . models import Subject
-from  datetime import timedelta
+from users.models import User, Student
+from teachers . models import Subject, Grade
+from  datetime import timedelta, datetime
 
-
-# class UserFactory(factory.django.DjangoModelFactory):
-#     # A factory class for the User model
-#     class Meta:
-#         model = User
+fake = faker.Faker()
+grade = Grade.objects.get(grade=1)
+class UserFactory(factory.django.DjangoModelFactory):
+    # A factory class for the User model
+    class Meta:
+        model = User
     
-#     username = factory.Faker('user_name')
-#     email = factory.Faker('email')
-#     is_teacher = True # Only create teacher users
+   
+    first_name = factory.Sequence(lambda n: fake.first_name())
+    last_name = factory.LazyFunction(fake.last_name)
+    # username = factory.LazyAttribute(lambda obj: '%s' % obj.first_name.lower())
+    username = factory.Sequence(lambda n: 'user%d' % n)
+    is_student = True
+    password = factory.django.Password('pw')
+    
+class StudentFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = Student
+        
+    user = factory.SubFactory(UserFactory)
+    grade = factory.Iterator(Grade.objects.all())
+    birth = factory.LazyFunction(lambda: fake.date_between(start_date=datetime(2000, 1, 1), end_date=datetime(2015, 12, 1)))
+    gender = factory.Iterator(["Male", "Female"])
+    request_password = False
+    
+# Only create teacher users
 
 # class SubjectFactory(factory.django.DjangoModelFactory): # A factory class for the Subject model 
 #     class Meta: 
@@ -37,7 +56,7 @@ class QuestionFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Question
     
-    subject = factory.Iterator(Subject.objects.filter(id=2)) # Create a teacher user for each question
+    subject = factory.Iterator(Subject.objects.filter(id=1)) # Create a teacher user for each question
     # exam = factory.Iterator(Exam.objects.filter(id=5)) # Create an exam for each question
     question = factory.Faker('paragraph')
     option_A = factory.Faker('sentence')
@@ -45,8 +64,19 @@ class QuestionFactory(factory.django.DjangoModelFactory):
     option_C = factory.Faker('sentence')
     option_D = factory.Faker('sentence')
     answer = factory.Iterator(['A', 'B', 'C', 'D']) # Randomly choose an answer from the options
+    question = factory.LazyAttribute(lambda obj: fake.paragraph())
     
-    
+    @factory.post_generation
+    def append_answer(self, create, extracted, **kwargs):
+        # Check if the answer is 'D' and append option_D to the question
+        if self.answer == 'A':
+            self.question += ' -------- the answer is [%s]' % self.option_A
+        elif self.answer == 'B':
+            self.question += ' -------- the answer is [%s]' % self.option_B
+        elif self.answer == 'C':
+            self.question += ' -------- the answer is [%s]' % self.option_C
+        else:
+            self.question += ' -------- the answer is [%s]' % self.option_D    
 # question_obj = QuestionFactory.build()
 
 # # Create and save a question object with random data
@@ -65,4 +95,4 @@ class QuestionFactory(factory.django.DjangoModelFactory):
 
 # # Create and save a list of 10 questions with random data
 # questions = QuestionFactory.create_batch(10)
-# questions = QuestionFactory.create_batch(5, subject_id=2, exam_id=3)
+# questions = QuestionFactory.create_batch(5, subject_id=2, exam_id=3)                              
