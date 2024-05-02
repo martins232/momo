@@ -145,7 +145,7 @@ class Session(models.Model):
             seconds = int(self.elapsed_time % 60)
             
             
-            return f"{str(hours) + 'h ' if hours > 0 else ''} {str(minutes) + 'm: ' if minutes > 0 else ''} {str(seconds) + 's' if seconds > 0 else ''}"
+            return f"{str(hours) + 'h ' if hours > 0 else ''} {str(minutes) + 'm ' if minutes > 0 else ''} {str(seconds) + 's' if seconds > 0 else ''}"
         else:
             return "-"
     

@@ -13,13 +13,15 @@ from django.core.mail import send_mail
 class StudentAdmin(admin.ModelAdmin):
     actions = ["mark_pending", "mark_approved", "mark_rejected", "remove_rejected"] 
     list_filter = ["status", "grade"]
-    list_display = ('name',"grade", 'birth', 'gender', 'image', "action", "_") #Tables you will see
+    list_display = ('name',"username", "grade", 'birth', 'gender', 'image', "action", "_") #Tables you will see
     fields =['birth',"grade", 'gender', 'image', "status"] # forms that could be filled in the admin
     
     
     
     def name(self, obj):
         return obj.user.first_name + " " + obj.user.last_name
+    def username(self, obj):
+        return obj.user.username 
 
     def _(self, obj): #_ was used so that you can get values for None
         if obj.status == "Approved":
@@ -136,13 +138,13 @@ class TeacherAdmin(admin.ModelAdmin):
             obj.user.is_staff= True
             obj.user.save()
         pending_teachers.update(status="Approved")
-        if len(emails)>0:
-            send_mail(
-                "Approved",
-                "Here is the message.",
-                emails,
-                fail_silently=False,
-            ) 
+        # if len(emails)>0:
+        #     send_mail(
+        #         "Approved",
+        #         "Here is the message.",
+        #         emails,
+        #         fail_silently=False,
+        #     ) 
         
        
         self.message_user(request, "Teacher(s) approved", level=messages.SUCCESS)

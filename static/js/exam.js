@@ -697,15 +697,19 @@ let intervalId = null
 
 // Function to start the counter
 function startCounter(msg) {
-	intervalId = setInterval(() => {
-	  counter++;
-	  beep()
-	  $("#warning").html(`<div class="alert alert-danger alert-dismissible">
-	  	<button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-	  	<strong><i class="fas fa-exclamation-triangle"></i></strong> This is the <strong>${warning > 1 ? warning : ""}${warning > 1 ? getOrdinal(warning) : "last"}</strong> warning. ${msg}: <span class="fw-bold">${counter}</span>
-   </div>
-	  `); // Display the count in the page title
-	}, 1000);
+	if (examstatus == "active"){
+		intervalId = setInterval(() => {
+			counter++;
+			beep()
+			$("#warning").html(`<div class="alert alert-danger alert-dismissible">
+				<button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+				<strong><i class="fas fa-exclamation-triangle"></i></strong> This is the <strong>${warning > 1 ? warning : ""}${warning > 1 ? getOrdinal(warning) : "last"}</strong> warning. ${msg}: <span class="fw-bold">${counter}</span>
+		 </div>
+			`); // Display the count in the page title
+		  }, 1000);
+	}else{
+		stopCounter()
+	}
   }
 
   // Function to stop the counter

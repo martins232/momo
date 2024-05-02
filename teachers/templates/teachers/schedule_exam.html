@@ -146,6 +146,14 @@
 {% block js %}
 <script>
 
+    $("#id_retake").on("change", function(){
+        if ($("#id_retake").is(":checked")){
+            $("#id_review").prop("checked", true)
+        }else{
+            $("#id_review").prop("checked", false)
+        }
+    })
+
     function notify(color, msg){
         $("#alert").html(`
             <div class="auto-close alert alert-${color} alert-dismissible fade show py-1" role="alert" >
