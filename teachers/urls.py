@@ -37,6 +37,7 @@ urlpatterns = [
     path("create-myquestion", views.question_create, name="create-myquestion"),
     path("edit-myquestion/<str:pk>/", views.question_edit, name="edit-myquestion"),
     path("delete-myquestion/", views.question_delete, name="delete-myquestion"),
+    path("update-topic/", views.update_topics, name="update-topic"),
     #debugging-------------------------------------------
     
     
@@ -48,6 +49,7 @@ urlpatterns = [
     path("exam/<str:pk>/", views.viewExam, name="view-exam"),
     path("assign-question-to-exam/<str:pk>/", views.assignQuestionToExam, name="assign-question-to-exam"),
     path("remove-question-from-exam/<str:pk>/", views.removeQuestionFromExam, name="remove-question-from-exam"),
+    
     
     path("change-students-password", views.changeStudentsPassword, name="change-students-password")
 ]

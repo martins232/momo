@@ -12,6 +12,13 @@
 		color: white;
 		background-color: #0d6efd;
 	} 
+	/* Custom CSS */
+	@media (min-width: 768px) { /* Adjust the breakpoint as needed */
+		.chart-container {
+			min-width: 600px; /* Set the minimum width for larger screens */
+		}
+	}
+
 </style>
 {% endblock additional_head_css %}
 
@@ -52,18 +59,32 @@
 		</div>
 	  </div>
 	</div>
-	{% comment %} <div class="accordion-item">
+
+	<div class="accordion-item">
 	  <h2 class="accordion-header" id="headingTwo">
-		<button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo"  >
-		  Accordion Item #2
+		
+		<button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#topicAnalysis"  >
+		  Topic Analysis 
 		</button>
 	  </h2>
-	  <div id="collapseTwo" class="accordion-collapse collapse"  data-bs-parent="#accordionExample">
+	  <div id="topicAnalysis" class="accordion-collapse collapse"  data-bs-parent="#accordionExample">
 		<div class="accordion-body">
-		  <strong>This is the second item's accordion body.</strong> It is hidden by default, until the collapse plugin adds the appropriate classes that we use to style each element. These classes control the overall appearance, as well as the showing and hiding via CSS transitions. You can modify any of this with custom CSS or overriding our default variables. It's also worth noting that just about any HTML can go within the <code>.accordion-body</code>, though the transition does limit overflow.
-		</div>
+            <!-- Use Bootstrap's grid system for responsiveness -->
+			<div class="d-flex justify-content-between w-100">
+				<button class="btn btn-light border" id="downloadBtn"><i class="fas fa-download"></i> Download Chart</button>
+				<a href="{% url "view-exam" pk %}" class="me-2">Update topic</a>
+			</div>
+            <div class="row">
+                <div class="col">
+                    <div class="chart-container" style="min-height: 400px; overflow-x: auto;">
+                        <canvas id="topicChart"><p>Your browser doesn't support canvas</p></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
 	  </div>
-	</div> {% endcomment %}
+	</div> 
+
 	<div class="accordion-item">
 	  <h2 class="accordion-header" id="headingThree">
 		<button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree"  >
@@ -92,6 +113,9 @@
 	  </div>
 	</div>
 </div>
+
+
+	
 
 
 
@@ -123,18 +147,23 @@
 
 {% block js %}
 <script src="https://unpkg.com/bootstrap-table@1.22.1/dist/bootstrap-table.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js"></script>
 
 
-
-<script>
+<script defer>
 	
 	let id
-	
+	let topics
+
+
+
 		function ajaxRequest(params) {
 				id = "{{pk}}"
 				var url = `${window.origin}/teacher/exam-data/${id}/` 
 				$.get(url).then(function (res) {
 					params.success(res)
+					topics = res.topics
+					plotTopic(topics)
 				})
 		}
 
@@ -261,5 +290,80 @@
 				},
 			};
 		}
+
+		//----------------------------------topic-----------------------------------
+		function plotTopic(topics){
+			const ctx = document.getElementById('topicChart').getContext('2d');
+			ctx.fillStyle = 'white'; // Set the background color to white
+			ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+
+			const labels = Object.keys(topics);
+			const topics_label = labels.map(topic => `${topic} (${topics[topic].no_questions})`);
+			const correctData = labels.map(topic => topics[topic].correct);
+			const incorrectData = labels.map(topic => topics[topic].incorrect);
+			const unansweredData = labels.map(topic => topics[topic].unanswered);
+
+			const myChart = new Chart(ctx, {
+				type: 'bar',
+				data: {
+					labels: topics_label,
+					datasets: [{
+						label: 'Correct',
+						data: correctData,
+						backgroundColor: 'rgba(0, 255, 0, 0.5)',
+						borderColor: 'rgba(0, 255, 0, 1)',
+						borderWidth: 1
+					}, {
+						label: 'Incorrect',
+						data: incorrectData,
+						backgroundColor: 'rgba(255, 0, 0, 0.5)',
+						borderColor: 'rgba(255, 0, 0, 1)',
+						borderWidth: 1
+					}, {
+						label: 'Unanswered',
+						data: unansweredData,
+						backgroundColor: 'rgba(0, 0, 255, 0.5)',
+						borderColor: 'rgba(0, 0, 255, 1)',
+						borderWidth: 1
+					}]
+				},
+				options: {
+					responsive: true,
+					maintainAspectRatio: false,
+					scales: {
+						yAxes: [{
+							ticks: {
+								beginAtZero: true
+							},
+							scaleLabel: {
+								display: true,
+								labelString: 'Total no. of students ({{session_count}})', // Replace with your Y-axis title
+								fontColor: '#666', // Optional: change the font color
+								fontSize: 16, // Optional: change the font size
+								fontStyle: 'bold' // Optional: set the font style
+							},
+						}]
+					}
+				}
+				
+			});
+
+			// Event listener for the download button
+			document.getElementById('downloadBtn').addEventListener('click', function() {
+				// Assuming 'myChart' is the variable holding your Chart.js instance
+
+				var canvas = document.getElementById('topicChart');
+				var url = canvas.toDataURL('image/png');
+
+				// Creating an anchor element to trigger download
+				var link = document.createElement('a');
+				link.href = url;
+				link.download = 'chart.png'; // Set the download filename
+				link.click(); // Trigger the download
+			});
+		}
+
+		
+		
 </script>
 {% endblock js %}

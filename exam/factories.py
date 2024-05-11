@@ -14,10 +14,11 @@ class UserFactory(factory.django.DjangoModelFactory):
         model = User
     
    
-    first_name = factory.Sequence(lambda n: fake.first_name())
+    # first_name = factory.Sequence(lambda n: fake.first_name())
+    first_name = factory.LazyFunction(fake.first_name)
     last_name = factory.LazyFunction(fake.last_name)
     # username = factory.LazyAttribute(lambda obj: '%s' % obj.first_name.lower())
-    username = factory.Sequence(lambda n: 'user%d' % n)
+    username = factory.Sequence(lambda n: 'user%d' % n+1)
     is_student = True
     password = factory.django.Password('pw')
     

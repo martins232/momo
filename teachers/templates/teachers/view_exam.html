@@ -31,13 +31,37 @@
 <h2 class="mt-2">{{exam.subject.name}} | <code>{{exam.name}}</code></h2>
 
 <div class="d-grid gap-2 d-md-block">
-    <button id="add" class="btn btn-primary {% if exam.get_exam_status != "pending" and exam.ready is True %} d-none {% endif %}" disabled onclick="addQuestionToExam()">
-        <i class="fa fa-plus"></i> Add
-    </button>
-    <button id="remove" class="btn btn-secondary {% if exam.get_exam_status != "pending" and exam.ready is True %} d-none {% endif %}" disabled onclick="removeQuestionFromExam()">
-        <i class="fa fa-minus"></i> Remove
-    </button>
+    {% if exam.get_exam_status == "active" and exam.ready is False %} 
+        <button id="add" class="btn btn-primary " disabled onclick="addQuestionToExam()">
+            <i class="fa fa-plus"></i> Add
+        </button>
+        <button id="remove" class="btn btn-secondary" disabled onclick="removeQuestionFromExam()">
+            <i class="fa fa-minus"></i> Remove
+        </button>
+    {% elif  exam.get_exam_status == "pending" %}
+        <button id="add" class="btn btn-primary " disabled onclick="addQuestionToExam()">
+            <i class="fa fa-plus"></i> Add
+        </button>
+        <button id="remove" class="btn btn-secondary" disabled onclick="removeQuestionFromExam()">
+            <i class="fa fa-minus"></i> Remove
+        </button>
+    {% else %}
+    <form action="" id="update_topic">      
+        <div class="input-group my-3 mb-3">                
+                <select name="topic" class="form-select" aria-label="Default select example" required>
+                <option value="" disabled selected >---------- Update {{exam.name}} question topics topics ----------</option>       
+                {% for topic in topics %}
+                    <option value="{{topic.id}}">{{topic.name}}</option>
+                {% endfor %}
+            </select>        
+            <button disabled class="btn btn-outline-primary" type="submit" id="button-addon2">Update</button>
+        </div>
+    </form>
+    {% endif %}
 </div>
+
+ 
+
 
 <div id="toolbar" class="{% if exam.get_exam_status != "pending" and exam.ready is True %} d-none {% endif %}">
     <label class="mt-2">
@@ -66,6 +90,9 @@
     data-detail-view="true" {% comment "" %}to show a detailed view table{% endcomment %}
 	  data-detail-view-by-click="false"
     data-detail-formatter="detailFormatter" {% comment "" %}to show detail view table.{% endcomment %}
+
+    data-server-sort="false"
+    data-sort-reset= "false"
 >
     <thead>
         <tr>
@@ -74,7 +101,7 @@
         <th data-field="check" data-checkbox="true"></th>
         <th data-field="#" data-formatter="numberingFormatter">#</th>
         <th data-field="question">Question</th>
-        <th data-field="subject__name" >Subject</th>
+        <th data-field="topics__name"  data-sortable="true">Topic</th>
         <th data-field="status" data-formatter="statusFormatter" data-align="center">Assigned</th>
         </tr>
     </thead>
@@ -93,9 +120,11 @@
     var $table = $('#table')
     var $add = $('#add')
     var $remove = $('#remove')
+    var $update_topic_form = $('#update_topic')
     let nos 
 
     let selections 
+    
     
 
     function ajaxRequest(params) {
@@ -160,12 +189,41 @@
     $table.on('check.bs.table uncheck.bs.table ' + 'check-all.bs.table uncheck-all.bs.table', function () {
         $remove.prop('disabled', !$table.bootstrapTable('getSelections').length)
         $add.prop('disabled', !$table.bootstrapTable('getSelections').length);
+        
+        $("#update_topic button[type=submit]").prop('disabled', !$table.bootstrapTable('getSelections').length);
     
         // save your data, here just save the current page
         selections = getIdSelections()
         // push or splice the selections if you want to save all data selections
-    })
+        
+    })                                                      
+    
+    $("#update_topic").on("submit", function(event){
+        event.preventDefault()
+        let topic = $("#update_topic select").val()
+        
+        $.ajax({
+            type:"POST",
+            url :'{% url "update-topic" %}',
+            data : {"csrfmiddlewaretoken": "{{csrf_token}}", "topic":topic, "ids": JSON.stringify(selections)},
+            success: function(success){
+                let msg = '<a href="{% url "exam-dashboard" exam.id %}">Topics added to question. Go back to {{exam.name}} analysis</a>'
+                notify("success", msg)
+                $table.bootstrapTable('refresh')
+                //close the alert element
+                const autoCloseElements = [...$(".auto-close")]
+                setTimeout(function () {
+                    autoCloseElements.forEach(el => fadeAndSlide(el));
+                }, 5000);
 
+            },
+            error: function(error){
+                console.log(JSON.stringify(error))
+            }
+
+
+        })                       
+    })
 
     function addQuestionToExam(){
         url = location.origin + "/teacher/assign-question-to-exam/" + exam_id +"/"

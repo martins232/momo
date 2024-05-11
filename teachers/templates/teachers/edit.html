@@ -1,6 +1,12 @@
 {% extends "main.html" %}
 {% load crispy_forms_tags %}
 
+{% block additional_head_css %}
+<!-- Include Tempus Dominus CSS -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+{% endblock additional_head_css %}
+
 {% block content %}
     <!--<div class="card mb-4 mt-3 p-5">
     </div>-->
@@ -20,10 +26,8 @@
           <form action="" method="post">
           
                 {% csrf_token %}
-                {{form | crispy}}
-                <div class= "d-flex justify-content-between" >
-                    <button class="btn btn-success " type="submit"><i class="fas fa-save"></i> Save</button> 
-                </div>
+                {% crispy form %}
+                
             
         </form>
         </div>

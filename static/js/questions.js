@@ -46,6 +46,7 @@ function clearForm(){
 window.operateEvents = {
 	"click .js-edit-question": function (e, value, row, index) {
 		let btn = $(e.currentTarget);
+		
 
 		$("#addQuestion .modal-title").text("Edit Question")
 
@@ -58,6 +59,7 @@ window.operateEvents = {
 		quest_id = row.id
 		sub_url = `/teacher/edit-myquestion/${quest_id}/`
 		$("#question-data select[name=subject]").val(row.subject)
+		$("#question-data select[name=topics]").val(row.topics__id)
 		$("#question-data textarea[name=option_A]").val(row.option_A)
 		$("#question-data textarea[name=option_B]").val(row.option_B)
 		$("#question-data textarea[name=option_C]").val(row.option_C)
@@ -207,19 +209,38 @@ function getIdSelections() {
 //delete button view
 $(
 	$remove.click(function () {
-		$("#addQuestion .modal-content").html("");
-		$.ajax({
-			url: `delete-myquestion?id=${selections}`,
-			type: "get",
-			dataType: "json",
-			beforeSend: function () {
-				$("#addQuestion").modal("show");
-			},
-			success: function (data) {
-				$("#addQuestion .modal-content").html(data.html_form);
-			},
-			error: function (error) { },
-		});
+		console.log(selections)
+		$("#delete").modal("show")
+		$("#delete form").on("submit",function (event) {
+			
+				event.preventDefault();
+				$.ajax({
+					type: "POST",
+					url: "delete-myquestion/",
+					data : {"csrfmiddlewaretoken": csrftoken, "ids": JSON.stringify(selections)},
+					success: function (success){
+						alert("Yes")
+					},
+					error: function (error){
+						alert("No")
+					}
+				})
+				
+			}
+		)
+		
+		// $.ajax({
+		// 	url: `delete-myquestion?id=${selections}`,
+		// 	type: "get",
+		// 	dataType: "json",
+		// 	beforeSend: function () {
+		// 		$("#addQuestion").modal("show");
+		// 	},
+		// 	success: function (data) {
+		// 		$("#addQuestion .modal-content").html(data.html_form);
+		// 	},
+		// 	error: function (error) { },
+		// });
 
 		function getCookie(name) {
 			let cookieValue = null;
@@ -244,28 +265,28 @@ $(
 			".js-question-delete-form",
 			function (event) {
 				event.preventDefault();
-				$.ajax({
-					type: "POST",
-					url: "delete-myquestion/",
-					data: {
-						csrfmiddlewaretoken: csrftoken,
-						id: JSON.stringify(selections),
-					},
-					success: function (data) {
-						if (data.deleted) {
-							notify("success", "Question(s) deleted");
-							const autoCloseElements = [...$(".auto-close")];
-							setTimeout(function () {
-								autoCloseElements.forEach((el) => fadeAndSlide(el));
-							}, 5000);
-							$table.bootstrapTable("refresh");
-						}
-						$("#addQuestion").modal("hide");
-					},
-					error: function (error) {
-						alert("Couldn't fetch data");
-					},
-				});
+				// $.ajax({
+				// 	type: "POST",
+				// 	url: "/teacher/delete-myquestion/",
+				// 	data: {
+				// 		csrfmiddlewaretoken: csrftoken,
+				// 		id: JSON.stringify(selections),
+				// 	},
+				// 	success: function (data) {
+				// 		if (data.deleted) {
+				// 			notify("success", "Question(s) deleted");
+				// 			const autoCloseElements = [...$(".auto-close")];
+				// 			setTimeout(function () {
+				// 				autoCloseElements.forEach((el) => fadeAndSlide(el));
+				// 			}, 5000);
+				// 			$table.bootstrapTable("refresh");
+				// 		}
+				// 		$("#addQuestion").modal("hide");
+				// 	},
+				// 	error: function (error) {
+				// 		alert("Couldn't fetch data");
+				// 	},
+				// });
 			}
 		);
 		// $.ajax({

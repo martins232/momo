@@ -7,7 +7,7 @@
             <!--Sidebar link header-->
 
             <!--Normal sidebar-->
-            <a class="nav-link" href="{% url "home" %}"><div class="sb-nav-link-icon"><i class="fas fa-tachometer-alt"></i></div>Dashboard</a>
+            <!--<a class="nav-link" href="{% url "home" %}"><div class="sb-nav-link-icon"><i class="fas fa-tachometer-alt"></i></div>Dashboard</a> -->
             <a class="nav-link" href="{% url "all-topics" %}"><div class="sb-nav-link-icon"><i class="fas fa-tachometer-alt"></i></div>Add topics</a>
             <a class="nav-link" href="{% url "profile" %}"><div class="sb-nav-link-icon"><i class="fas fa-user-tie"></i></div>Profile</a>
             <a class="nav-link" href="{% url "all-questions" %}"><div class="sb-nav-link-icon"><i class="fas fa-folder-open"></i></div>All questions</a>
@@ -37,16 +37,16 @@
 
             <div class="sb-sidenav-menu-heading">Password Request</div>
             <a class="nav-link" href="{% url "change-students-password" %}"><div class="sb-nav-link-icon"><i class="fas fa-book-open"></i></div> Students</a>
-            <a class="nav-link" href="charts.html">
+            <!--<a class="nav-link" href="charts.html">
                 <div class="sb-nav-link-icon"><i class="fas fa-chart-area"></i></div>
                 Charts
-            </a>
+            </a> -->
            
             
         </div>
     </div>
     <div class="sb-sidenav-footer">
-        <div class="small">Logged in as:</div>
-        {{request.user}}
+        <div class="small">{{request.user.get_full_name}}</div>
+        
     </div>
 </nav>

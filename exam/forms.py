@@ -1,18 +1,23 @@
 
 from dataclasses import fields
+from urllib import request
 from wsgiref.validate import validator
 from django import forms
+
+from main.decorators import teacher
 from .models import Exam, Question
 from users.models import Grade
 from datetime import date, timedelta, datetime
 from django.core.exceptions import ValidationError
 from teachers.models import Topic
+from crispy_forms.helper import FormHelper
+from crispy_forms.layout import Layout, Div, Field, HTML
+
+from .group_fields import GroupedModelChoiceField
 
 
 
-# from django_summernote.fields import SummernoteTextFormField, SummernoteTextField
-# from django_summernote.widgets import SummernoteWidget, SummernoteInplaceWidget
-# from django_ckeditor_5.widgets import CKEditor5Widget
+
 
 from tinymce.widgets import TinyMCE
 
@@ -46,10 +51,12 @@ class ExamForm(forms.ModelForm):
         time_attrs={
             'type':'time',
             "style": "font-size:14px; cursor:pointer",
-            "class": "mt-3 w-50"
+            "class": "mt-3 w-50"      
             },
         time_format='%H:%M',
         ))
+   
+    
     end_date = forms.SplitDateTimeField(
         label='End Date',
         widget=forms.SplitDateTimeWidget(
@@ -74,9 +81,31 @@ class ExamForm(forms.ModelForm):
         self.fields['subject'].queryset = request.user.subject_set.all()
         self.fields["duration"].help_text = "<li>H:M:S</li>"
         self.fields["retake"].label = "Allow students retake exam"
-        self.fields["review"].label = "Allow students view result after exam"
+        self.fields["review"].label = "Allow students view score after exam"
         self.fields["duration"].initial = "00:60:00"
         self.fields["name"].widget.attrs.update({"placeholder":"Enter exam name","style": "text-transform: capitalize;"})
+        
+        self.helper = FormHelper()
+        
+        self.helper.layout = Layout(
+        "name",
+        'grade',
+        'subject',
+        'duration',
+        'pass_mark',
+        'start_date', 
+        'end_date',
+            Field('retake', css_class="form-check-input", wrapper_class="form-check form-switch"),
+            Field('review', css_class="form-check-input", wrapper_class="form-check form-switch"),
+            HTML("""
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-save"></i> Submit
+                    </button>
+                </div>
+            """)
+        )
+        
         
         if self.instance:
             if self.instance.get_exam_status == "active":
@@ -146,7 +175,11 @@ class QuestionForm(forms.ModelForm):
     # question =SummernoteTextField()
     # question =forms.CharField(widget=SummernoteWidget(attrs={'summernote': {'width': '100%', "height":"220px"}}))
     answer = forms.ChoiceField(widget=forms.RadioSelect,
-        choices=answer_choice,)   
+        choices=answer_choice,) 
+    topics = GroupedModelChoiceField(
+        queryset=Topic.objects.none(), 
+        choices_groupby='grade', required=False
+    )  
     
     # topics = forms.ModelChoiceField(widget=forms.SelectMultiple, queryset=Topic.objects.filter(grade=2), required=False)
     
@@ -165,8 +198,11 @@ class QuestionForm(forms.ModelForm):
         
     def __init__(self,request,  *args, **kwargs):
         super(QuestionForm, self).__init__(*args, **kwargs)
+        self.teacher = request.user
         # self.fields["question"].widget.attrs.update({"rows":5,}) 
         self.fields["question"].required = True
+        self.fields["topics"].empty_label = "Select topic"
+        self.fields['topics'].queryset = Topic.objects.filter(subject__teacher=request.user).order_by('grade')
         self.fields['subject'].queryset = request.user.subject_set.all()
         self.fields["subject"].widget.attrs.update({'id': 'subject'})
         fields= ('option_A', 'option_B', 'option_C', 'option_D', )

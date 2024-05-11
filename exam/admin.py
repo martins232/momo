@@ -5,6 +5,7 @@ from django.utils.html import format_html
 # Register your models here.
 class ExamAdmin(admin.ModelAdmin):
     list_display = ["name", "subject","teacher"]
+    list_display_links = None
 
     # def formfield_for_foreignkey(self, db_field, request, **kwargs):
     #     if db_field.name == "teacher":

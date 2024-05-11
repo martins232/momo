@@ -198,6 +198,8 @@ class TopicForm(forms.ModelForm):
         super(TopicForm, self).__init__(*args, **kwargs)
         self.fields["subject"].queryset = Subject.objects.filter(teacher=request.user)
         self.fields['name'].label = "Topic name"
+        self.fields["subject"].empty_label = "Select a topic"
+        self.fields["grade"].empty_label = "Select a grade"
         
     def clean_name(self):
         name = self.cleaned_data.get("name")

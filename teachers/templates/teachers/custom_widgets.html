@@ -1,0 +1,28 @@
+
+<input list="datalistOptions" name="{{ widget.name }}" {% for name, value in widget.attrs.items %}{% if value is not False %} {{ name }}{% if value is not True %}="{{ value|stringformat:'s' }}"{% endif %}{% endif %}{% endfor %}>
+<datalist id="datalistOptions">
+
+        {% for group_name, group_choices, group_index in widget.optgroups %}
+                {% for option in group_choices %}
+                    <option value="{{ option.value}}">{{ option.label }}</option>
+                {% endfor %}
+         {% endfor %}
+</datalist>
+
+
+
+{% comment %} {% for group_name, group_choices, group_index in widget.optgroups %}
+        {% if group_name %}
+            <optgroup label="{{ group_name }}">
+        {% endif %}
+        {% for option in group_choices %}
+            <option value="{{ option.value|stringformat:'s' }}">{{ option.label }}</option>
+        {% endfor %}
+        {% if group_name %}
+            </optgroup>
+        {% endif %}
+    {% endfor %}
+
+    {% for item in widget.data %}
+        <option value="{{ item.value }}">{{ item }}</option>
+    {% endfor %} {% endcomment %}
