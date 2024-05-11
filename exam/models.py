@@ -1,10 +1,10 @@
-from email.policy import default
-from tabnanny import verbose
+from collections import defaultdict
 from urllib import request
 from django.db import models
 from users. models import User, Grade
 from teachers. models import Subject, Topic
 from django.utils import timezone
+
 
 from django.contrib import admin
 
@@ -29,8 +29,8 @@ class Exam(models.Model):
     start_date = models.DateTimeField()
     end_date = models.DateTimeField()
     ready = models.BooleanField(default=False) #to make sure exam satisfy every requirements like no. of quest etc before students can see it
-    retake = models.BooleanField( default=False)
     review = models.BooleanField(default=False)
+    retake = models.BooleanField( default=False)
     updated = models.DateTimeField(auto_now=True)
     created = models.DateTimeField(auto_now_add=True)
     
@@ -56,21 +56,16 @@ class Exam(models.Model):
         if now> startExam and now> endExam:
             return "ended"
 
-        #####################debuging###############################################
-        # print("Current tz: ",timezone.get_current_timezone())
-        # print("Current tz name: ",timezone.get_current_timezone_name())
-        # print("Current time in UTC: ",timezone.now())
-        # print("The time is: ",timezone.localtime(now))
-        # print("The date is: ",timezone.localdate(now))
-        # print("The Exam end date is: ",timezone.localtime(self.end_date))
-        # print("The Exam end date is UTC: ",self.end_date)
-        #####################debuging###############################################
-        
+       
                       
                                                     
     @property
     def get_no_question(self):
         return self.question_set.all().count()
+    
+    @property
+    def get_all_question(self):
+        return self.question_set.all()
     
     @property
     def seconds_to_hms(self):
@@ -81,11 +76,27 @@ class Exam(models.Model):
         
         return f"{str(hours) + 'hr' if hours > 0 else ''} {'s' if hours>1 else ''} {str(minutes) + 'min ' if minutes > 0 else ''} {str(seconds) + 'sec(s)' if seconds > 0 else ''}"
    
-    def check_status_of_student(self, user):
-        print(user)
-        
-        # print(Session.objects.get(user=request.user))
-        return 1
+    def topic_count(self):
+        """
+        Calculate the count of unique topics for the questions associated with the current exam instance.
+
+        This method retrieves all questions related to the current exam instance and creates a dictionary
+        with the names of the topics as keys and 0 as the value, indicating the initial count. It also
+        compiles a list of question IDs that do not have an associated topic.
+
+        Returns:
+            dict: A dictionary with topic names as keys and 0 as the value for each key.
+        """
+        questions = self.question_set.all()
+        topics_count = defaultdict(dict)
+        questions_without_topic = list()
+        for question in questions.select_related("topics"):
+            if question.topics:
+                topic_name = question.topics.name  # Assuming the Topic model has a 'name' field
+                topics_count[topic_name] = {"correct": 0, "incorrect":0, "unanswered": 0, "no_questions":0}
+            else:
+                questions_without_topic.append(question.id)
+        return dict(topics_count), questions_without_topic
     
     class Meta:
         ordering = [ "created"]
@@ -95,8 +106,7 @@ class Question(models.Model):
     # teacher = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, limit_choices_to={"is_teacher":True})
     subject = models.ForeignKey(Subject, on_delete=models.RESTRICT, blank=False)
     exam = models.ForeignKey(Exam, on_delete=models.SET_NULL, null=True, blank=True)
-    # topics = models.ManyToManyField(Topic, blank=True)
-    # question = CKEditor5Field('Question')
+    topics = models.ForeignKey(Topic, on_delete=models.SET_NULL, blank=True, null=True)
     question = models.TextField()
     option_A = models.TextField()
     option_B = models.TextField()
@@ -164,4 +174,10 @@ class Session(models.Model):
                     unanswered += 1
                     
         return correct, incorrect, unanswered
-   
+
+
+# class StudentAnswer(models.Model):
+#     session = models.ForeignKey(Session, on_delete=models.CASCADE)
+#     question = models.ForeignKey(Question, on_delete=models.CASCADE)
+#     choice = models.CharField(max_length=255)
+#     status = models.CharField(max_length=10)  # e.g., "correct", "incorrect", "unanswered"

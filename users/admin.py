@@ -1,5 +1,8 @@
 from django.contrib import admin
+from django.http import HttpRequest
+from django.http.response import HttpResponse
 from . models import User, Student, Teacher, Grade
+from django.shortcuts import redirect
 from . forms import StudentRequestForm
 from django.utils.html import format_html
 from django.utils.translation import ngettext
@@ -138,6 +141,9 @@ class TeacherAdmin(admin.ModelAdmin):
             obj.user.is_staff= True
             obj.user.save()
         pending_teachers.update(status="Approved")
+        self.message_user(request, "Teacher(s) approved. Assign subject to teacher", level=messages.SUCCESS)
+        return redirect("/admin/teachers/subject/")
+        
         # if len(emails)>0:
         #     send_mail(
         #         "Approved",
@@ -146,8 +152,9 @@ class TeacherAdmin(admin.ModelAdmin):
         #         fail_silently=False,
         #     ) 
         
-       
-        self.message_user(request, "Teacher(s) approved", level=messages.SUCCESS)
+        
+        
+    
         
         
     @admin.action(description="Mark selected teacher as rejected")

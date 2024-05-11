@@ -89,6 +89,22 @@ def scheduledExam(request):
     
     #all the classes 
     grades = Grade.objects.filter(Q(exam__start_date__gt=timezone.now()) | Q(exam__start_date__lte=timezone.now(), exam__end_date__gt=timezone.now()), exam__teacher=request.user).distinct()
+    
+    
+    # # Get the current time once to avoid multiple calls
+    # current_time = timezone.now()
+
+    # # Filter exams that are either currently ongoing or will start in the future
+    # exams = Exam.objects.filter(
+    #     Q(start_date__gt=current_time) | 
+    #     Q(start_date__lte=current_time, end_date__gt=current_time), 
+    #     teacher=request.user
+    # )
+    
+    # #all the classes 
+    # grades = Grade.objects.filter(
+    #             exam__in=exams
+    #         ).distinct().select_related('exam')
     if request.method == "POST":
         form = ExamForm(request, request.POST, )
         if form.is_valid():
@@ -104,7 +120,7 @@ def scheduledExam(request):
         "exams": exams,
         "grades": grades,
     }
-  
+    
     return render(request, "teachers/schedule_exam.html", context)
 
 @teacher
@@ -298,12 +314,14 @@ def studentPerformance(request, pk):
     }
     return render(request, "teachers/student_performance.html", context)
 
+        
 #JSON data after exams has been taken
 def examDashboardData(request, pk):
     exam = Exam.objects.get(id = pk)
-    sessions = Session.objects.filter(exam= exam).order_by("score")
-    questions = Question.objects.filter(exam =exam)
-    
+    sessions = Session.objects.filter(exam= exam).select_related('user')
+    questions = exam.get_all_question
+    topics_count, questions_without_topic = exam.topic_count()
+   
     data = []
     for question in questions:
         correct_count = 0
@@ -323,15 +341,24 @@ def examDashboardData(request, pk):
             if student_choice == "":
                 unanswered_count += 1
                 unanswered_student[str(session.user.id)] = str(session.user.get_full_name())
+                
             else:
                 option_choice_nos[student_choice]+=1
                 if student_choice == options[question.answer]:
                     correct_count +=1
                     correct_student[str(session.user.id)] = str(session.user.get_full_name())
+                    
+
                 if student_choice != options[question.answer]:
                     incorrect_count +=1
                     incorrect_student[str(session.user.id)] = session.user.get_full_name()
-            
+                    
+        if question.topics:
+            topics_count[question.topics.name]["correct"] += correct_count
+            topics_count[question.topics.name]["incorrect"] += incorrect_count
+            topics_count[question.topics.name]["unanswered"] += unanswered_count
+            topics_count[question.topics.name]["no_questions"] += 1
+                
         data.append({
             "question": question.question, 
             "answer": options[question.answer],
@@ -344,10 +371,7 @@ def examDashboardData(request, pk):
             "option_count" : option_choice_nos
             })
       
-            
-    
-    
-    return JsonResponse({"rows":data})
+    return JsonResponse({"rows":data, "topics": topics_count})
 
 def newExamDashboard(request, pk):
     exam = Exam.objects.get(id = pk)
@@ -363,10 +387,13 @@ def newExamDashboard(request, pk):
 def examDashboard(request, pk):
     exam = Exam.objects.get(id = pk)
     sessions = Session.objects.filter(exam= exam).order_by("-score")
+    
+    
     context ={
         "exam":exam,
         "sessions":sessions,
-        "pk": pk
+        "pk": pk,
+        "session_count": sessions.count()
     }
     
        
@@ -394,7 +421,7 @@ def questionData(request):
     
 
     length = Question.objects.filter(subject__in=subject_list).count() #get all the questions by the logged in teacher
-    questions = Question.objects.filter(subject__in=subject_list).filter(Q(subject__name__icontains=search) | Q(question__icontains=search)).values("id", "question","option_A", "option_B","option_C","option_D", "answer", "exam","exam__name","subject", "subject__name", )
+    questions = Question.objects.filter(subject__in=subject_list).filter(Q(subject__name__icontains=search) | Q(topics__name__icontains=search) | Q(question__icontains=search)).values("id", "question","topics__id", "topics__name","option_A", "option_B","option_C","option_D", "answer", "exam","exam__name","subject", "subject__name", )
     
     
     
@@ -457,8 +484,11 @@ def editQuestion(request):
         
 def viewExam(request, pk):
     exam = Exam.objects.get(id=pk)
+    
     context = {"exam": exam} #used for sending subject id in the templated
-  
+    if exam.get_exam_status =="ended" or "active":
+        topics = Topic.objects.filter(subject=exam.subject)
+        context["topics"] = topics
     return render(request, "teachers/view_exam.html", context)
 
 def assignQuestionToExam(request, pk):
@@ -468,7 +498,7 @@ def assignQuestionToExam(request, pk):
         questions = Question.objects.filter(id__in = ids)
         questions.update(exam=pk)
         
-        if exam.get_no_question > 0:
+        if exam.get_no_question > 0:           
             exam.ready = True
             exam.save()
         return JsonResponse({"message": f"{len(ids)} Question(s) added to {exam.name}. <br>Total questions: <span class='fw-bold'>{exam.get_no_question}</span>"})
@@ -552,10 +582,9 @@ def allQuestions(request):
     
     
     form = QuestionForm(request)
-    subjects = Subject.objects.filter(teacher= request.user)
     context = {
         "form":form,
-        "subjects": subjects, 
+        # "subjects": subjects, 
     }
     
     return render(request, "teachers/all_questions.html", context)
@@ -569,7 +598,6 @@ def question_create(request):
             form.save()
             data['form_is_valid'] = True
         else:
-            print(form.errors)
             data['form_is_valid'] = False
             data['html_form'] = form
     context = {'form': form}
@@ -595,29 +623,27 @@ def question_edit(request, pk):
     return JsonResponse(data)
 
 def question_delete(request):
-    data= dict()
-    
-   
-    # data = quest.delete()
-    
-    
-    if is_ajax(request=request):
-        if request.method == "POST":
-            ids = json.loads(request.POST.get("id"))
-            questions = Question.objects.filter(id__in =ids)
-            deleted_question = questions.delete()
-            print(deleted_question)
-            data["deleted"] = True
-            return JsonResponse(data)
-        else:
-            ids = request.GET.get("id").split(',')
-            questions = Question.objects.filter(id__in =ids)
-            context = {'questions': questions}
-            data['html_form'] = render_to_string('teachers/includes/delete_question.html',context, request=request)
-            return JsonResponse(data)
+    """Function to delete questions through ajax"""
+    ids = request.POST.get("ids")
+    ids = json.loads(ids)
+    questions = Question.objects.filter(id__in =ids)
+    questions.delete()
+    return JsonResponse({"response":True})
 
-
+def update_topics(request):
+    """Function to delete questions through ajax"""
+    ids = request.POST.get("ids")
+    topic = request.POST.get("topic")
+    ids = json.loads(ids)
+    topic = json.loads(topic)
+    questions = Question.objects.filter(id__in =ids)
+    questions.update(topics=topic)                           
+    return JsonResponse({"response":True})
+    
 def changeStudentsPassword(request):
+    '''
+    Function that allows teachers to reset students password upon request
+    '''
     students = Student.objects.filter(request_password=True)
     if request.method == "POST":
         ids = request.POST.get("ids")

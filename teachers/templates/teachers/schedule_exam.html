@@ -1,6 +1,12 @@
 {% extends "main.html" %}
 {% load crispy_forms_tags %}
 
+{% block additional_head_css %}
+
+
+
+{% endblock additional_head_css %}
+
 {% block content %}
     <nav aria-label="breadcrumb" class="main-breadcrumb">
         <ol class="breadcrumb">
@@ -31,18 +37,14 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <form method="POST" autocomplete="OFF">
+                    <form method="POST" autocomplete="OFF" novalidate>
                         {% csrf_token %}
                         <div class="mb-3">
-                            {{form | crispy}}
+                            {% comment %} {{form | crispy}} {% endcomment %}
+                            {% crispy form %}
                         </div>
                     
-                        <div class="modal-footer">
-                            
-                            <button type="submit" class="btn btn-success"><i class="fas fa-save"></i> Submit</button>
-                            <!-- <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button> -->
-
-                        </div>
+                        
                     </form>
                 </div>
             </div>
@@ -137,15 +139,16 @@
     </div>
     
    
-    {% if exam.get_exam_status == "active" %} d-none {% endif %}      
+    
 
 
 {% include "modal.html" %}
 {% endblock content %}
 
 {% block js %}
-<script>
 
+<script>
+    
     $("#id_retake").on("change", function(){
         if ($("#id_retake").is(":checked")){
             $("#id_review").prop("checked", true)

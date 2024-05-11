@@ -272,6 +272,7 @@ class TeacherRequestForm(forms.ModelForm):
     def __init__(self, request, *args, **kwargs):
         self.request = request # Assign the request object to the form instance
         super().__init__(*args, **kwargs) # Call the parent class constr
+        self.fields["email"].help_text = "<li class='fw-bold'>Use a verifiable email</li>"
         # if request.user:
         #     if request.user.pk:
         #         # self.fields["gender"].disabled=True
