@@ -100,7 +100,8 @@ function checkStorage() {
  }
 
 function checkSizeofScreen(){
-	if (innerWidth != window.innerWidth |  window.innerHeight < innerHeight) {
+	//if (innerWidth != window.innerWidth |  window.innerHeight < innerHeight) {
+	if (innerWidth != window.innerWidth) {
 		warningFunc("You are not to resize this window, you have 10 secs to close any opened screen")
 	}
 	
@@ -659,9 +660,10 @@ document.addEventListener("keydown", (event) => {
 
 $(window).on("resize", function () {
 	if (examstatus == "active") {
-		if (innerWidth != window.innerWidth | window.innerHeight < innerHeight) {
+		// if (innerWidth != window.innerWidth | window.innerHeight < innerHeight) {
+		if (innerWidth != window.innerWidth) {
 			warningFunc("You are not to resize this window, you have 10 secs to close any opened screen")
-			setTimeout(startCounter("You are not to resize this window, you have 30 secs to close any opened screen"),3000)
+			setTimeout(startCounter("You are not to resize this window, you have 30 secs to close any opened screen"),5000)
 		}else{
 			stopCounter()
 			counter = 0

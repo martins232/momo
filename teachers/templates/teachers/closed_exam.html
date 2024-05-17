@@ -1,6 +1,20 @@
 {% extends "main.html" %}
 {% load crispy_forms_tags %}
-
+{% block additional_head_css %}
+	<style>
+		.table-responsive > .table .dropdown {
+			position: static;
+		  }
+		  
+		  .table-responsive > .table .dropdown > .dropdown-menu {
+			border:.5px solid black;
+			background-color: snow;
+			left: auto !important;
+			
+			top: 13px !important;
+		  }
+	</style>
+{% endblock additional_head_css %}
 
 {% block content %}
 <nav aria-label="breadcrumb" class="main-breadcrumb">
@@ -30,7 +44,7 @@
             <th scope="col" >Questions</th>
             <th  scope="col" >End Date</th>
             <th  scope="col" class= "text-center">STATUS</th>
-            <th  scope="col" class="table-dark text-center align-middle" colspan="3">ACTION</th>
+            <th  scope="col" class="table-dark text-center align-middle" >ACTION</th>
             {% comment %} <th colspan="2" scope="col">Action</th> {% endcomment %}
           </tr>
         </thead>
@@ -40,7 +54,7 @@
                 {% if exam.grade == grade %}
                     <tr>
                         <th scope="row">{{forloop.counter}}</th>
-                        <td class="user-select-all" style="min-width: 150px;"><a href="{% url "exam-dashboard" exam.id %}">{{exam.name}}</a></td>
+                        <td class="user-select-all" style="min-width: 150px;">{{exam.name}}</td>
                         <td>{{exam.subject}}</td>
                         {% comment %} <td>{{exam.duration }}</td> {% endcomment %}
                         <td>{{exam.seconds_to_hms }}</td>
@@ -59,20 +73,34 @@
                         
                         
                         
-                        <td>
-                            <a 
-                                href="{% if exam.get_exam_status == "pending" %} {% url "edit-exam" exam.id %} {% else %} # {% endif %}" 
-                                {% if exam.get_exam_status == "active" %} onclick="examActiveMsg('{{exam.name}}')" {% endif %}
-                                class="btn btn-success btn-sm" ><i class="fas fa-pencil-alt"></i>
-                            </a>
-                        </td>
+                        <td style="min-width: 150px;">
+                            <div class="d-flex justify-content-evenly"   >
+								<a role="button" class="text-danger deleteBtn" data-id="{{exam.id}}" data-bs-toggle="modal" data-bs-target="#delete"><i class="fas fa-trash-alt"></i></a>
+                              <div class="dropdown">
+                                <a role="button" class="text-dark" id="action" data-bs-toggle="dropdown"><i class="fas fa-ellipsis-h"></i></a>
+                              <ul class="dropdown-menu mx-auto" aria-labelledby="dropdownMenuButton1" >
+                                <li><a class="dropdown-item" href="{% url "exam-dashboard" exam.id %}">View exam</a></li>
+                                <li><a class="dropdown-item" href="#">Another action</a></li>
+                                <li><a class="dropdown-item" href="#">Something else here</a></li>
+                              </ul>
+                              </div>
+
+
+
+                            </div>
+
+                            
+
+
+                          
+                          </td>
+
                         
                         {% comment %} <td><a href="#" class="btn btn-danger btn-sm delete" data-id="{{exam.id}}" data-name="{{exam.name}}" 
                             data-url = "{% url "delete-exam" exam.id %}" data-bs-toggle="modal" data-bs-target="#delete_modal">
                             <i class="fas fa-trash-alt"></i>
                         </a></td> {% endcomment %}
-                        <td><a class="btn btn-danger btn-sm deleteBtn" data-id="{{exam.id}}" data-bs-toggle="modal" data-bs-target="#delete"><i class="fas fa-trash-alt"></i>
-                        </a></td>
+                       
                   </tr>
                 {% endif %}
             
