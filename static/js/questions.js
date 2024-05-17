@@ -1,5 +1,6 @@
 let $table = $("#table");
 let $remove = $("#remove");
+let $docx = $("#docx");
 let selections;
 const formDataObj = {};
 let nos;
@@ -193,6 +194,7 @@ $table.on(
 	"check-all.bs.table uncheck-all.bs.table",
 	function () {
 		$remove.prop("disabled", !$table.bootstrapTable("getSelections").length);
+		$docx.prop("disabled", !$table.bootstrapTable("getSelections").length);
 
 		// save your data, here just save the current page
 		selections = getIdSelections();
@@ -207,114 +209,82 @@ function getIdSelections() {
 }
 
 //delete button view
-$(
+
 	$remove.click(function () {
-		console.log(selections)
 		$("#delete").modal("show")
 		$("#delete form").on("submit",function (event) {
 			
-				event.preventDefault();
-				$.ajax({
-					type: "POST",
-					url: "delete-myquestion/",
-					data : {"csrfmiddlewaretoken": csrftoken, "ids": JSON.stringify(selections)},
-					success: function (success){
-						alert("Yes")
-					},
-					error: function (error){
-						alert("No")
-					}
-				})
-				
-			}
-		)
+			event.preventDefault();
+			$.ajax({
+				type: "POST",
+				url: "delete-myquestion/",
+				data : {"csrfmiddlewaretoken": csrftoken, "ids": JSON.stringify(selections)},
+				success: function (success){
+					$("#delete").modal("hide")
+					notify("success", "Question(s) deleted")
 		
-		// $.ajax({
-		// 	url: `delete-myquestion?id=${selections}`,
-		// 	type: "get",
-		// 	dataType: "json",
-		// 	beforeSend: function () {
-		// 		$("#addQuestion").modal("show");
-		// 	},
-		// 	success: function (data) {
-		// 		$("#addQuestion .modal-content").html(data.html_form);
-		// 	},
-		// 	error: function (error) { },
-		// });
-
-		function getCookie(name) {
-			let cookieValue = null;
-			if (document.cookie && document.cookie !== "") {
-				const cookies = document.cookie.split(";");
-				for (let i = 0; i < cookies.length; i++) {
-					const cookie = cookies[i].trim();
-					// Does this cookie string begin with the name we want?
-					if (cookie.substring(0, name.length + 1) === name + "=") {
-						cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-						break;
-					}
+					$("#remove, #docx").prop('disabled', true)
+					$table.bootstrapTable("refresh")
+					const autoCloseElements = [...$(".auto-close")]
+					setTimeout(function () {
+						autoCloseElements.forEach(el => fadeAndSlide(el));
+					}, 5000);
+					},
+				error: function (error){
+					alert("Something went wrong")
 				}
-			}
-			return cookieValue;
+			})
+				
 		}
-		const csrftoken = getCookie("csrftoken");
-
-		//delete question
-		$("#addQuestion").on(
-			"submit",
-			".js-question-delete-form",
-			function (event) {
-				event.preventDefault();
-				// $.ajax({
-				// 	type: "POST",
-				// 	url: "/teacher/delete-myquestion/",
-				// 	data: {
-				// 		csrfmiddlewaretoken: csrftoken,
-				// 		id: JSON.stringify(selections),
-				// 	},
-				// 	success: function (data) {
-				// 		if (data.deleted) {
-				// 			notify("success", "Question(s) deleted");
-				// 			const autoCloseElements = [...$(".auto-close")];
-				// 			setTimeout(function () {
-				// 				autoCloseElements.forEach((el) => fadeAndSlide(el));
-				// 			}, 5000);
-				// 			$table.bootstrapTable("refresh");
-				// 		}
-				// 		$("#addQuestion").modal("hide");
-				// 	},
-				// 	error: function (error) {
-				// 		alert("Couldn't fetch data");
-				// 	},
-				// });
+		)})
+		
+		
+	$("#docx").on("click", function(){
+		$.ajax({
+			type: "POST",
+			url: "convert-to-docx/",
+			data : {"csrfmiddlewaretoken": csrftoken, "ids": JSON.stringify(selections)},
+			success: function(response, status, xhr) {
+				var filename = ""; 
+				var disposition = xhr.getResponseHeader('Content-Disposition');
+				if (disposition && disposition.indexOf('attachment') !== -1) {
+					var filenameRegex = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/;
+					var matches = filenameRegex.exec(disposition);
+					if (matches != null && matches[1]) filename = matches[1].replace(/['"]/g, '');
+				}
+				var blob = new Blob([response], { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
+				var downloadUrl = URL.createObjectURL(blob);
+				var a = document.createElement("a");
+				a.href = downloadUrl;
+				a.download = filename;
+				document.body.appendChild(a);
+				a.click();
+			},
+			error: function(xhr, status, error) {
+				// Handle any errors that occur during the request
+				console.error("Error: " + error);
 			}
-		);
-		// $.ajax({
-		//     type: "POST",
-		//     url: "delete-question",
-		//     data: {
-		//         id: JSON.stringify(selections),
-		//         "csrfmiddlewaretoken": csrftoken
-		//                   //or
-		//         //"csrfmiddlewaretoken": "{{csrf_token}}"
-		//     },
-		//     success: function (success){
-		//         notify("success", "Question(s) deleted")
-		//         //$table.bootstrapTable('remove', {field: 'id',values: getIdSelections()})
-		//           $table.bootstrapTable("refresh")
-		//           $remove.prop('disabled', true)
-		//           //$table.bootstrapTable('refresh')
-		//           const autoCloseElements = [...$(".auto-close")]
-		//           setTimeout(function () {
-		//               autoCloseElements.forEach(el => fadeAndSlide(el));
-		//           }, 5000);
-		//     },
-		//     error: function (error){
-		//       notify("danger", "Something went wrong")
-		//     }
-		// })
-	})
-);
+		})
+	})	
+	
+
+
+function getCookie(name) {
+	let cookieValue = null;
+	if (document.cookie && document.cookie !== "") {
+		const cookies = document.cookie.split(";");
+		for (let i = 0; i < cookies.length; i++) {
+			const cookie = cookies[i].trim();
+			// Does this cookie string begin with the name we want?
+			if (cookie.substring(0, name.length + 1) === name + "=") {
+				cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+				break;
+			}
+		}
+	}
+	return cookieValue;
+}
+const csrftoken = getCookie("csrftoken");
 
 //numbering formatter
 function numberingFormatter() {
@@ -393,5 +363,9 @@ function questionCellStyle(value, row, index) {
 
 
 
-
+document.addEventListener('focusin', function(e) {
+	if (e.target.closest('.tox-tinymce-aux, .moxman-window, .tam-assetmanager-root') !== null) {
+	  e.stopImmediatePropagation();
+	}
+  });
 

@@ -1,5 +1,6 @@
 import json
 from django.shortcuts import render, redirect, get_object_or_404
+import exam
 from users.models import Student, User, Teacher, Grade
 from main . decorators import teacher
 from teachers. forms import UserUpdateForm,TeacherUpdateForm, ChangeProfilePicture, TopicForm
@@ -128,8 +129,9 @@ def scheduledExam(request):
 def closedExam(request):
     """Exams that have been completed"""
     grades = Grade.objects.filter(exam__end_date__lt=timezone.now(), exam__teacher=request.user).distinct()
-    exams = Exam.objects.filter(end_date__lt=timezone.now(), teacher=request.user)
-    
+    exams = Exam.objects.filter(end_date__lt=timezone.now(), teacher=request.user).order_by("grade").select_related("grade")
+    grader = exams.distinct()
+    print(grader)
     context = {
         "exams": exams,
         "grades": grades
@@ -639,6 +641,48 @@ def update_topics(request):
     questions = Question.objects.filter(id__in =ids)
     questions.update(topics=topic)                           
     return JsonResponse({"response":True})
+
+def convertToDocx(request):
+    from django.http import HttpResponse
+    from docx import Document
+    from io import BytesIO
+    document = Document()
+    """Function to delete questions through ajax"""
+    ids = request.POST.get("ids")
+    ids = json.loads(ids)
+    question_instances = Question.objects.filter(id__in =ids)
+    # question_instances = Question.objects.filter(subject__teacher=request.user)
+    questions = [
+        (
+            q.question,
+            [f"a) {q.option_A   }", f"b) {q.option_B}", f"c) {q.option_C}", f"d) {q.option_D}"]
+        )
+        for q in question_instances
+    ]  
+    i = 1   
+    for question, choices in questions:
+        para = document.add_paragraph()
+
+        # Add the question text
+        para.add_run(str(i) + "\t" +question+ "\n").bold = True
+
+        # Add choices
+        for choice in choices:
+            para.add_run("\t" + choice +"\n")  # Using a tab character to align choices
+            
+        i+=1    
+    
+    buffer = BytesIO() #creates a virtual memory in RAM for reading and writing byte
+    document.save(buffer) #write the document’s bytes into the in-memory buffer instead of a physical file.
+    buffer.seek(0) #it “seeks” to the 0th byte (the start) of the buffer, so you can read from it from the beginning.
+    
+    # Set up the HTTP response
+    response = HttpResponse(
+        buffer.getvalue(), #gets the store data from the buffer virtual memory in bytes
+        content_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document' #This tells the client’s browser that the server is sending a Word document.
+    )
+    response['Content-Disposition'] = 'attachment; filename="emeka.docx"'    
+    return response
     
 def changeStudentsPassword(request):
     '''

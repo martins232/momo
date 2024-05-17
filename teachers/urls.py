@@ -38,6 +38,7 @@ urlpatterns = [
     path("edit-myquestion/<str:pk>/", views.question_edit, name="edit-myquestion"),
     path("delete-myquestion/", views.question_delete, name="delete-myquestion"),
     path("update-topic/", views.update_topics, name="update-topic"),
+    path("convert-to-docx/", views.convertToDocx, name="docx"),
     #debugging-------------------------------------------
     
     
