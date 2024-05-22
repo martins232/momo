@@ -16,6 +16,7 @@ from django.dispatch import receiver
 
 from django.http.response import JsonResponse
 from django.db.models import Count, Avg
+from django.utils.html import strip_tags
 
 
 
@@ -130,8 +131,8 @@ def closedExam(request):
     """Exams that have been completed"""
     grades = Grade.objects.filter(exam__end_date__lt=timezone.now(), exam__teacher=request.user).distinct()
     exams = Exam.objects.filter(end_date__lt=timezone.now(), teacher=request.user).order_by("grade").select_related("grade")
-    grader = exams.distinct()
-    print(grader)
+    
+    
     context = {
         "exams": exams,
         "grades": grades
@@ -176,7 +177,8 @@ def editExam(request, pk):
     exam = get_object_or_404(Exam, id=pk)
     if request.user != exam.teacher:
         return redirect("404")
-    form = ExamForm(request, instance=exam) 
+    form = ExamForm(request, instance=exam, initial={"duration": exam.duration_to_minutes}) 
+    
     if request.method == "POST":
         form = ExamForm(request, request.POST, instance=exam) 
         if form.is_valid():
@@ -489,8 +491,18 @@ def viewExam(request, pk):
     
     context = {"exam": exam} #used for sending subject id in the templated
     if exam.get_exam_status =="ended" or "active":
-        topics = Topic.objects.filter(subject=exam.subject)
-        context["topics"] = topics
+        grades = Grade.objects.all()
+    
+        # Create a dictionary to hold topics grouped by grade
+        topics_grouped_by_grade = {}
+
+        for grade in grades:
+            # Fetch topics for each grade
+            topics = Topic.objects.filter(grade=grade, subject=exam.subject)
+            if topics.count()>0:
+                topics_grouped_by_grade[grade] = topics
+        
+        context["topics_grouped_by_grade"] = topics_grouped_by_grade
     return render(request, "teachers/view_exam.html", context)
 
 def assignQuestionToExam(request, pk):
@@ -654,7 +666,7 @@ def convertToDocx(request):
     # question_instances = Question.objects.filter(subject__teacher=request.user)
     questions = [
         (
-            q.question,
+            strip_tags(q.question),
             [f"a) {q.option_A   }", f"b) {q.option_B}", f"c) {q.option_C}", f"d) {q.option_D}"]
         )
         for q in question_instances

@@ -163,27 +163,35 @@ const getTopicData = (url=window.origin + "/teacher/topic-data/" +`?grade=${$("#
         url: url,
         success: function (success){
             obs = success
+            
             let topic = ""
             // Loop through each subject
             for (const subject in obs) {
+                
                 topic += `<h2 class=" mt-2 text-center bg-dark text-light">${subject}</h2>`
             
-                // Loop through each student in the subject
-                topic += "<ol class='list-group list-group-numbered'>"
-                for (const sub_topic of obs[subject]) {
-                    topic += `<li class='list-group-item position-relative'>
-                        <span>${sub_topic.name}</span> 
-
-                        
-                        <div class="position-absolute top-0 end-0 mt-1">
-                            <button onclick="scroller(); actionBtn(this);" class="action_btn btn btn-sm btn-light" data-action="edit" data-id=${sub_topic.id} data-subject=${subject}><i class="fas fa-pencil"></i></button>
-                            <button onclick="actionBtn(this)" class="action_btn btn btn-sm btn-light text-danger me-2" data-action="delete" data-id=${sub_topic.id}><i class="fas fa-trash"></i></button>
-                        </div>
-                    
-                    </li>`
-                    
-                }
-                topic += "</ol>"
+                
+                    if (obs[subject].length>0){
+                        // Loop through each topic in the subject
+                        topic += "<ol class='list-group list-group-numbered'>"
+                        for (const sub_topic of obs[subject]) {
+                            topic += `<li class='list-group-item position-relative'>
+                                <span>${sub_topic.name}</span> 
+        
+                                
+                                <div class="position-absolute top-0 end-0 mt-1">
+                                    <button onclick="scroller(); actionBtn(this);" class="action_btn btn btn-sm btn-light" data-action="edit" data-id=${sub_topic.id} data-subject=${subject}><i class="fas fa-pencil"></i></button>
+                                    <button onclick="actionBtn(this)" class="action_btn btn btn-sm btn-light text-danger me-2" data-action="delete" data-id=${sub_topic.id}><i class="fas fa-trash"></i></button>
+                                </div>
+                            
+                            </li>`
+                            
+                        }
+                        topic += "</ol>"
+                    }else{
+                        topic += `<p class='text-center fs-3'>No topic at the moment</p> `
+                    }
+                
             }
             $("#topic_area").html(`${topic}`)
            

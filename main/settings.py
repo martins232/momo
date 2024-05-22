@@ -111,23 +111,23 @@ WSGI_APPLICATION = 'main.wsgi.application'
 #     }
 # }
 
-if not DEBUG:
-    DATABASES = {
-	"default": dj_database_url.parse(os.environ.get("DATABASE_URL"))
-    }
-else:
-    DATABASES = {
-	"default": dj_database_url.parse(os.environ.get("DATABASE_URL"))
-    }
+# if not DEBUG:
+#     DATABASES = {
+# 	"default": dj_database_url.parse(os.environ.get("DATABASE_URL"))
+#     }
+# else:
     # DATABASES = {
-    #     'default': {
-    #         'ENGINE': 'django.db.backends.postgresql',
-    #         'NAME': "skodaji",
-    #         "USER": "root",
-    #         "PASSWORD": "123",
-            
-    #     }
+	# "default": dj_database_url.parse(os.environ.get("DATABASE_URL"))
     # }
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': "skodaji",
+        "USER": "root",
+        "PASSWORD": "123",
+        
+    }
+}
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
