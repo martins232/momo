@@ -244,25 +244,16 @@ function getIdSelections() {
 			type: "POST",
 			url: "convert-to-docx/",
 			data : {"csrfmiddlewaretoken": csrftoken, "ids": JSON.stringify(selections)},
-			success: function(response, status, xhr) {
-				var filename = ""; 
-				var disposition = xhr.getResponseHeader('Content-Disposition');
-				if (disposition && disposition.indexOf('attachment') !== -1) {
-					var filenameRegex = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/;
-					var matches = filenameRegex.exec(disposition);
-					if (matches != null && matches[1]) filename = matches[1].replace(/['"]/g, '');
-				}
+			success: function(response) {
+				// Handle the file download
 				var blob = new Blob([response], { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
-				var downloadUrl = URL.createObjectURL(blob);
-				var a = document.createElement("a");
-				a.href = downloadUrl;
-				a.download = filename;
-				document.body.appendChild(a);
-				a.click();
+				var link = document.createElement('a');
+				link.href = window.URL.createObjectURL(blob);
+				link.download = "questions.docx";
+				link.click();
 			},
-			error: function(xhr, status, error) {
-				// Handle any errors that occur during the request
-				console.error("Error: " + error);
+			xhrFields: {
+				responseType: 'blob'  // This is important for handling binary data
 			}
 		})
 	})	

@@ -14,16 +14,20 @@ from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Div, Field, HTML
 
 from .group_fields import GroupedModelChoiceField
-
-
-
-
-
 from tinymce.widgets import TinyMCE
 
-
-class ExamForm(forms.ModelForm):
+class MyRangeField(forms.DateField):
+    # slider for duration field
+    def to_python(self, value):
+        value = timedelta(minutes=int(value))
+        return value
     
+    
+    
+class ExamForm(forms.ModelForm):
+    duration = MyRangeField(
+        widget=forms.NumberInput(attrs={'type': 'range', 'min': 10, 'max': 150, 'step': 5, "class":"form-range"})
+    )
     grade = forms.ModelChoiceField(
         label = "Grader",
         empty_label="Select a grade",
@@ -55,7 +59,8 @@ class ExamForm(forms.ModelForm):
             },
         time_format='%H:%M',
         ))
-   
+    
+    
     
     end_date = forms.SplitDateTimeField(
         label='End Date',
@@ -77,12 +82,13 @@ class ExamForm(forms.ModelForm):
         ))
     
     def __init__(self, request, *args, **kwargs):
-        super(ExamForm, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.fields['subject'].queryset = request.user.subject_set.all()
-        self.fields["duration"].help_text = "<li>H:M:S</li>"
+        self.fields["duration"].help_text = "<span class='fw-bold'>1 hour</span>"
         self.fields["retake"].label = "Allow students retake exam"
         self.fields["review"].label = "Allow students view score after exam"
-        self.fields["duration"].initial = "00:60:00"
+        self.fields["retake"].help_text = "<span class='fw-bold text-danger'></span>"
+        self.fields["duration"].initial = "60"
         self.fields["name"].widget.attrs.update({"placeholder":"Enter exam name","style": "text-transform: capitalize;"})
         
         self.helper = FormHelper()
@@ -95,8 +101,8 @@ class ExamForm(forms.ModelForm):
         'pass_mark',
         'start_date', 
         'end_date',
-            Field('retake', css_class="form-check-input", wrapper_class="form-check form-switch"),
             Field('review', css_class="form-check-input", wrapper_class="form-check form-switch"),
+            Field('retake', css_class="form-check-input", wrapper_class="form-check form-switch"),
             HTML("""
                 <div class="modal-footer">
                     <button type="submit" class="btn btn-success">
@@ -107,20 +113,28 @@ class ExamForm(forms.ModelForm):
         )
         
         
-        if self.instance:
+        if self.instance.pk:
+            self.fields["duration"].help_text = f"<span class='fw-bold'>{self.instance.seconds_to_hms}</span>"
+            
+            
+            
             if self.instance.get_exam_status == "active":
                 fields = ('grade',  'subject', 'duration', 'pass_mark', 'start_date','retake', 'review',)
                 for field in fields:
                     self.fields[field].disabled = True
                 
                 self.fields["end_date"].widget.attrs.update({"min":str(date.today())})
-        # This will work but when the form selects all teachers that have an active session
-        # self.fields['teacher'].initial = request.user
-        # self.fields['teacher'].widget.attrs['readonly'] = True
+            
+            
+            if self.instance.get_no_question > 0:
+                self.fields["subject"].disabled = True
+                
+            
+           
         
     class Meta:
         model = Exam
-        exclude = ["teacher", "ready"]
+        exclude = ["teacher", "ready", "deleted"]
         
         help_text={"duration": "Duration (H:M:S)"}
     
@@ -130,6 +144,7 @@ class ExamForm(forms.ModelForm):
         
     def clean_duration(self):
         duration = self.cleaned_data.get("duration")
+
         if duration > timedelta(hours=6, minutes=00, seconds=00):
             raise ValidationError("Duration can't be greater than 6hours")
         elif duration < timedelta(minutes=1):
@@ -176,22 +191,17 @@ class QuestionForm(forms.ModelForm):
     # question =forms.CharField(widget=SummernoteWidget(attrs={'summernote': {'width': '100%', "height":"220px"}}))
     answer = forms.ChoiceField(widget=forms.RadioSelect,
         choices=answer_choice,) 
-    topics = GroupedModelChoiceField(
-        queryset=Topic.objects.none(), 
-        choices_groupby='grade', required=False
-    )  
+    # topics = GroupedModelChoiceField(
+    #     queryset=Topic.objects.none(), 
+    #     choices_groupby='grade', required=False
+    # )  
     
     # topics = forms.ModelChoiceField(widget=forms.SelectMultiple, queryset=Topic.objects.filter(grade=2), required=False)
     
     class Meta:
         model = Question
         # fields = ('subject',  'question', 'question', 'option_A', 'option_B', 'option_C', 'option_D', 'answer','topics', )
-        exclude = ("exam", 'updated', 'created')
-        # widgets = {
-        #       "text": CKEditor5Widget(
-        #           attrs={"class": "django_ckeditor_5"}, config_name="extends"
-        #       )
-        #   }
+        exclude = ("topics", "exam", 'updated', 'created')
         widgets = {
             'question': TinyMCE(attrs={"cols":80, "rows":30}),
         }
@@ -201,8 +211,8 @@ class QuestionForm(forms.ModelForm):
         self.teacher = request.user
         # self.fields["question"].widget.attrs.update({"rows":5,}) 
         self.fields["question"].required = True
-        self.fields["topics"].empty_label = "Select topic"
-        self.fields['topics'].queryset = Topic.objects.filter(subject__teacher=request.user).order_by('grade')
+        # self.fields["topics"].empty_label = "Select topic"
+        # self.fields['topics'].queryset = Topic.objects.filter(subject__teacher=request.user).order_by('grade')
         self.fields['subject'].queryset = request.user.subject_set.all()
         self.fields["subject"].widget.attrs.update({'id': 'subject'})
         fields= ('option_A', 'option_B', 'option_C', 'option_D', )

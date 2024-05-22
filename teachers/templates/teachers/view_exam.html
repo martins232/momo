@@ -45,14 +45,18 @@
         <button id="remove" class="btn btn-secondary" disabled onclick="removeQuestionFromExam()">
             <i class="fa fa-minus"></i> Remove
         </button>
-    {% else %}
+    
     <form action="" id="update_topic">      
         <div class="input-group my-3 mb-3">                
-                <select name="topic" class="form-select" aria-label="Default select example" required>
-                <option value="" disabled selected >---------- Update {{exam.name}} question topics topics ----------</option>       
-                {% for topic in topics %}
-                    <option value="{{topic.id}}">{{topic.name}}</option>
-                {% endfor %}
+            <select name="topic" class="form-select" aria-label="Default select example" required>
+                <option value="" disabled selected >---------- Update {{exam.name}} question topics ----------</option>  
+                {% for grade, topics in topics_grouped_by_grade.items %}  
+                    <optgroup label="{{ grade }}">
+                        {% for topic in topics %}
+                            <option value="{{topic.id}}">{{topic.name}}</option>
+                        {% endfor %}
+                    </optgroup>
+                {% endfor %} 
             </select>        
             <button disabled class="btn btn-outline-primary" type="submit" id="button-addon2">Update</button>
         </div>
@@ -66,7 +70,7 @@
 <div id="toolbar" class="{% if exam.get_exam_status != "pending" and exam.ready is True %} d-none {% endif %}">
     <label class="mt-2">
         <input type="checkbox" name="iconSize" value="0" id="id_unassigned">
-        <code>Unassigned</code>
+        <code>Unassigned questions</code>
     </label>
 </div>
 <table
@@ -167,6 +171,7 @@
         }else{
             request_params.unassigned = 0
             $table.bootstrapTable('refresh')
+            $("#update_topic button[type=submit]").prop('disabled', true)
         }
     });
 

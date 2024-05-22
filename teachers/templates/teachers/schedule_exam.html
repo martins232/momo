@@ -51,13 +51,13 @@
         </div>
 
     </div>
-    <div class="card my-3 mx-auto">
+    <div class=" my-3 mx-auto">
 
         {% for grade in grades %}
         
-        <h3 class="card-head text-center">{{grade}}</h3>
+        <h3 class=" text-center">{{grade}}</h3>
         <div class="table-responsive">
-            <table class="table table-sm table-hover table-bordered">
+            <table class="table table-sm table-hover ">
                 <thead class="table-secondary">
                   <tr>
                     <th scope="col"></th>
@@ -148,13 +148,35 @@
 {% block js %}
 
 <script>
+    function convertMinutesToHoursAndMinutes(minutes) {
+        let hours = Math.floor(minutes / 60);
+        let remainingMinutes = minutes % 60;
+        return `${hours>1 ? `${hours} hours`: `${hours} hour`} ${remainingMinutes>0 ? `and ${remainingMinutes}minutes` : ""}`;
+    }
     
     $("#id_retake").on("change", function(){
         if ($("#id_retake").is(":checked")){
-            $("#id_review").prop("checked", true)
+            // if retake is on, check that the review too is on
+            if (!$("#id_review").prop("checked")){
+                $("#id_review").prop("checked", true)
+                $("#hint_id_retake span").text("Students must see score first before they can retake this exam")
+            }
         }else{
-            $("#id_review").prop("checked", false)
+            $("#hint_id_retake span").text("")
         }
+    })
+
+    $("#id_review").on("change", function(){
+        //prevent teacher from toggling off the review button when retake is on
+        if ($("#id_retake").is(":checked")){
+            $("#id_review").prop("checked", true)
+            $("#hint_id_retake span").text("Exam retake option in on")
+        }
+    })
+
+    $("#id_duration").on("change", function(){
+        $(this).val() + ` MINS ~ ${convertMinutesToHoursAndMinutes($(this).val())}`
+        $("#hint_id_duration span").text(`${$(this).val() >= 60 ? convertMinutesToHoursAndMinutes($(this).val()): $(this).val()+ " Mins" }`)
     })
 
     function notify(color, msg){

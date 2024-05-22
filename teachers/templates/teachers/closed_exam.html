@@ -32,9 +32,9 @@
 
 {% for grade in grades %}
         
-<h3 class="card-head text-center">{{grade}}</h3>
+<h3 class=" text-center">{{grade}}</h3>
 <div class="table-responsive">
-    <table class="table table-sm table-hover table-bordered">
+    <table class="table table-sm table-hover">
         <thead class="table-secondary">
           <tr>
             <th scope="col">#</th>
@@ -65,24 +65,21 @@
                             {% if exam.get_exam_status == "active" %} text-success
                             {% elif exam.get_exam_status == "pending" %} text-warning
                             {% endif %} ">
-                                <i class="fas fa-circle fa-sm"></i>
-                                <span class="d-none d-md-inline-block"> {{exam.get_exam_status}}</span>
+                            <i class="fas fa-circle fa-sm"></i>
+                            <span class="d-none d-md-inline-block"> {{exam.get_exam_status}}</span>
                         </td>
 
-                        
-                        
-                        
-                        
                         <td style="min-width: 150px;">
-                            <div class="d-flex justify-content-evenly"   >
-								<a role="button" class="text-danger deleteBtn" data-id="{{exam.id}}" data-bs-toggle="modal" data-bs-target="#delete"><i class="fas fa-trash-alt"></i></a>
+                            <div class="d-flex justify-content-center"   >
+								
                               <div class="dropdown">
                                 <a role="button" class="text-dark" id="action" data-bs-toggle="dropdown"><i class="fas fa-ellipsis-h"></i></a>
-                              <ul class="dropdown-menu mx-auto" aria-labelledby="dropdownMenuButton1" >
-                                <li><a class="dropdown-item" href="{% url "exam-dashboard" exam.id %}">View exam</a></li>
-                                <li><a class="dropdown-item" href="#">Another action</a></li>
-                                <li><a class="dropdown-item" href="#">Something else here</a></li>
-                              </ul>
+                                    <ul class="dropdown-menu mx-auto" aria-labelledby="dropdownMenuButton1" >
+                                        <li><a class="dropdown-item" href="{% url "exam-dashboard" exam.id %}"> <i class="fas fa-eye"></i> View exam</a></li>
+                                        
+                                        <li><a role="button" class="dropdown-item deleteBtn" data-id="{{exam.id}}" data-bs-toggle="modal" data-bs-target="#delete"><i class="fas fa-trash-alt text-danger"></i> Discard exam</a></li>
+                                        <li><a class="dropdown-item" href="#">Something else here</a></li>
+                                    </ul>
                               </div>
 
 

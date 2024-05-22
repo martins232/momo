@@ -29,6 +29,7 @@ class Exam(models.Model):
     start_date = models.DateTimeField()
     end_date = models.DateTimeField()
     ready = models.BooleanField(default=False) #to make sure exam satisfy every requirements like no. of quest etc before students can see it
+    deleted = models.BooleanField(default=False)
     review = models.BooleanField(default=False)
     retake = models.BooleanField( default=False)
     updated = models.DateTimeField(auto_now=True)
@@ -74,8 +75,15 @@ class Exam(models.Model):
         minutes = int((duration % 3600) // 60)
         seconds = int(duration % 60)
         
-        return f"{str(hours) + 'hr' if hours > 0 else ''} {'s' if hours>1 else ''} {str(minutes) + 'min ' if minutes > 0 else ''} {str(seconds) + 'sec(s)' if seconds > 0 else ''}"
-   
+        return f"{str(hours) + 'hr' if hours > 0 else ''}{'s' if hours>1 else ''} {str(minutes) + 'min ' if minutes > 0 else ''} {str(seconds) + 'sec(s)' if seconds > 0 else ''}"
+    
+    def duration_to_minutes(self):
+        duration = self.duration.seconds
+        minutes = int(duration / 60)
+        return minutes
+        
+        
+        
     def topic_count(self):
         """
         Calculate the count of unique topics for the questions associated with the current exam instance.
@@ -98,13 +106,28 @@ class Exam(models.Model):
                 questions_without_topic.append(question.id)
         return dict(topics_count), questions_without_topic
     
+    def delete(self, *args, **kwargs):
+        # super(Exam).delete(*args, *kwargs)
+        
+        if self.get_exam_status in ["active", "ended"]:
+            sessions = self.session_set.all()
+            if (sessions.count()>0):
+                for session in sessions:
+                    ...
+                print("i can't delete you bro you have some valuable data")
+            else:
+                super().delete(*args, **kwargs)
+        else:
+            super().delete(*args, **kwargs)              
+        
     class Meta:
-        ordering = [ "created"]
+        ordering = [ "created"]             
     
     
 class Question(models.Model):
     # teacher = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, limit_choices_to={"is_teacher":True})
     subject = models.ForeignKey(Subject, on_delete=models.RESTRICT, blank=False)
+    # exam = models.ForeignKey(Exam, on_delete=models.SET_NULL, null=True, blank=True)
     exam = models.ForeignKey(Exam, on_delete=models.SET_NULL, null=True, blank=True)
     topics = models.ForeignKey(Topic, on_delete=models.SET_NULL, blank=True, null=True)
     question = models.TextField()
