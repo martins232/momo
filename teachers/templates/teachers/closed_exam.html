@@ -29,6 +29,8 @@
     {% comment %} notification {% endcomment %}
 </div>
 
+<button id="showToastButton" class="btn btn-primary">Show Toast</button>
+
 
 {% for grade in grades %}
         
@@ -78,7 +80,7 @@
                                         <li><a class="dropdown-item" href="{% url "exam-dashboard" exam.id %}"> <i class="fas fa-eye"></i> View exam</a></li>
                                         
                                         <li><a role="button" class="dropdown-item deleteBtn" data-id="{{exam.id}}" data-bs-toggle="modal" data-bs-target="#delete"><i class="fas fa-trash-alt text-danger"></i> Discard exam</a></li>
-                                        <li><a class="dropdown-item" href="#">Something else here</a></li>
+                                        <li><a class="dropdown-item" href="#"><i class="fas fa-check text-success"></i> Mark exam as concluded</a></li>
                                     </ul>
                               </div>
 
@@ -90,7 +92,7 @@
 
 
                           
-                          </td>
+                        </td>
 
                         
                         {% comment %} <td><a href="#" class="btn btn-danger btn-sm delete" data-id="{{exam.id}}" data-name="{{exam.name}}" 
@@ -112,6 +114,11 @@
 
 {% block js %}
     <script>
+      
+      // Example usage
+      document.getElementById('showToastButton').addEventListener('click', function() {
+        createToast('success', 'Toast created');
+      });
         function notify(color, msg){
             $("#alert").html(`
                 <div class="auto-close alert alert-${color} alert-dismissible fade show py-1" role="alert" >
@@ -194,6 +201,11 @@
             setTimeout(function () {
                 autoCloseElements.forEach(el => fadeAndSlide(el));
             }, 5000);
+
+            let currentUrl = window.location.href;
+            let queryParam = "?deleted=true";
+            let newUrl = currentUrl.replace(queryParam, "");
+            window.history.replaceState(null, '', newUrl);
         }
     });
         

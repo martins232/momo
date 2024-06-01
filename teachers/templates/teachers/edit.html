@@ -63,7 +63,7 @@
             }
         })
 
-        $("#id_duration").on("change", function(){
+        $("#id_duration").on("input", function(){
             $(this).val() + ` MINS ~ ${convertMinutesToHoursAndMinutes($(this).val())}`
             $("#hint_id_duration span").text(`${$(this).val() >= 60 ? convertMinutesToHoursAndMinutes($(this).val()): $(this).val()+ " Mins" }`)
         })

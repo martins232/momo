@@ -15,7 +15,7 @@ from random import shuffle
 from exam . models import Question, Session
 from django.core.exceptions import PermissionDenied
 from django.utils import timezone
-from django.db.models import Q
+from django.db.models import Q, OuterRef, Subquery
 
 from django.contrib.auth.decorators import login_required
 from main.decorators import student
@@ -92,22 +92,45 @@ def editStudentProfileImage(request, pk):
 @student
 @login_required
 def exams(request):
+    # Subquery to get the exam IDs that have been taken by the current user, ho many attempts and if the exam supports retake
+    taken_exams_subquery = Session.objects.filter(Q(attempts__gte=2) | Q(attempts=1, exam__retake=False),
+        user=request.user,
+        exam=OuterRef('pk'),
+        
+    ).values('exam')
+    
+    
     """Exams that are ready and students are eligible to see and write"""
-    exams = Exam.objects.filter(Q(start_date__lte=timezone.now(), end_date__gt=timezone.now()),
-                                 ready=True, grade=request.user.student.grade).order_by("end_date")
+    time_now = timezone.now()
+    exams = Exam.objects.filter(Q(start_date__lte=time_now, end_date__gt=time_now),
+                                 ready=True, grade=request.user.student.grade).exclude(pk__in=Subquery(taken_exams_subquery)).order_by("end_date")
     
     
-    if request.method == "POST": #if the student clicks the start button on the modal in the available exam page
+    if request.method == "POST": #if the student clicks the start button for an in the available exam page
         id = request.POST.get("exam")
+        exam = Exam.objects.get(pk=id)
+        
         if Session.objects.filter(user=request.user, exam=id).exists(): #check if the user has written this test before
             student_session = Session.objects.get(user=request.user, exam=id)
-            if student_session.attempts < 2 or student_session.completed == False: # check if the student completed this exam even in his last attempt or how many times the user wrote this test (this student is eligible)
-                request.session['id'] = id # add the exam.id to the session header because student is eligible to write
+            if student_session.attempts < 2 or student_session.completed == False: # check if the student completed this exam even in his last attempt or how many times the user write this test (this student is eligible)
                 if student_session.completed: # user wants to retake this test
-                    request.session['check_storage_for_data'] = 0 # tell Javascript whether to check storage
+                    #check if exam to be retaken supports retake
+                    if exam.retake:
+                        request.session['check_storage_for_data'] = 0 # tell Javascript whether to check storage
+                        request.session['id'] = id # add the exam.id to the session header because student is eligible to write
+                        return JsonResponse({"message": True}) 
+                    else:
+                        if request.session.get("check_storage_for_data", None) != None:
+                            if request.session['check_storage_for_data'] != None: 
+                                del request.session['check_storage_for_data'] 
+                        if request.session.get("id", None) != None:
+                            if request.session['id'] != None:
+                                del request.session['id']
+                        return JsonResponse({"message": False}) 
                 else: # user didn't finish the test
+                    request.session['id'] = id # add the exam.id to the session header because student is eligible to write
                     request.session['check_storage_for_data'] = 1 # tell Javascript whether to check storage
-                return JsonResponse({"message": True})# True meaning you can open a new window
+                    return JsonResponse({"message": True})# True meaning you can open a new window
             
             else: #user has exceeded maximum attempts (this student is not eligible)
                 # delete session variables if it exist to prevent accessing exam
@@ -118,7 +141,7 @@ def exams(request):
                 if request.session.get("id", None) != None:
                     if request.session['id'] != None:
                         del request.session['id']
-                return JsonResponse({"message": False}) # True meaning you can open a new window
+                return JsonResponse({"message": False}) # False meaning you can't open a new window
             
         else: #first time writers
             request.session['id'] = id # add the exam.id to the session header

@@ -38,18 +38,20 @@
         <button id="remove" class="btn btn-secondary" disabled onclick="removeQuestionFromExam()">
             <i class="fa fa-minus"></i> Remove
         </button>
-    {% elif  exam.get_exam_status == "pending" %}
+    {% elif  exam.get_exam_status == "pending"   %}
         <button id="add" class="btn btn-primary " disabled onclick="addQuestionToExam()">
             <i class="fa fa-plus"></i> Add
         </button>
         <button id="remove" class="btn btn-secondary" disabled onclick="removeQuestionFromExam()">
             <i class="fa fa-minus"></i> Remove
         </button>
-    
+    {% endif %}
+
+    {% if update_topic %}
     <form action="" id="update_topic">      
         <div class="input-group my-3 mb-3">                
             <select name="topic" class="form-select" aria-label="Default select example" required>
-                <option value="" disabled selected >---------- Update {{exam.name}} question topics ----------</option>  
+                <option value="" disabled selected >--------------------</option>  
                 {% for grade, topics in topics_grouped_by_grade.items %}  
                     <optgroup label="{{ grade }}">
                         {% for topic in topics %}
@@ -105,7 +107,7 @@
         <th data-field="check" data-checkbox="true"></th>
         <th data-field="#" data-formatter="numberingFormatter">#</th>
         <th data-field="question">Question</th>
-        <th data-field="topics__name"  data-sortable="true">Topic</th>
+        <th data-field="topics__name">Topic</th>
         <th data-field="status" data-formatter="statusFormatter" data-align="center">Assigned</th>
         </tr>
     </thead>
@@ -176,7 +178,7 @@
     });
 
     function statusFormatter(value, row, index){
-        if (row.exam){
+        if (row.exam__id){
             return `<span class="text-success" title="Question has been added to {{exam.name}}"><i class="fas fa-check"></></span>`
         }
         
@@ -206,21 +208,19 @@
     $("#update_topic").on("submit", function(event){
         event.preventDefault()
         let topic = $("#update_topic select").val()
-        
+        let msg 
         $.ajax({
             type:"POST",
             url :'{% url "update-topic" %}',
             data : {"csrfmiddlewaretoken": "{{csrf_token}}", "topic":topic, "ids": JSON.stringify(selections)},
             success: function(success){
-                let msg = '<a href="{% url "exam-dashboard" exam.id %}">Topics added to question. Go back to {{exam.name}} analysis</a>'
-                notify("success", msg)
+                if("{{exam.get_exam_status}}" == "ended"){
+                    msg= '<a href="{% url "exam-dashboard" exam.id %}">Topic(s) added to question. Go back to {{exam.name}} analysis</a>'
+                }else{
+                    msg= 'Topic(s) added to question.'
+                }
+                createToast("success", msg)
                 $table.bootstrapTable('refresh')
-                //close the alert element
-                const autoCloseElements = [...$(".auto-close")]
-                setTimeout(function () {
-                    autoCloseElements.forEach(el => fadeAndSlide(el));
-                }, 5000);
-
             },
             error: function(error){
                 console.log(JSON.stringify(error))

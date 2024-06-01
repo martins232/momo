@@ -39,6 +39,8 @@ urlpatterns = [
     path("delete-myquestion/", views.question_delete, name="delete-myquestion"),
     path("update-topic/", views.update_topics, name="update-topic"),
     path("convert-to-docx/", views.convertToDocx, name="docx"),
+    path("template-to-docx/", views.prepareDocxTemplateForExam, name="template-docx"),
+    path("uploaded-docx/", views.handleUploadedDocx, name="upload-docx"),
     #debugging-------------------------------------------
     
     

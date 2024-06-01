@@ -1,4 +1,6 @@
 import json
+import re
+from urllib import response
 from django.shortcuts import render, redirect, get_object_or_404
 import exam
 from users.models import Student, User, Teacher, Grade
@@ -18,6 +20,15 @@ from django.http.response import JsonResponse
 from django.db.models import Count, Avg
 from django.utils.html import strip_tags
 
+from django.http import HttpResponse
+from docx import Document
+from io import BytesIO
+from docx.shared import Pt, Cm, Inches, RGBColor
+from docx.enum.text import WD_PARAGRAPH_ALIGNMENT, WD_ALIGN_PARAGRAPH, WD_TAB_ALIGNMENT, WD_TAB_LEADER
+from docx.oxml import OxmlElement
+from docx.oxml.ns import qn
+
+from django.db import transaction
 
 
 from django.utils import timezone
@@ -406,8 +417,7 @@ def examDashboard(request, pk):
 
 def questionData(request):
     
-     # for the sake of other subjects that would use this JSON data
-    subject_list = Subject.objects.filter(teacher=request.user) # used in the all_question page to filter all questions by a particular teacher 
+    
     
     subject = request.GET.get("subject") # used in the drag page to filter questions for a particular subject 
     search = request.GET.get("search") 
@@ -419,33 +429,45 @@ def questionData(request):
     
     
     
-    # if a particular subject that is making the request through ajax
+    # if there is a particular subject that is making the request through ajax
     if subject != None:
-        subject_list = list(subject)
-    
-
-    length = Question.objects.filter(subject__in=subject_list).count() #get all the questions by the logged in teacher
-    questions = Question.objects.filter(subject__in=subject_list).filter(Q(subject__name__icontains=search) | Q(topics__name__icontains=search) | Q(question__icontains=search)).values("id", "question","topics__id", "topics__name","option_A", "option_B","option_C","option_D", "answer", "exam","exam__name","subject", "subject__name", )
-    
-    
-    
-    
-    
-    if search:
-        length =  questions.count()
+        subject=int(subject)
+        length = Question.objects.filter(subject=subject).count() #get all the questions by the logged in teacher
+        questions = Question.objects.filter(subject=subject).filter(Q(subject__name__icontains=search) | Q(topics__name__icontains=search) | Q(question__icontains=search))
         
-    if unassigned is not None: # if the teacher wants filter between unassigned  and assigned questions
+       
+        """Note unassigned here are questions that do to belong 'to a particular' exam """
         unassigned = bool(int(unassigned))
-        if unassigned:
-            questions = questions.filter(exam__isnull = unassigned)
+        if unassigned: #this block finds question not attached to this exam
+            questions = questions.exclude(exam = exam_id).values("id", "question","topics__id", "topics__name","option_A", "option_B","option_C","option_D", "answer","subject", "subject__name")
             length =  questions.count()
         else:
-            questions = questions.filter(exam__isnull = unassigned)
+            questions = questions.filter(exam = exam_id).values("id", "question","topics__id", "topics__name","option_A", "option_B","option_C","option_D", "answer","subject", "subject__name", "exam__id")
             length =  questions.count()
+        
+    else:
+         # for the sake of other subjects that would use this JSON data
+        subject_list = Subject.objects.filter(teacher=request.user) # used in the all_question page to filter all questions by a particular teacher 
+        length = Question.objects.filter(subject__in=subject_list).count() #get all the questions by the logged in teacher
+        questions = Question.objects.filter(subject__in=subject_list).filter(Q(subject__name__icontains=search) | Q(topics__name__icontains=search) | Q(question__icontains=search)).order_by("-created").values("id", "question","topics__id", "topics__name","option_A", "option_B","option_C","option_D", "answer","subject", "subject__name")
     
-    if exam_id != None and unassigned==False: #to get just assigned topic to a particular exam
-        questions = questions.filter(exam = exam_id)
+    
+        
+        
+        
+    
+
+    
+    
+    
+    
+    
+    if search: # when seaching fields using the search input
         length =  questions.count()
+        
+    
+    
+   
        
     questions = questions[offset:limit+offset]
     return JsonResponse({"total":length, "offset": offset, "rows":list(questions)})
@@ -503,6 +525,9 @@ def viewExam(request, pk):
                 topics_grouped_by_grade[grade] = topics
         
         context["topics_grouped_by_grade"] = topics_grouped_by_grade
+        
+    if exam.get_exam_status =="pending" or "ended":
+        context["update_topic"] = True
     return render(request, "teachers/view_exam.html", context)
 
 def assignQuestionToExam(request, pk):
@@ -510,7 +535,8 @@ def assignQuestionToExam(request, pk):
     if is_ajax(request=request):
         ids = json.loads(request.POST.get("id"))
         questions = Question.objects.filter(id__in = ids)
-        questions.update(exam=pk)
+        for question in questions:
+            question.exam.add(exam)
         
         if exam.get_no_question > 0:           
             exam.ready = True
@@ -522,7 +548,8 @@ def removeQuestionFromExam(request, pk):
     if is_ajax(request=request):
         ids = json.loads(request.POST.get("id"))
         questions = Question.objects.filter(id__in = ids)
-        questions.update(exam=None)
+        for question in questions:
+            question.exam.remove(exam)
         
         if exam.get_no_question < 1:
             exam.ready = False
@@ -655,9 +682,7 @@ def update_topics(request):
     return JsonResponse({"response":True})
 
 def convertToDocx(request):
-    from django.http import HttpResponse
-    from docx import Document
-    from io import BytesIO
+    #to convert questions already in the database to docx file
     document = Document()
     """Function to delete questions through ajax"""
     ids = request.POST.get("ids")
@@ -695,6 +720,236 @@ def convertToDocx(request):
     )
     response['Content-Disposition'] = 'attachment; filename="emeka.docx"'    
     return response
+
+
+
+
+
+# Function to add a areas where for question set to the document
+def add_question_set(doc, question_prefix):
+    # Add question with indentation
+    # Define the question and options
+    question_text = ""
+
+    options = ["A)  ", "B)  ", "C)  ", "D)  "]
+    
+    p = doc.add_paragraph()
+    p.alignment = WD_PARAGRAPH_ALIGNMENT.LEFT # type: ignore
+    tab_stops = p.paragraph_format.tab_stops
+    tab_stops.add_tab_stop(Cm(1))  # type: ignore # Add a tab stop at 1.5 cm
+    
+    run = p.add_run(question_prefix)
+    run.font.size = Pt(11) # type: ignore
+    run.add_tab()  # Insert tab character
+    run = p.add_run(question_text)
+    run.font.size = Pt(11) # type: ignore
+
+    set_paragraph_border(p) # function to add border to each paragraph
+    
+    # Add table with options
+    table = doc.add_table(rows=3, cols=2)
+    table.autofit = False
+    
+    # Adjust column widths
+    table.columns[0].width = Inches(2.5) # type: ignore
+    table.columns[1].width = Inches(2.5) # type: ignore
+
+    # Add options to the table
+    for i, option in enumerate(options):
+        cell = table.cell(i // 2, i % 2)
+        cell.text = option
+        cell.paragraphs[0].runs[0].font.size = Pt(11) # type: ignore
+
+    last_row = table.rows[-1]
+    merged_cell = last_row.cells[0].merge(last_row.cells[1])
+    merged_cell.text = "Ans)   "
+    merged_cell.paragraphs[0].runs[0].font.size = Pt(11)
+    
+    # Set table borders
+    set_table_borders(table)
+    
+    # Set table indentation
+    for row in table.rows:
+        for cell in row.cells:
+            for paragraph in cell.paragraphs:
+                paragraph.paragraph_format.left_indent = Cm(1)  # type: ignore # Indent by 1 cm
+
+    # Add some spacing after each question set
+    doc.add_paragraph("\n")
+    
+def set_paragraph_border(paragraph):
+    # Get the paragraph properties element
+    p = paragraph._p
+    pPr = p.get_or_add_pPr()
+
+    # Create the border element
+    pbdr = OxmlElement('w:pBdr')
+    for border_name in ['top', 'left', 'bottom', 'right']:
+        border = OxmlElement(f'w:{border_name}')
+        border.set(qn('w:val'), 'single')
+        border.set(qn('w:sz'), '4')  # 1/8 point, 8 = 1 point
+        border.set(qn('w:space'), '0')
+        border.set(qn('w:color'), 'auto')
+        pbdr.append(border)
+
+    # Append the border element to paragraph properties
+    pPr.append(pbdr)
+    
+def set_table_borders(table):
+    tbl = table._element
+    tblBorders = OxmlElement('w:tblBorders')
+
+    for border_name in ['top', 'left', 'bottom', 'right', 'insideH', 'insideV']:
+        border = OxmlElement(f'w:{border_name}')
+        border.set(qn('w:val'), 'single')
+        border.set(qn('w:sz'), '4')  # 1/8 point, 8 = 1 point
+        border.set(qn('w:space'), '0')
+        border.set(qn('w:color'), 'auto')
+        tblBorders.append(border)
+
+    tbl.tblPr.append(tblBorders)
+    
+def prepareDocxTemplateForExam(request):
+    #when the teacher submits the form form for template creation
+    if request.method =="POST":
+        no_of_questions = int(request.POST.get("nos"))
+        title = request.POST.get("title")
+        
+        # Create a new Document
+        doc = Document()
+        
+        # Add level 2 heading
+        title = doc.add_paragraph("{} question template".format(title.title()))
+        title.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        for run in title.runs:
+            run.font.color.rgb = RGBColor(0, 0, 0)  # Set the color to red
+            run.font.size = Pt(20)
+
+        # Add level 3 heading
+        level3_heading = doc.add_paragraph("Warning: Dodistort the structure of this template")
+        level3_heading.alignment = WD_ALIGN_PARAGRAPH.LEFT
+        for run in level3_heading.runs:
+            run.font.color.rgb = RGBColor(255, 0, 0)  # Set the color to red
+        
+        # Add three question sets to the document
+        for i in range(1,no_of_questions +1):
+            add_question_set(doc, f"{i}.",)
+
+        # Save the document
+        buffer = BytesIO()
+        doc.save(buffer) #write the document’s bytes into the in-memory buffer instead of a physical file.
+        buffer.seek(0) #it “seeks” to the 0th byte (the start) of the buffer, so you can read from it from the beginning.
+        # Set up the HTTP response
+        response = HttpResponse(
+            buffer.getvalue(), #gets the store data from the buffer virtual memory in bytes
+            content_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document' #This tells the client’s browser that the server is sending a Word document.
+        )
+        response['Content-Disposition'] = 'attachment; filename="question_upload.docx"'    
+        return response
+
+
+def bulk_create_questions(subject_id, exam_ids, data):
+    
+
+    questions = [
+        Question(
+            subject=subject_id,
+            question=item[0],
+            option_A=item[1][0],
+            option_B=item[1][1],
+            option_C=item[1][2],
+            option_D=item[1][3],
+            answer=item[1][4].upper()
+        ) for item in data
+    ]
+
+    
+    # # Use transaction to ensure atomicity
+    with transaction.atomic():
+        created_questions = Question.objects.bulk_create(questions)
+        # Add ManyToMany relationships
+        for question in created_questions:
+            question.exam.add(exam_ids)
+
+        
+def handleUploadedDocx(request):
+    from docx.oxml.table import CT_Tbl
+    
+    if request.method =="POST" and 'file' in request.FILES:
+        uploaded_file = request.FILES['file']
+        exam_name = request.POST.get("title")
+        exam = Exam.objects.get(name=exam_name)
+        subject = exam.subject
+        
+        if not uploaded_file.name.endswith('.docx'):
+            return JsonResponse({"message": False, "reason": "<b>File error</b>:<br> File type is not supported. Please upload a .docx file. You can get one by downloading a template"})
+        # Use python-docx to process the uploaded .docx file
+        doc = Document(uploaded_file)
+        
+        question_pattern = re.compile(r'^\d+\.\s')
+    
+        # Regular expression to match the option tags
+        # option_pattern = re.compile(r'^[A-Z]\)\s*')
+        option_pattern = re.compile(r'^(?:[aA-zZ]\)|Ans\))\s*')
+        questions = []
+        options = []
+        current_options = [] 
+        for paragraph in doc.paragraphs:
+            # Check if the paragraph text matches the question pattern
+            if question_pattern.match(paragraph.text):
+                # Remove the numbering from the question text
+                question_text = question_pattern.sub('', paragraph.text)
+                questions.append(question_text.strip())
+                if current_options:
+                    options.append(current_options)
+                    current_options = []
+    
+        if current_options:
+            options.append(current_options)
+        
+        # Extract options from tables
+        for table in doc.tables:
+            table_options = []
+            for row in table.rows:
+                for cell in row.cells:
+                    # Collect cell text without duplicates and strip option tags
+                    option_text = option_pattern.sub('', cell.text.strip())
+                    if option_text and option_text not in table_options:
+                        table_options.append(option_text.strip())
+            if table_options:
+                options.append(table_options)        
+        
+        
+        
+        # check that 
+        if len(questions)>0:
+            if len (questions) == len(options):
+                message = True
+                questions_and_options = list(zip(questions, options))
+                
+                
+                for question_no , questions_and_option in enumerate(questions_and_options):
+                    if len(questions_and_option[1]) != 5:
+                        message = False
+                        break
+                # print(questions_and_options)
+                bulk_create_questions(subject, exam, questions_and_options)
+                if message:
+                    return JsonResponse({"message": True}) 
+                else:
+                    return JsonResponse({"message": False, "reason": "<b>Incomplete Question Option</b>:<br> One or more options for a question are not fully completed. Please review the file and provide all necessary information. Error occurred at <b>question {}</b>".format(question_no + 1)})
+            else:
+                return JsonResponse({"message": False, "reason": "<b>Question Length Mismatch</b>:<br> Please ensure you are using the template file correctly. If you believe the template has been modified incorrectly, please download a fresh copy."}) 
+        else:
+            return JsonResponse({"message": False, "reason": "<b>No question found</b>:<br> We were unable to find any questions in the uploaded file. This might be due to the file's content not being recognized or the file being empty. Please check the file and try again."})     
+            
+        
+        
+        #     fullText.append(para.text)
+        # document = '\n'.join(fullText)
+        # print(document)
+              
+    
     
 def changeStudentsPassword(request):
     '''

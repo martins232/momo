@@ -16,11 +16,16 @@ from crispy_forms.layout import Layout, Div, Field, HTML
 from .group_fields import GroupedModelChoiceField
 from tinymce.widgets import TinyMCE
 
+
 class MyRangeField(forms.DateField):
     # slider for duration field
     def to_python(self, value):
-        value = timedelta(minutes=int(value))
-        return value
+        if isinstance(value, timedelta):
+            return value
+        else:
+            value = timedelta(minutes=int(value))
+            return value
+            
     
     
     
@@ -86,7 +91,7 @@ class ExamForm(forms.ModelForm):
         self.fields['subject'].queryset = request.user.subject_set.all()
         self.fields["duration"].help_text = "<span class='fw-bold'>1 hour</span>"
         self.fields["retake"].label = "Allow students retake exam"
-        self.fields["review"].label = "Allow students view score after exam"
+        self.fields["review"].label = "Allow students see score after exam"
         self.fields["retake"].help_text = "<span class='fw-bold text-danger'></span>"
         self.fields["duration"].initial = "60"
         self.fields["name"].widget.attrs.update({"placeholder":"Enter exam name","style": "text-transform: capitalize;"})

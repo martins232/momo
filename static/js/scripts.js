@@ -24,3 +24,48 @@ window.addEventListener('DOMContentLoaded', event => {
 
 });
 
+
+function createToast(color, message,delay=5000, icon ="fa-circle-check") {
+    if (color=="danger"){
+        icon="fa-exclamation-circle"
+    }
+    // Create toast element
+    const toastElement = document.createElement('div');
+    toastElement.classList.add('toast', "align-items-center", "border-start", "border-5", `border-${color}`);
+    toastElement.setAttribute('role', 'alert');
+    toastElement.setAttribute('aria-live', 'assertive');
+    toastElement.setAttribute('aria-atomic', 'true');
+    toastElement.setAttribute('data-bs-delay', Number(delay));
+  
+    // create flex
+    const flexForBody = document.createElement('div');
+    flexForBody.classList.add('d-flex');
+  
+    // Toast body
+    const toastBody = document.createElement('div');
+    toastBody.classList.add('toast-body', `text-${color}`, "d-flex");
+    toastBody.innerHTML = `<div class="align-self-center me-1"><i class="fas ${icon}"></i></div>
+    <div>${message}</div>`;
+
+    //button
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.classList.add('btn-close', 'me-2', 'm-auto');
+    button.setAttribute('data-bs-dismiss', 'toast');
+    button.setAttribute('aria-label', 'Close');
+    
+    //assemble flexed body
+    flexForBody.appendChild(toastBody)
+    flexForBody.appendChild(button)
+    // Assemble the toast
+    toastElement.appendChild(flexForBody);
+    
+  
+    // Append to toast container
+    const toastContainer = document.getElementById('toastPlacement');
+    toastContainer.appendChild(toastElement);
+  
+    // Initialize and show the toast using Bootstrap's Toast class
+    const toast = new bootstrap.Toast(toastElement);
+    toast.show();
+  }

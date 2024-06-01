@@ -12,7 +12,7 @@
 
 <!-- Button trigger modal -->
 
-
+<form id="startExam"  >
 <div class="card my-3 mx-auto">
   <div class="table-responsive">
     <table class="table table-sm table-hover">
@@ -38,12 +38,7 @@
           <td>{{exam.start_date | date:"d/m/y"}}</td>
           
 
-          <td class="text-center"><button class="btn btn-success btn-sm start" data-id="{{exam.id}}"
-              data-name={{request.user}} data-exam="{{exam.name}}" data-duration="{{exam.duration}}"
-              data-teacher="{{exam.teacher}}" data-questions-no="{{exam.question_set.all.count}}"
-              data-subject="{{exam.subject}}" data-bs-toggle="modal" data-bs-target="#exam_modal">
-              <i class="fas fa-play"></i>
-              <span class="d-none d-md-inline-block"> START EXAM</span>
+          <td class="text-center"><button type="submit" class="btn btn-success btn-sm start" data-id="{{exam.id}}"><i class="fas fa-play"></i><span class="d-none d-md-inline-block"> START EXAM</span>
             </button></td>
         </tr>
         {% empty%}
@@ -59,7 +54,7 @@
 
 
 
-  <div class="modal fade" id="exam_modal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
+  {% comment %} <div class="modal fade" id="exam_modal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1"
     aria-labelledby="staticBackdropLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg">
       <div class="modal-content">
@@ -89,9 +84,9 @@
       </div>
     </div>
 
-  </div>
+  </div> {% endcomment %}
 
-
+</form>
   {% endblock content %}
 
 
@@ -100,9 +95,9 @@
   <script src="{% static " js/exam.js" %}" defer></script> {% endcomment %}
   <script defer>
 
-    const modalBtns = [...document.getElementsByClassName("start")]
+    {% comment %} const modalBtns = [...document.getElementsByClassName("start")]
     modalBtns.forEach(modalbtn => {
-      const id = modalbtn.getAttribute("data-id")
+      const id = modalbtn.getAttribute("data-id") //exam id
       const user = modalbtn.getAttribute("data-name")
       const exam = modalbtn.getAttribute("data-exam")
       const duration = modalbtn.getAttribute("data-duration")
@@ -161,31 +156,32 @@
       `
 
       })
-    });
+    }); {% endcomment %}
 
 
     let form = $("#startExam")
     form.on("submit", function (event) {
       event.preventDefault()
-      data = form.serialize()
+      let exam_id = event.originalEvent.submitter.getAttribute("data-id")
+      data = {csrfmiddlewaretoken:"{{csrf_token}}", exam:exam_id}
       $.ajax({
         method: "POST",
         url: '{% url "available-exam" %}',
         data: data,
         success: function (success) {
-          $(".modal").modal("hide")
+         
 
-          if (success.message) {
+         if (success.message) {
             window.open('{% url "exam-session" %}', "Session", "menubar=yes,location=yes,resizable=no,scrollbars=yes,status=yes,height=" + screen.availHeight + ",width=" + screen.availWidth)
           } else {
             alert("No exam at the moment")
             window.location = location.origin + '{% url "available-exam" %}'
-          }
+          } 
         },
         error: function (error) {
           console.log(error)
         }
-      })
+      }) 
     })
 
 
