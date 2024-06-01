@@ -103,9 +103,9 @@
                 data: data,
                 success: function (success){
                     if (success){
-                        notify("success",success.message);
+                        createToast('success', success.message);
                     }else{
-                        notify("danger", "Something went wrong");
+                        createToast('danger', "Oops... Something went wrong");
                     }
                     
                         //reset form after adding a question
@@ -114,12 +114,10 @@
                     }else{
                         $("#topic-form input[name=name]").val("")
                     }
-                    //close the alert element
-                    const autoCloseElements = [...$(".auto-close")]
-                    setTimeout(function () {
-                        autoCloseElements.forEach(el => fadeAndSlide(el));
-                    }, 5000);
                     getTopicData()
+                },
+                error: function(error){
+                    createToast('danger', "Oops... Something went wrong");
                 }
             })
         })
@@ -138,17 +136,11 @@
                     url:  window.origin + `/teacher/edit-topic/`,
                     data: data,
                     success: function (success){
-                        console.log("Yes")
                         if (success){
-                            notify("success", success.message);
+                            createToast('success', success.message);
                         }else{
-                            notify("success", success.message);
+                            createToast('success', success.message);
                         }
-                        //close the alert element
-                        const autoCloseElements = [...$(".auto-close")]
-                        setTimeout(function () {
-                            autoCloseElements.forEach(el => fadeAndSlide(el));
-                        }, 5000);
                         getTopicData()
                     },
                 })
@@ -217,46 +209,6 @@ function scroller(){
 
 
 
-//alerts *****************************************************************************************************************
-
-function notify(color, msg){
-    $("#alert").html(`
-        <div class="auto-close alert alert-${color} alert-dismissible fade show py-1" role="alert" >
-            ${msg}
-        </div>
-    `)
-}
-
-function fadeAndSlide(element) {
-    const fadeDuration = 500;
-    const slideDuration = 500;
-
-    // Step 1: Fade out the element
-    let opacity = 1;
-    const fadeInterval = setInterval(function () {
-      if (opacity > 0) {
-        opacity -= 0.1;
-        element.style.opacity = opacity;
-      } else {
-        clearInterval(fadeInterval);
-        // Step 2: Slide up the element
-        let height = element.offsetHeight;
-        const slideInterval = setInterval(function () {
-          if (height > 0) {
-            height -= 10;
-            element.style.height = height + "px";
-          } else {
-            clearInterval(slideInterval);
-            // Step 3: Remove the element from the DOM
-            element.parentNode.removeChild(element);
-          }
-        }, slideDuration / 10);
-      }
-    }, fadeDuration / 10);
-  }
-// *****************************************************************************************************************
-
-
 //action btn click
 function actionBtn(n){
     let action= n.getAttribute("data-action")
@@ -286,16 +238,11 @@ function actionBtn(n){
             url: window.origin + "/teacher/delete-topic/",
             data: {"csrfmiddlewaretoken": "{{csrf_token}}", "id": id},
             success: function(success){
-                notify("success", success.message)
-                //close the alert element
-                const autoCloseElements = [...$(".auto-close")]
-                setTimeout(function () {
-                    autoCloseElements.forEach(el => fadeAndSlide(el));
-                }, 5000);
+                createToast('success', success.message);
                 getTopicData()
             },
             error: function(error){
-                console.log(error)
+                createToast('danger', "Oops... Something went wrong");
             }
         })
     }

@@ -102,7 +102,7 @@ $("#question-data").on("submit", function (event) {
 		success: function (data) {
 			$(".spinner").toggleClass("d-none")
 			if (data.form_is_valid) {
-				notify("success", "Question created succesfully");  // <-- This is just a placeholder for now for testing
+				createToast("success", "Question created succesfully");  // <-- This is just a placeholder for now for testing
 				$("#question-data").get(0).reset()
 				if (subBtn =="false"){
 					$("#addQuestion").modal("hide");
@@ -110,12 +110,8 @@ $("#question-data").on("submit", function (event) {
 					$('#addQuestion').animate({ scrollTop: $('#addQuestion').scrollTop(0) }, 500);
 				}
 				$table.bootstrapTable("refresh")
-				const autoCloseElements = [...$(".auto-close")]
-				setTimeout(function () {
-					autoCloseElements.forEach(el => fadeAndSlide(el));
-				}, 5000);
 			}else{
-				notify("danger", "Question not created");  // <-- This is just a placeholder for now for testing
+				createToast("danger", "Question not created");  // <-- This is just a placeholder for now for testing
 				$("#addQuestion   .modal-body").html(data.html_form)
 				
 				
@@ -127,7 +123,7 @@ $("#question-data").on("submit", function (event) {
 			}
 		}, 
 		error: function(error){
-			alert("Couldn't fetch data")
+			createToast('danger', "Oops... Something went wrong");
 		}
 	})
 });
@@ -172,18 +168,17 @@ $("#addQuestion").on("submit", ".js-question-edit-form", function () {
 		dataType: "json",
 		success: function (data) {
 			if (data.form_is_valid) {
-				notify("success", "Question saved succesfully"); // <-- This is just a placeholder for now for testing
+				createToast("success", "Question saved succesfully"); // <-- This is just a placeholder for now for testing
 				$("#addQuestion").modal("hide");
 				$table.bootstrapTable("refresh");
-				const autoCloseElements = [...$(".auto-close")];
-				setTimeout(function () {
-					autoCloseElements.forEach((el) => fadeAndSlide(el));
-				}, 5000);
 			} else {
 				$("#addQuestion .modal-content").html(data.html_form);
 				$("#addQuestion").modal("show");
 			}
-		},
+		}, 
+		error: function(error){
+			createToast('danger', "Oops... Something went wrong");
+		}
 	});
 	return false;
 });
@@ -221,15 +216,11 @@ function getIdSelections() {
 				data : {"csrfmiddlewaretoken": csrftoken, "ids": JSON.stringify(selections)},
 				success: function (success){
 					$("#delete").modal("hide")
-					notify("success", "Question(s) deleted")
+					createToast("success", "Question(s) deleted")
 		
 					$("#remove, #docx").prop('disabled', true)
 					$table.bootstrapTable("refresh")
-					const autoCloseElements = [...$(".auto-close")]
-					setTimeout(function () {
-						autoCloseElements.forEach(el => fadeAndSlide(el));
-					}, 5000);
-					},
+				},
 				error: function (error){
 					alert("Something went wrong")
 				}
@@ -297,44 +288,7 @@ function detailFormatter(index, row) {
          </div>`;
 }
 
-//alerts *****************************************************************************************************************
 
-function notify(color, msg) {
-	$("#alert").html(`
-      <div class="auto-close alert alert-${color} alert-dismissible fade show py-1" role="alert" >
-          ${msg}
-      </div>
-  `);
-}
-
-function fadeAndSlide(element) {
-	const fadeDuration = 500;
-	const slideDuration = 100;
-
-	// Step 1: Fade out the element
-	let opacity = 1;
-	const fadeInterval = setInterval(function () {
-		if (opacity > 0) {
-			opacity -= 0.1;
-			element.style.opacity = opacity;
-		} else {
-			clearInterval(fadeInterval);
-			// Step 2: Slide up the element
-			let height = element.offsetHeight;
-			const slideInterval = setInterval(function () {
-				if (height > 0) {
-					height -= 10;
-					element.style.height = height + "px";
-				} else {
-					clearInterval(slideInterval);
-					// Step 3: Remove the element from the DOM
-					element.parentNode.removeChild(element);
-				}
-			}, slideDuration / 10);
-		}
-	}, fadeDuration / 10);
-}
-// *****************************************************************************************************************
 
 function examCellStyle(value, row, index) {
 	return {

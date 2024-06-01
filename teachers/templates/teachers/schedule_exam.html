@@ -3,11 +3,19 @@
 
 {% block additional_head_css %}
 
-
-
+<style>
+    .table .dropdown {
+        position: static; /* Ensures the dropdown is positioned correctly */
+    }
+    #dropdownMenuButton1{
+        cursor: pointer;
+    }
+    
+</style>        
 {% endblock additional_head_css %}
 
 {% block content %}
+
     <nav aria-label="breadcrumb" class="main-breadcrumb">
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a href="javascript:void(0)">Home</a></li>
@@ -68,7 +76,7 @@
                     <th  scope="col" >Start Date</th>
                     <th  scope="col" >End Date</th>
                     <th  scope="col" class= "text-center">STATUS</th>
-                    <th  scope="col" class="table-dark text-center align-middle" colspan="3">ACTION</th>
+                    <th  scope="col" class="table-dark text-center align-middle" >ACTION</th>
                     {% comment %} <th colspan="2" scope="col">Action</th> {% endcomment %}
                   </tr>
                 </thead>
@@ -80,7 +88,7 @@
                             <th scope="row" class="text-danger">{% if exam.ready is False %}
                                     <i class="fas fa-exclamation-triangle fa-sm"></i>
                                 {% endif %}</th>
-                            <td class="user-select-all" style="min-width: 150px;"><a href="{% url "session-dashboard" exam.id %}">{{exam.name}}</a></td>
+                            <td class="user-select-all" style="min-width: 150px;">{{exam.name}}</td>
                             <td>{{exam.subject}}</td>
                             <td>{{exam.seconds_to_hms }}</td>
                             <td class= "text-center">{{exam.get_no_question }}</td>
@@ -88,34 +96,34 @@
                             <td style="min-width: 180px;">{{exam.end_date }}</td>
                             
                             <td class="text-center 
-                            {% if exam.get_exam_status == "active" %}text-success
-                            {% elif exam.get_exam_status == "pending" %} text-warning
-                            {% endif %}">
-
-                                
-                                    <i class="fas fa-circle fa-sm"></i>
-                                    <span class="d-none d-md-inline-block"> {{exam.get_exam_status}}</span>
-                                
-                                {% comment %} {% if exam.get_no_question == 0 %}
-                                    <i class="fas fa-exclamation-triangle fa-sm"></i>
-                                    <span class="d-none d-md-inline-block"> No Question</span>
-                                {% else %}
-                                    <i class="fas fa-circle fa-sm"></i>
-                                    <span class="d-none d-md-inline-block"> {{exam.get_exam_status}}</span>
-                                {% endif %} {% endcomment %}
-                                    
+                            {% if exam.get_exam_status == "active" %}text-success{% elif exam.get_exam_status == "pending" %} text-warning{% endif %}">
+                                <i class="fas fa-circle fa-sm"></i>
+                                <span class="d-none d-md-inline-block"> {{exam.get_exam_status}}</span>
                             </td>
 
+                            <td class="text-center">
+                                <div class="dropdown">
+                                    <a  role="button" class="text-secondary" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false">
+                                        <i class="fas fa-ellipsis-h"></i>
+                                    </a>
+                                    <ul class="dropdown-menu mt-1" aria-labelledby="dropdownMenuButton1">
+                                        <li><a class="dropdown-item" href="{% url "session-dashboard" exam.id %}"> <i class="fas fa-tv"></i> Monitor exam</a></li>
+                                        <li><a class="dropdown-item" href="{% url "view-exam" exam.id %}"> <i class="fas fa-eye"></i> View exam</a></li>
+                                        <li><a role="button" class="dropdown-item" data-id="{{exam.id}}" onclick="showModal('{{exam.name}}', 'This is the content of the modal.')"><i class="fas fa-file-word text-primary"></i> Add question from Docx</a></li>
+                                        
+                                        <li><a role="button" class="dropdown-item deleteBtn" data-id="{{exam.id}}" data-bs-toggle="modal" data-bs-target="#delete"><i class="fas fa-trash-alt text-danger"></i> Discard exam</a></li>
+                                    </ul>
+                                </div>
+                            </td>
                             
-                            
-                            <td><a href="{% url "view-exam" exam.id %}" class="btn btn-warning btn-sm" ><i class="fas fa-eye"></i></a></td>
+                            {% comment %} <td><a href="{% url "view-exam" exam.id %}" class="btn btn-warning btn-sm" ><i class="fas fa-eye"></i></a></td>
                             
                             <td>
                                 <a href="{% url "edit-exam" exam.id %}" class="btn btn-success btn-sm" ><i class="fas fa-pencil-alt"></i></a>
                             </td>
                             
                             <td><a class="btn btn-danger btn-sm deleteBtn" data-id="{{exam.id}}" data-bs-toggle="modal" data-bs-target="#delete"><i class="fas fa-trash-alt"></i>
-                            </a></td>
+                            </a></td> {% endcomment %}
                           </tr>
                         {% endif %}
                     
@@ -139,7 +147,6 @@
     </div>
     
    
-    
 
 
 {% include "modal.html" %}
@@ -170,11 +177,11 @@
         //prevent teacher from toggling off the review button when retake is on
         if ($("#id_retake").is(":checked")){
             $("#id_review").prop("checked", true)
-            $("#hint_id_retake span").text("Exam retake option in on")
+            $("#hint_id_retake span").text("Disable the exam retake option before proceeding")
         }
     })
 
-    $("#id_duration").on("change", function(){
+    $("#id_duration").on("input", function(){
         $(this).val() + ` MINS ~ ${convertMinutesToHoursAndMinutes($(this).val())}`
         $("#hint_id_duration span").text(`${$(this).val() >= 60 ? convertMinutesToHoursAndMinutes($(this).val()): $(this).val()+ " Mins" }`)
     })
@@ -241,7 +248,8 @@
             success: function (response){
                 if(response.message =="deleted"){
                         // Redirect to the same page with a query parameter to indicate success
-                        window.location.href = window.origin+"/teacher/exam/?deleted=true";                                    
+                        window.location.href = window.origin+"/teacher/exam/?deleted=true";    
+                                                        
                 }
             },
             error: function(error){
@@ -255,16 +263,170 @@
 // Code to execute after refresh, only if the deletion was successful
 $(document).ready(function () {
     if (window.location.search.includes("deleted=true")) {
-        notify("success", "Exam deleted");
-
-        const autoCloseElements = [...$(".auto-close")];
-        setTimeout(function () {
-            autoCloseElements.forEach(el => fadeAndSlide(el));
-        }, 5000);
+        createToast("success", "Exam deleted");
+        let currentUrl = window.location.href;
+        let queryParam = "?deleted=true";
+        let newUrl = currentUrl.replace(queryParam, "");
+        window.history.replaceState(null, '', newUrl);
     }
 });
     
+// JavaScript function to create and show modal
+function showModal(title, content) {
+    // Create modal structure
+    const modalHTML = `
+        <div class="modal fade" id="dynamicModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="exampleModalLabel">${title}</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        {% comment %} ${content} {% endcomment %}
+
+                        <div class="container">
+                            <ul class="nav nav-pills nav-fill mb-3" id="pills-tab" role="tablist">
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link active" id="pills-download-tab" data-bs-toggle="pill" data-bs-target="#pills-download" type="button" role="tab" aria-controls="pills-download" aria-selected="true">Download Template</button>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link" id="pills-upload-tab" data-bs-toggle="pill" data-bs-target="#pills-upload" type="button" role="tab" aria-controls="pills-upload" aria-selected="false">Upload Format</button>
+                                </li>
+                            </ul>
+                            <div class="tab-content" id="pills-tabContent">
+                                <div class="tab-pane fade show active" id="pills-download" role="tabpanel" aria-labelledby="pills-download-tab">
+                                    <div class="mb-3">
+                                        <form id="templateForm">
+                                            <label for="numQuestions" class="form-label">How many questions do you want for this exam?</label>
+                                            <input type="number" class="form-control" id="numQuestions" placeholder="Enter number of questions" required>
+                                            <div class="d-grid mt-2">
+                                                <button type="submit" class="btn btn-success"><i class="fas fa-cloud-download-alt"></i> Download</button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                                <div class="tab-pane fade" id="pills-upload" role="tabpanel" aria-labelledby="pills-upload-tab">
+                                    <!-- Content for upload format tab -->
+                                    <div class="mb-3">
+                                        <label for="uploadFile" class="form-label">Upload your file</label>
+                                        <input type="file" accept=".docx" class="form-control" id="uploadFile">
+                                    </div>
+                                    <div class="mb-3 progressDispaly d-none">
+                                        <label for="uploadProgress" class="form-label">Upload Progress</label>
+                                        <div class="progress">
+                                            <div id="uploadProgress" class="progress-bar" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                                        </div>
+                                    </div>
+                                    <div class="d-grid mt-2">
+                                        <button type="button" class="btn btn-success" id="uploadButton"><i class="fas fa-cloud-upload-alt"></i> Upload</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    `;
+
+    // Append modal to body
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+
+    // Initialize modal
+    const modalElement = document.getElementById('dynamicModal');
+    const modal = new bootstrap.Modal(modalElement);
+
+    // Show the modal
+    modal.show();
+
+    // Event listener to remove the modal from the DOM after it's closed
+    modalElement.addEventListener('hidden.bs.modal', () => {
+        modalElement.remove();
+    });
+
+    // format form 
+    let templateForm = $("#templateForm")
+
+    templateForm.on("submit", function(event){
+        event.preventDefault()
+        $.ajax({
+            type: "POST",
+            data:{"csrfmiddlewaretoken":"{{csrf_token}}", "nos":$("#templateForm input[type=number]").val(), "title": title},
+            url: `{% url "template-docx" %}`,
+            success: function(response) {
+				// Handle the file download
+				var blob = new Blob([response], { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
+				var link = document.createElement('a');
+				link.href = window.URL.createObjectURL(blob);
+				link.download = `${title.replaceAll(" ", "-")}-question-template.docx`;
+				link.click();
+			},
+			xhrFields: {
+				responseType: 'blob'  // This is important for handling binary data
+			}
+
+        })
+    })
+
+    document.getElementById('uploadButton').addEventListener('click', function() {
+        $(".progressDispaly").removeClass("d-none")
+        const uploadFile = document.getElementById('uploadFile').files[0];
+        const uploadProgress = document.getElementById('uploadProgress');
+
+        if (uploadFile) {
+            const xhr = new XMLHttpRequest();
+           
+            xhr.upload.addEventListener('progress', function(e) {
+                if (e.lengthComputable) {
+                    const percentComplete = (e.loaded / e.total) * 100;
+                    uploadProgress.style.width = percentComplete + '%';
+                    uploadProgress.innerText = percentComplete.toFixed(2) + '%';
+
+                    uploadProgress.setAttribute('aria-valuenow', percentComplete);
+        
+                }
+            });
+
+            
+
+            xhr.open('POST', `{% url "upload-docx" %}`, true);
+            const formData = new FormData();
+            formData.append('file', uploadFile);
+            formData.append("title", title);
+            formData.append('csrfmiddlewaretoken', "{{csrf_token}}" );
+            xhr.send(formData); 
+            createToast("success", "Processing...", icon ="fa-bell")
+
+            // Handle upload completion
+            xhr.addEventListener('load', function() {
+                if (xhr.status === 200) {
+                    $(".progressDispaly").toggleClass("d-none")
+                    let response = JSON.parse(xhr.responseText);
+                    console.log(response.message)
+                    if (response.message){
+                        createToast("success", `Questions added succesfully`);
+                    }else{
+                        createToast("danger", `${response.reason}`, delay=10000);
+                    } 
+                } else {
+                    createToast("danger", 'Upload failed!'); 
+                }
+            });
+        } else {
+            createToast("danger", 'Select the template file and upload');
+        }
+    });
+
+
+}
+
+
 </script>
+
+
+
 
 {% endblock js %}
 

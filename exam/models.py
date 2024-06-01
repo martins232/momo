@@ -114,6 +114,7 @@ class Exam(models.Model):
             if (sessions.count()>0):
                 for session in sessions:
                     ...
+                    #super().delete(*args, **kwargs)
                 print("i can't delete you bro you have some valuable data")
             else:
                 super().delete(*args, **kwargs)
@@ -128,7 +129,7 @@ class Question(models.Model):
     # teacher = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, limit_choices_to={"is_teacher":True})
     subject = models.ForeignKey(Subject, on_delete=models.RESTRICT, blank=False)
     # exam = models.ForeignKey(Exam, on_delete=models.SET_NULL, null=True, blank=True)
-    exam = models.ForeignKey(Exam, on_delete=models.SET_NULL, null=True, blank=True)
+    exam = models.ManyToManyField(Exam,)
     topics = models.ForeignKey(Topic, on_delete=models.SET_NULL, blank=True, null=True)
     question = models.TextField()
     option_A = models.TextField()
@@ -143,7 +144,8 @@ class Question(models.Model):
         return self.question
     
     class Meta:
-        ordering = [ "-created"]
+        ...
+        # ordering = [ "-created"]
     
     
 class Session(models.Model):
