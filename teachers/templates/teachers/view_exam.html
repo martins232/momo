@@ -17,7 +17,7 @@
 
 
 <div id="alert">
-    {% if  exam.get_exam_status == "active" and  exam.ready is False %}
+    {% if  show_no_question_warning %}
         <div class="auto-close alert alert-danger alert-dismissible fade show py-1" role="alert" >
             <i class="fas fa-exclamation-triangle fa-sm"></i> 
             "{{exam.name}}" is currently <b>ACTIVE</b>, but has no question(s) attached. Please consider either adding questions or deleting it.

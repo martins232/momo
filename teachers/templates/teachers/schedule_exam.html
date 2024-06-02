@@ -107,6 +107,7 @@
                                         <i class="fas fa-ellipsis-h"></i>
                                     </a>
                                     <ul class="dropdown-menu mt-1" aria-labelledby="dropdownMenuButton1">
+                                        <li><a class="dropdown-item" href="{% url "edit-exam" exam.id %}"> <i class="fas fa-pen"></i> Edit exam</a></li>
                                         <li><a class="dropdown-item" href="{% url "session-dashboard" exam.id %}"> <i class="fas fa-tv"></i> Monitor exam</a></li>
                                         <li><a class="dropdown-item" href="{% url "view-exam" exam.id %}"> <i class="fas fa-eye"></i> View exam</a></li>
                                         <li><a role="button" class="dropdown-item" data-id="{{exam.id}}" onclick="showModal('{{exam.name}}', 'This is the content of the modal.')"><i class="fas fa-file-word text-primary"></i> Add question from Docx</a></li>
@@ -185,47 +186,6 @@
         $(this).val() + ` MINS ~ ${convertMinutesToHoursAndMinutes($(this).val())}`
         $("#hint_id_duration span").text(`${$(this).val() >= 60 ? convertMinutesToHoursAndMinutes($(this).val()): $(this).val()+ " Mins" }`)
     })
-
-    function notify(color, msg){
-        $("#alert").html(`
-            <div class="auto-close alert alert-${color} alert-dismissible fade show py-1" role="alert" >
-                ${msg}
-            </div>
-        `)
-    }
-
-
-    function fadeAndSlide(element) {
-        const fadeDuration = 500;
-        const slideDuration = 500;
-    
-        // Step 1: Fade out the element
-        let opacity = 1;
-        const fadeInterval = setInterval(function () {
-          if (opacity > 0) {
-            opacity -= 0.1;
-            element.style.opacity = opacity;
-          } else {
-            clearInterval(fadeInterval);
-            // Step 2: Slide up the element
-            let height = element.offsetHeight;
-            const slideInterval = setInterval(function () {
-              if (height > 0) {
-                height -= 10;
-                element.style.height = height + "px";
-              } else {
-                clearInterval(slideInterval);
-                // Step 3: Remove the element from the DOM
-                element.parentNode.removeChild(element);
-              }
-            }, slideDuration / 10);
-          }
-        }, fadeDuration / 10);
-      }
-    // *****************************************************************************************************************
-    
-    
-
 
     let delBtns = $(".deleteBtn")
     let id
@@ -350,12 +310,16 @@ function showModal(title, content) {
     let templateForm = $("#templateForm")
 
     templateForm.on("submit", function(event){
+        $('#templateForm button').prop('disabled', true);
+        $('#templateForm button i').toggleClass("fa-cloud-download-alt fa-spinner fa-spin")
         event.preventDefault()
         $.ajax({
             type: "POST",
             data:{"csrfmiddlewaretoken":"{{csrf_token}}", "nos":$("#templateForm input[type=number]").val(), "title": title},
             url: `{% url "template-docx" %}`,
             success: function(response) {
+                $('#templateForm button').prop('disabled', false);
+                $('#templateForm button i').toggleClass("fa-cloud-download-alt fa-spinner fa-spin")
 				// Handle the file download
 				var blob = new Blob([response], { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
 				var link = document.createElement('a');
@@ -372,6 +336,8 @@ function showModal(title, content) {
 
     document.getElementById('uploadButton').addEventListener('click', function() {
         $(".progressDispaly").removeClass("d-none")
+        $('#uploadButton').prop('disabled', true);
+        $('#uploadButton i').toggleClass("fa-cloud-upload-alt fa-spinner fa-spin")
         const uploadFile = document.getElementById('uploadFile').files[0];
         const uploadProgress = document.getElementById('uploadProgress');
 
@@ -403,12 +369,23 @@ function showModal(title, content) {
             xhr.addEventListener('load', function() {
                 if (xhr.status === 200) {
                     $(".progressDispaly").toggleClass("d-none")
+                    $('#uploadButton').prop('disabled', false);
+                    $('#uploadButton i').toggleClass("fa-cloud-upload-alt fa-spinner fa-spin")
                     let response = JSON.parse(xhr.responseText);
-                    console.log(response.message)
                     if (response.message){
                         createToast("success", `Questions added succesfully`);
                     }else{
-                        createToast("danger", `${response.reason}`, delay=10000);
+                        if (response.reason){
+                            createToast("danger", `${response.reason}`, delay=10000);
+                        }else{
+                            const errorContainer = document.getElementById('error-container');
+                           let errors =  response.errors
+                           let i = 1
+                           errors.forEach((error)=>{
+                                createToast("danger", `${error}`, delay=i * 10000);
+                                i ++
+                           })
+                        }
                     } 
                 } else {
                     createToast("danger", 'Upload failed!'); 
