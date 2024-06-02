@@ -131,7 +131,7 @@ class Question(models.Model):
     # exam = models.ForeignKey(Exam, on_delete=models.SET_NULL, null=True, blank=True)
     exam = models.ManyToManyField(Exam,)
     topics = models.ForeignKey(Topic, on_delete=models.SET_NULL, blank=True, null=True)
-    question = models.TextField()
+    question = models.TextField(unique=True)
     option_A = models.TextField()
     option_B = models.TextField()
     option_C = models.TextField()

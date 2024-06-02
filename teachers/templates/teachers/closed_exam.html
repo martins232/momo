@@ -29,7 +29,7 @@
     {% comment %} notification {% endcomment %}
 </div>
 
-<button id="showToastButton" class="btn btn-primary">Show Toast</button>
+
 
 
 {% for grade in grades %}
@@ -116,9 +116,7 @@
     <script>
       
       // Example usage
-      document.getElementById('showToastButton').addEventListener('click', function() {
-        createToast('success', 'Toast created');
-      });
+      
         function notify(color, msg){
             $("#alert").html(`
                 <div class="auto-close alert alert-${color} alert-dismissible fade show py-1" role="alert" >

@@ -29,6 +29,7 @@ from docx.oxml import OxmlElement
 from docx.oxml.ns import qn
 
 from django.db import transaction
+from django.core.exceptions import ValidationError
 
 
 from django.utils import timezone
@@ -512,6 +513,9 @@ def viewExam(request, pk):
     exam = Exam.objects.get(id=pk)
     
     context = {"exam": exam} #used for sending subject id in the templated
+    if  exam.get_exam_status == "active" and  exam.ready is False:
+        context["show_no_question_warning"] = True
+        
     if exam.get_exam_status =="ended" or "active":
         grades = Grade.objects.all()
     
@@ -850,9 +854,10 @@ def prepareDocxTemplateForExam(request):
 
 def bulk_create_questions(subject_id, exam_ids, data):
     
-
-    questions = [
-        Question(
+    questions = []
+    errors = []
+    for item in data:
+        question_instance = Question(
             subject=subject_id,
             question=item[0],
             option_A=item[1][0],
@@ -860,8 +865,18 @@ def bulk_create_questions(subject_id, exam_ids, data):
             option_C=item[1][2],
             option_D=item[1][3],
             answer=item[1][4].upper()
-        ) for item in data
-    ]
+        )
+        try:
+            # Validate each instance
+            question_instance.full_clean()
+            questions.append(question_instance)
+        except ValidationError as e:
+            # Collect validation errors
+            errors.append((question_instance, e))
+
+    
+    if errors:
+        return errors    
 
     
     # # Use transaction to ensure atomicity
@@ -933,7 +948,14 @@ def handleUploadedDocx(request):
                         message = False
                         break
                 # print(questions_and_options)
-                bulk_create_questions(subject, exam, questions_and_options)
+                errors = bulk_create_questions(subject, exam, questions_and_options) 
+                if errors:
+                    # Prepare error messages for the user
+                    error_messages = []
+                    for instance, error in errors:
+                        error_messages.append(f"Question: '<b>{instance.question}</b>' has errors: {error.messages}")
+                    print(error_messages)
+                    return JsonResponse({"message": False, "errors": error_messages})   
                 if message:
                     return JsonResponse({"message": True}) 
                 else:
