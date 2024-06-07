@@ -179,3 +179,67 @@ input:checked + span {
     background: #c0dfe7; 
     border-color: #014122
 }
+
+
+/* result styling */
+.reportContainer {
+    background-color: #f0f2f5;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 10px;
+    /* height: 100vh; */
+    /* margin: 0; */
+}
+.report-card {
+    max-width: 800px;
+    padding: 30px;
+    border: 1px solid #e0e0e0;
+    border-radius: 12px;
+    background-color: #ffffff;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    text-align: center;
+}
+.report-card-header h1 {
+    color: #007bff;
+}
+.report-card-header p {
+    margin: 0;
+    color: #6c757d;
+}
+.student-info p {
+    text-align: left;
+    margin: 0;
+    font-size: 1.1rem;
+}
+
+
+.table thead th {
+    background-color: #007bff;
+    color: white; 
+}
+
+.btn-download {
+    background-color: #007bff;
+    border: none;
+    padding: 10px 20px;
+    font-size: 1.1rem;
+}
+
+.frac {
+    display: inline-block;
+    position: relative;
+    vertical-align: middle;
+    letter-spacing: 0.001em;
+    text-align: center;
+}
+.frac > span {
+    display: block;
+    padding: 0;
+}
+.frac span.bottom {
+    border-top: thin solid black;
+}
+.frac span.symbol {
+    display: none;
+}

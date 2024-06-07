@@ -941,11 +941,10 @@ def handleUploadedDocx(request):
             if len (questions) == len(options):
                 message = True
                 questions_and_options = list(zip(questions, options))
-                
-                
+                                
                 for question_no , questions_and_option in enumerate(questions_and_options):
                     if len(questions_and_option[1]) != 5:
-                        message = False
+                        message = False #this will notify teachers of incomplete option in one or more options
                         break
                 # print(questions_and_options)
                 errors = bulk_create_questions(subject, exam, questions_and_options) 
@@ -954,7 +953,7 @@ def handleUploadedDocx(request):
                     error_messages = []
                     for instance, error in errors:
                         error_messages.append(f"Question: '<b>{instance.question}</b>' has errors: {error.messages}")
-                    print(error_messages)
+                    
                     return JsonResponse({"message": False, "errors": error_messages})   
                 if message:
                     return JsonResponse({"message": True}) 
