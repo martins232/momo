@@ -302,7 +302,7 @@ def session_save(request, pk):
             remark=True
         else:
             remark=False
-        return JsonResponse({"pass": remark, "score": score_, "no_of_correct_answer":score, "no_of_wrong_answers":no_of_wrong_answers, "no_of_unanswered":no_of_unanswered,})
+        return JsonResponse({"pass": remark, "score": score_, "no_of_correct_answer":score, "no_of_wrong_answers":no_of_wrong_answers, "no_of_unanswered":no_of_unanswered, "total_questions": len(questions)})
         # return JsonResponse({"pass": True, "score": score_, "result":results}) # create a json response for this user to display data
         
     else:

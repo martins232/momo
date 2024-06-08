@@ -4,6 +4,7 @@ let ajax_data
 let see_score
 let elapsedTime
 
+
 let warning =3
 let misconduct = false
 
@@ -384,7 +385,7 @@ function keypressed(event) {
 let promptSubmit = () => {
 	let message = ""
 	no_AnsweredQuestions = Object.keys(selectedAnswers).length
-	no_totalQuestion = Object.keys(ajax_data).length
+	let no_totalQuestion = Object.keys(ajax_data).length
 	if (no_AnsweredQuestions < no_totalQuestion) {
 		message += `<p class="fw-bold">You have ${no_totalQuestion - no_AnsweredQuestions}  unanswered question</p>`
 	}
@@ -440,6 +441,7 @@ let submit = () => {
 		}
 	})
 	
+	examstatus="ended"
 	$.ajax({
 		type: "POST",
 		url: url_submit,
@@ -480,7 +482,7 @@ const result = (a) =>{
 		<div class="report-card-header mb-4">
 			<h1>Student Report Card</h1>
 			<p><strong>Exam Name</strong> ${examDetails.examName}</p>
-			<p><strong>Subject ID:</strong> ${examDetails.subject}</p>
+			<p><strong>Subject:</strong> ${examDetails.subject}</p>
 			
 		</div>
 		
@@ -528,7 +530,7 @@ const result = (a) =>{
 					<td><div class="frac">
 								<span>${a.no_of_correct_answer}</span>
 								<span class="symbol">/</span>
-								<span class="bottom">${no_totalQuestion}</span>
+								<span class="bottom">${a.total_questions}</span>
 							</div>
 					</td>
 				</tr>
@@ -540,7 +542,8 @@ const result = (a) =>{
 		</table>
 
 		<div class="report-card-footer mt-4">
-			<p><strong>Teacher's Remark:</strong> <span class="text-decoration-underline ${a.pass? 'text-succes' :'text-danger'}">${a.pass?"Pass":"Fail"}</span></p>
+			<p><strong>Teacher's Remark:</strong> <span class="text-decoration-underline ${a.pass? 'text-success' :'text-danger'}">${a.pass?"Pass":"Fail"}</span></p>
+			<p class="text-muted">Corrections to this exam will be made available after the exam period ends as scheduled by the teacher.</p>
 		</div>
 
 		<div class="text-center mt-4">
