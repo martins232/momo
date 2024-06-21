@@ -1,10 +1,12 @@
+from asyncio import constants
 from collections import defaultdict
+from turtle import mode
 from urllib import request
 from django.db import models
 from users. models import User, Grade
 from teachers. models import Subject, Topic
 from django.utils import timezone
-
+from django.db.models import UniqueConstraint,Q
 
 from django.contrib import admin
 
@@ -109,20 +111,20 @@ class Exam(models.Model):
     def delete(self, *args, **kwargs):
         # super(Exam).delete(*args, *kwargs)
         
-        if self.get_exam_status in ["active", "ended"]:
-            sessions = self.session_set.all()
-            if (sessions.count()>0):
-                for session in sessions:
-                    ...
-                    #super().delete(*args, **kwargs)
-                print("i can't delete you bro you have some valuable data")
+        if self.get_exam_status in ["ended"]:
+            sessions = self.session_set.exists()
+            
+            if (sessions):
+                self.deleted = True
+                self.save()
             else:
                 super().delete(*args, **kwargs)
         else:
             super().delete(*args, **kwargs)              
         
     class Meta:
-        ordering = [ "created"]             
+        ordering = [ "created"]           
+        
     
     
 class Question(models.Model):
@@ -137,6 +139,7 @@ class Question(models.Model):
     option_C = models.TextField()
     option_D = models.TextField()
     answer =  models.CharField(max_length=250)
+    explaination = models.CharField(null=True, blank=True)
     updated = models.DateTimeField(auto_now=True)
     created = models.DateTimeField(auto_now_add=True)
     
@@ -189,14 +192,14 @@ class Session(models.Model):
         correct = 0
         incorrect = 0
         unanswered = 0
-        for question, options in choices_data.items():
-            for option in options:
-                if isinstance(option, dict) and option.get("status") == "correct":
-                    correct += 1
-                elif isinstance(option, dict) and option.get("status") == "incorrect":
-                    incorrect += 1
-                elif not option:
-                    unanswered += 1
+        
+        for option in choices_data.values():
+            if option[1].get("status") == "correct":
+                correct += 1
+            elif option[1].get("status") == "incorrect":
+                incorrect += 1
+            elif option[1].get("status")== "unanswered":
+                unanswered += 1
                     
         return correct, incorrect, unanswered
 

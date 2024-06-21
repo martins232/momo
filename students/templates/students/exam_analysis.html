@@ -120,9 +120,11 @@
                 success: function(success){
                   $(".spinner-border").addClass("d-none")
                   data = success.data
+                  
                   data.forEach((question, index) => {
                     let tag = ""
                     mark_icon = ""
+                    const map_option_key = Object.keys(question.options[0])
                     if (question.choice){
                         if (question.choice == question.answer){
                             tag = "correct"
@@ -138,25 +140,25 @@
                       <div class="question mt-3">
                         
                         <div class="d-flex p-1 justify-content-between">
-                          <p class="w-100"> ${index + 1}). ${question.question} </p> ${mark_icon}
+                          <span class="w-100"> ${index + 1}). ${question.question} </span> ${mark_icon}
                         </div>
                         
                        
                         <div class="mt-1 ms-3">
                           <div class="d-flex justify-content-between">
-                            <span class="${question.choice? question.options[0].A ==question.choice ? tag : question.options[0].A ==question.answer ? "correct": "": question.options[0].A ==question.answer ? "correct": ""}">
+                            <span class="${question.choice? map_option_key[0] ==question.choice ? tag : map_option_key[0] ==question.answer ? "correct": "": map_option_key[0] ==question.answer ? "correct": ""}">
                               A: ${question.options[0].A} </span> 
                           </div>				
                           <div class="d-flex justify-content-between">
-                            <span class="${question.choice? question.options[0].B ==question.choice ? tag : question.options[0].B ==question.answer ? "correct": "": question.options[0].B ==question.answer ? "correct": ""}">
+                            <span class="${question.choice? map_option_key[1] ==question.choice ? tag : map_option_key[1] ==question.answer ? "correct": "": map_option_key[1] ==question.answer ? "correct": ""}">
                               B: ${question.options[0].B} </span> 
                           </div>				
                           <div class="d-flex justify-content-between">
-                            <span class="${question.choice? question.options[0].C ==question.choice ? tag : question.options[0].C ==question.answer ? "correct": "": question.options[0].C ==question.answer ? "correct": ""}">
+                            <span class="${question.choice? map_option_key[2] ==question.choice ? tag : map_option_key[2] ==question.answer ? "correct": "": map_option_key[2] ==question.answer ? "correct": ""}">
                               C: ${question.options[0].C} </span> 
                           </div>				
                           <div class="d-flex justify-content-between">
-                            <span class="${question.choice? question.options[0].D ==question.choice ? tag : question.options[0].D ==question.answer ? "correct": "": question.options[0].D ==question.answer ? "correct": ""}">
+                            <span class="${question.choice? map_option_key[3] ==question.choice ? tag : map_option_key[3] ==question.answer ? "correct": "": map_option_key[3] ==question.answer ? "correct": ""}">
                               D: ${question.options[0].D} </span> 
                           </div>				
                           

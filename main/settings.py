@@ -116,18 +116,18 @@ if not DEBUG:
 	"default": dj_database_url.parse(os.environ.get("DATABASE_URL"))
     }
 else:
+    # DATABASES = {
+	# "default": dj_database_url.parse(os.environ.get("DATABASE_URL"))
+    # }
     DATABASES = {
-	"default": dj_database_url.parse(os.environ.get("DATABASE_URL"))
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': "skodaji",
+            "USER": "root",
+            "PASSWORD": "123",
+            
+        }
     }
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.postgresql',
-#         'NAME': "skodaji",
-#         "USER": "root",
-#         "PASSWORD": "123",
-        
-#     }
-# }
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
@@ -201,6 +201,7 @@ TINYMCE_DEFAULT_CONFIG= {
         "bold italic underline fontsize subscript superscript| alignleft aligncenter "
         "alignright alignjustify | bullist numlist outdent indent  |table | charmap " ,
     "promotion": False,
+    
     
 }
 
