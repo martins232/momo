@@ -224,7 +224,7 @@
             var choice = button.getAttribute("data-choice")
 
             var modalBody = questionModal.querySelector('.modal-body')
-
+            let map_answer = {"A": option_A, "B": option_B, "C":option_C, "D":option_D}
              
 
             modalBody.innerHTML = `
@@ -244,10 +244,10 @@
             <div class="row ms-1 mt-3">
                 <div class="col-1" ><h4>A</h4></div>
                 <div class="col-11">
-                    <p class="${option_A == answer ? "correct" : (option_A == choice) ? "wrong" : "" }">[A] ${option_A}</p>
-                    <p class="${option_B == answer ? "correct" : (option_B == choice) ? "wrong" : "" }">[B] ${option_B}</p>
-                    <p class="${option_C == answer ? "correct" : (option_C == choice) ? "wrong" : "" }">[C] ${option_C}</p>
-                    <p class="${option_D == answer ? "correct" : (option_D == choice) ? "wrong" : "" }">[D] ${option_D}</p>
+                    <p class="${option_A == map_answer[answer] ? "correct" : (option_A == map_answer[choice]) ? "wrong" : "" }">[A] ${option_A}</p>
+                    <p class="${option_B == map_answer[answer] ? "correct" : (option_B == map_answer[choice]) ? "wrong" : "" }">[B] ${option_B}</p>
+                    <p class="${option_C == map_answer[answer] ? "correct" : (option_C == map_answer[choice]) ? "wrong" : "" }">[C] ${option_C}</p>
+                    <p class="${option_D == map_answer[answer] ? "correct" : (option_D == map_answer[choice]) ? "wrong" : "" }">[D] ${option_D}</p>
                 </div>
             </div>
 

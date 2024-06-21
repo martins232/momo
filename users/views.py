@@ -82,7 +82,7 @@ def lobby(request):
     """
     try:
         if request.user.teacher.status == "Approved":
-            return redirect("home")                            
+            return redirect("profile")                            
     except ObjectDoesNotExist:
         pass
     

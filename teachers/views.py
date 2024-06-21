@@ -33,6 +33,7 @@ from django.core.exceptions import ValidationError
 
 
 from django.utils import timezone
+from django.contrib.postgres.aggregates import ArrayAgg
 
 
 
@@ -102,7 +103,10 @@ def scheduledExam(request):
     exams = Exam.objects.filter( Q(start_date__gt=timezone.now()) | Q(start_date__lte=timezone.now(), end_date__gt=timezone.now()), teacher=request.user)
     
     #all the classes 
-    grades = Grade.objects.filter(Q(exam__start_date__gt=timezone.now()) | Q(exam__start_date__lte=timezone.now(), exam__end_date__gt=timezone.now()), exam__teacher=request.user).distinct()
+    # grades = Grade.objects.filter(Q(exam__start_date__gt=timezone.now()) | Q(exam__start_date__lte=timezone.now(), exam__end_date__gt=timezone.now()), exam__teacher=request.user).distinct()
+    
+    unique_grades = exams.values('grade').distinct()
+    grades = Grade.objects.filter(id__in=[g['grade'] for g in unique_grades])
     
     
     # # Get the current time once to avoid multiple calls
@@ -141,8 +145,11 @@ def scheduledExam(request):
 @login_required(login_url="login")
 def closedExam(request):
     """Exams that have been completed"""
-    grades = Grade.objects.filter(exam__end_date__lt=timezone.now(), exam__teacher=request.user).distinct()
-    exams = Exam.objects.filter(end_date__lt=timezone.now(), teacher=request.user).order_by("grade").select_related("grade")
+    # grades = Grade.objects.filter(exam__end_date__lt=timezone.now(), exam__teacher=request.user).distinct()
+    exams = Exam.objects.filter(end_date__lt=timezone.now(), teacher=request.user, deleted=False).order_by("grade").select_related("grade")
+    unique_grades = exams.values('grade').distinct()
+    grades = Grade.objects.filter(id__in=[g['grade'] for g in unique_grades])
+    
     
     
     context = {
@@ -287,6 +294,9 @@ def studentPerformance(request, pk):
     session = Session.objects.get(exam=exam, user=student)
     choices = session.choices
     
+    # print(choices)
+    # assert()
+    
     questions = exam.question_set.all().values()
             
     data_ =[]
@@ -299,24 +309,26 @@ def studentPerformance(request, pk):
 
     for question in questions:
         options = [ question["option_A"], question["option_B"], question["option_C"], question["option_D"] ]
-        zipper =dict(list( zip(['A', 'B', 'C', 'D'], options)))
-        answer_Abbrv =  question["answer"] # the answer in the database e.g "C"
+        # zipper =dict(list( zip(['A', 'B', 'C', 'D'], options)))
+        # answer_Abbrv =  question["answer"] # the answer in the database e.g "C"
         
-        if choices[question["question"]][0] == "":
+        if choices[str(question["id"])][0] == "":
             no_unanswered += 1
-        if choices[question["question"]][0] == zipper[answer_Abbrv]:
+        if choices[str(question["id"])][0] == question["answer"]:
             no_correct += 1
-        if choices[question["question"]][0] != zipper[answer_Abbrv]:
+        if choices[str(question["id"])][0] != question["answer"]:
             no_incorrect += 1
+        
         
         data_.append({"question": question["question"], 
                       "options_A" : question["option_A"], 
                       "options_B" : question["option_B"], 
                       "options_C" : question["option_C"], 
                       "options_D" : question["option_D"], 
-                      "answer": zipper[answer_Abbrv], 
-                      "choice": choices[question["question"]][0]})
-        
+                      "answer": question["answer"], 
+                      "choice": choices[str(question["id"])][0]})
+    
+    
     context = {
         "student": student,
         "exam": exam,
@@ -353,19 +365,20 @@ def examDashboardData(request, pk):
         option_choice_nos={question.option_A:0, question.option_B:0, question.option_C:0, question.option_D:0} #{"......":0}
         
         for session in sessions:
-            student_choice = session.choices[question.question][0]
+            student_choice = session.choices[str(question.id)][0]
             if student_choice == "":
                 unanswered_count += 1
                 unanswered_student[str(session.user.id)] = str(session.user.get_full_name())
                 
             else:
-                option_choice_nos[student_choice]+=1
-                if student_choice == options[question.answer]:
+                option_text = options[student_choice]
+                option_choice_nos[option_text]+=1
+                if student_choice == question.answer:
                     correct_count +=1
                     correct_student[str(session.user.id)] = str(session.user.get_full_name())
                     
 
-                if student_choice != options[question.answer]:
+                if student_choice != question.answer:
                     incorrect_count +=1
                     incorrect_student[str(session.user.id)] = session.user.get_full_name()
                     
@@ -417,9 +430,6 @@ def examDashboard(request, pk):
 
 
 def questionData(request):
-    
-    
-    
     subject = request.GET.get("subject") # used in the drag page to filter questions for a particular subject 
     search = request.GET.get("search") 
     limit = int(request.GET.get("limit"))
@@ -427,8 +437,6 @@ def questionData(request):
     unassigned = request.GET.get("unassigned")
     exam_id = request.GET.get("exam")
     # unassigned = bool(int(request.GET.get("unassigned", 0)))
-    
-    
     
     # if there is a particular subject that is making the request through ajax
     if subject != None:
@@ -450,7 +458,7 @@ def questionData(request):
          # for the sake of other subjects that would use this JSON data
         subject_list = Subject.objects.filter(teacher=request.user) # used in the all_question page to filter all questions by a particular teacher 
         length = Question.objects.filter(subject__in=subject_list).count() #get all the questions by the logged in teacher
-        questions = Question.objects.filter(subject__in=subject_list).filter(Q(subject__name__icontains=search) | Q(topics__name__icontains=search) | Q(question__icontains=search)).order_by("-created").values("id", "question","topics__id", "topics__name","option_A", "option_B","option_C","option_D", "answer","subject", "subject__name")
+        questions = Question.objects.filter(subject__in=subject_list).filter(Q(subject__name__icontains=search) | Q(topics__name__icontains=search) | Q(question__icontains=search)).order_by("-created").annotate(exam__name = ArrayAgg("exam__name", distinct=True)).values("id", "question","topics__id", "topics__name","option_A", "option_B","option_C","option_D", "answer","subject", "subject__name", "exam__name")
     
     
         
@@ -853,7 +861,7 @@ def prepareDocxTemplateForExam(request):
 
 
 def bulk_create_questions(subject_id, exam_ids, data):
-    
+    '''After all validations has been made bulk create a template docx file'''
     questions = []
     errors = []
     for item in data:
@@ -879,7 +887,7 @@ def bulk_create_questions(subject_id, exam_ids, data):
         return errors    
 
     
-    # # Use transaction to ensure atomicity
+    # Use transaction to ensure atomicity
     with transaction.atomic():
         created_questions = Question.objects.bulk_create(questions)
         # Add ManyToMany relationships
@@ -896,6 +904,9 @@ def handleUploadedDocx(request):
         exam = Exam.objects.get(name=exam_name)
         subject = exam.subject
         
+        if exam.get_exam_status == "active" and exam.ready:
+            return JsonResponse({"message": False, "reason": "<b>Upload error</b>:<br> Exam is already active. Adding question will disrupt exam"})
+        
         if not uploaded_file.name.endswith('.docx'):
             return JsonResponse({"message": False, "reason": "<b>File error</b>:<br> File type is not supported. Please upload a .docx file. You can get one by downloading a template"})
         # Use python-docx to process the uploaded .docx file
@@ -908,19 +919,30 @@ def handleUploadedDocx(request):
         option_pattern = re.compile(r'^(?:[aA-zZ]\)|Ans\))\s*')
         questions = []
         options = []
-        current_options = [] 
+        
+        
+        current_question = ''
+        collecting = False
+        
+        
         for paragraph in doc.paragraphs:
             # Check if the paragraph text matches the question pattern
             if question_pattern.match(paragraph.text):
-                # Remove the numbering from the question text
-                question_text = question_pattern.sub('', paragraph.text)
-                questions.append(question_text.strip())
-                if current_options:
-                    options.append(current_options)
-                    current_options = []
-    
-        if current_options:
-            options.append(current_options)
+                if current_question:
+                    questions.append(current_question.strip())
+                current_question = question_pattern.sub('', paragraph.text).strip()
+                collecting = True
+            elif collecting:
+                if not paragraph.text.strip():  # Skip empty lines
+                    continue
+                current_question += '<br>' + paragraph.text.strip() 
+            else:
+                continue
+
+        if current_question:
+            questions.append(current_question.strip())
+        
+        
         
         # Extract options from tables
         for table in doc.tables:
@@ -956,6 +978,8 @@ def handleUploadedDocx(request):
                     
                     return JsonResponse({"message": False, "errors": error_messages})   
                 if message:
+                    exam.ready = True
+                    exam.save()
                     return JsonResponse({"message": True}) 
                 else:
                     return JsonResponse({"message": False, "reason": "<b>Incomplete Question Option</b>:<br> One or more options for a question are not fully completed. Please review the file and provide all necessary information. Error occurred at <b>question {}</b>".format(question_no + 1)})

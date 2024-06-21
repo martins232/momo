@@ -10,13 +10,15 @@
     #dropdownMenuButton1{
         cursor: pointer;
     }
+
+    
     
 </style>        
 {% endblock additional_head_css %}
 
 {% block content %}
 
-    <nav aria-label="breadcrumb" class="main-breadcrumb">
+<nav aria-label="breadcrumb" class="main-breadcrumb">
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a href="javascript:void(0)">Home</a></li>
             <li class="breadcrumb-item"><a href="javascript:void(0)">Teacher</a></li>
@@ -133,6 +135,8 @@
               </table>
 
         </div>
+        {% empty %}
+            <p class="text-center fs-3 border-bottom">No pending or active exam at the moment</p>
         {% endfor %}
         <!-- <div class="card-body">
           <h5 class="card-title">Card title</h5>
@@ -256,7 +260,7 @@ function showModal(title, content) {
                                 <div class="mb-3">
                                     <form id="templateForm">
                                         <label for="numQuestions" class="form-label">How many questions do you want for this exam?</label>
-                                        <input type="number" class="form-control" id="numQuestions" placeholder="Enter number of questions" required>
+                                        <input type="number" max="100" class="form-control" id="numQuestions" placeholder="Enter number of questions" required>
                                         <div class="d-grid mt-2">
                                             <button type="submit" class="btn btn-success"><i class="fas fa-cloud-download-alt"></i> Download</button>
                                         </div>

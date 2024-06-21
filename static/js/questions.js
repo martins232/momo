@@ -216,6 +216,7 @@ function getIdSelections() {
 				data : {"csrfmiddlewaretoken": csrftoken, "ids": JSON.stringify(selections)},
 				success: function (success){
 					$("#delete").modal("hide")
+					$("#toastPlacement").val("")
 					createToast("success", "Question(s) deleted")
 		
 					$("#remove, #docx").prop('disabled', true)

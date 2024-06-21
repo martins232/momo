@@ -43,7 +43,7 @@ def profile(request):
             return redirect("login")
         else:
             messages.error(request, "Password wasn't changed. Please check form for errors")
-            print("I am not valid")
+            
     context = {
         "user": user,
         "changePassword": changePassword
@@ -255,37 +255,45 @@ def session_save(request, pk):
         # attempts_ = 2 if (attempts+ db_attempts) > 2 else attempts + db_attempts
         ######################################
         
+        
         for k in data_.keys():
             question = Question.objects.get(question = k)
             questions.append(question) # appending question object in a list
 
         
+        
         score = 0
-        multiplier = 100 / exam.question_set.all().count()
+        multiplier = 100 / len(questions)
         no_of_wrong_answers = 0
         no_of_unanswered = 0
         
+        new_choice = dict()
         
         for q in questions:  # q is the question instance
             a_selected = data_.get(q.question) #from the question instance get the question key from the request.POST method
             answer  = {"A" :q.option_A, "B":q.option_B, "C":q.option_C, "D":q.option_D} # represent the options as "A", "B", "C", "D" to correspond to the correct answer from the db
-    
+            
+            new_choice[q.id] = [list(answer.keys())[list(answer.values()).index(a_selected[0])]] if a_selected[0] != "" else [""]
             if a_selected[0] != "": # if what the user selected is not empty
                 for option, value in answer.items(): # from the answers in the db as dictionary
                     if a_selected[0] in value: # if the student_answer in list of answers (value)
                         if option == q.answer: # if the option is == the teacher answer
                             data_.get(q.question).append({"status": "correct"}) #---------------
+                            new_choice.get(q.id).append({"status": "correct"}) #---------------
                             score += 1  # add a mark
                         else:
                             no_of_wrong_answers +=1
                             data_.get(q.question).append({"status": "incorrect"}) #---------------
+                            new_choice.get(q.id).append({"status": "incorrect"}) #---------------
             else:
                 no_of_unanswered +=1
                 data_.get(q.question).append({"status": "unanswered"}) #---------------
+                new_choice.get(q.id).append({"status": "unanswered"}) #---------------
             #     results.append({str(q):{"correct_answer": correct_answer, "answered": a_selected}}) # create dictionary of correct and not correct answer
             # else:
             #     results.append({str(q): "not answered"}) # if the question was not answered create a not answered dictionary
-                
+        
+               
         score_ = round(score * multiplier ,1)# convert to 100% scale
         user_session.exam = exam
         user_session.score=score_
@@ -293,7 +301,8 @@ def session_save(request, pk):
         user_session.attempts=attempts_
         user_session.misconduct=misconduct
         user_session.completed = True
-        user_session.choices = data_
+        # user_session.choices = data_
+        user_session.choices = new_choice
         user_session.save()
         
         # Session.objects.create(user=user, exam = exam, score=score_, elapsed_time=elapsed, attempts=attempts, misconduct=misconduct ) # create and instance of this user session
@@ -334,7 +343,7 @@ def examAnalysis(request, pk):
         "correct": correct,
         "incorrect": incorrect,
         "unanswered": unanswered,
-        "total_ans": correct + incorrect + unanswered
+        "total_ans": correct + incorrect
     }
     return render(request, "students/exam_analysis.html", context)
 
@@ -350,8 +359,8 @@ def  sessionCorrectionData(request, pk):
         options = {"A":question.option_A, "B": question.option_B, "C":question.option_C, "D": question.option_D}
         question_and_options["question"] = question.question
         question_and_options["options"] = [options]
-        question_and_options["answer"] = options[question.answer]
-        question_and_options["choice"] = session.choices[question.question][0]
+        question_and_options["answer"] = question.answer
+        question_and_options["choice"] = session.choices[str(question.id)][0]
         data.append(question_and_options)
     return JsonResponse({"data": data})
               
