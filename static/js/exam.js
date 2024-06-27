@@ -49,7 +49,7 @@ getData().then((data)=>{
 		examstatus = "active"
 
 		// Call startTimer initially to avoid delay in displaying the timer
-		startTimer();
+		
 		// Set the interval to call startTimer every second
 		timer = setInterval(startTimer, 1000);
 

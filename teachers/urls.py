@@ -54,5 +54,7 @@ urlpatterns = [
     path("remove-question-from-exam/<str:pk>/", views.removeQuestionFromExam, name="remove-question-from-exam"),
     
     
+    path("AI-explanation", views.explanationWithAI, name="AI-explanation"),
+    path("update-explanation", views.generateExplanation, name="update-explanation"),
     path("change-students-password", views.changeStudentsPassword, name="change-students-password")
 ]

@@ -139,7 +139,7 @@ class Question(models.Model):
     option_C = models.TextField()
     option_D = models.TextField()
     answer =  models.CharField(max_length=250)
-    explaination = models.CharField(null=True, blank=True)
+    explanation = models.CharField(null=True, blank=True)
     updated = models.DateTimeField(auto_now=True)
     created = models.DateTimeField(auto_now_add=True)
     
