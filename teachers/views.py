@@ -39,6 +39,7 @@ from django.contrib.postgres.aggregates import ArrayAgg
 
 from django.template.loader import render_to_string
 from django.views.decorators.cache import cache_page
+from openai import OpenAI
 
 # Create your views here.
 @login_required(login_url="login")
@@ -448,10 +449,10 @@ def questionData(request):
         """Note unassigned here are questions that do to belong 'to a particular' exam """
         unassigned = bool(int(unassigned))
         if unassigned: #this block finds question not attached to this exam
-            questions = questions.exclude(exam = exam_id).values("id", "question","topics__id", "topics__name","option_A", "option_B","option_C","option_D", "answer","subject", "subject__name")
+            questions = questions.exclude(exam = exam_id).values("id", "question","topics__id", "topics__name","option_A", "option_B","option_C","option_D", "answer","subject", "subject__name","explanation")
             length =  questions.count()
         else:
-            questions = questions.filter(exam = exam_id).values("id", "question","topics__id", "topics__name","option_A", "option_B","option_C","option_D", "answer","subject", "subject__name", "exam__id")
+            questions = questions.filter(exam = exam_id).values("id", "question","topics__id", "topics__name","option_A", "option_B","option_C","option_D", "answer","subject", "subject__name", "exam__id", "explanation")
             length =  questions.count()
         
     else:
@@ -1014,3 +1015,67 @@ def changeStudentsPassword(request):
         "students": students
     }
     return render(request, "teachers/change_students_password.html", context)
+
+
+def explanationWithAI(request):
+    if request.method == "POST":
+        id = request.POST.get("id")
+        question = Question.objects.get(id=id)
+        
+        if question:
+            client = OpenAI(
+                base_url = "https://integrate.api.nvidia.com/v1",
+                api_key = "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"
+            )
+            system_message = {
+                "role": "system",
+                "content": (
+                    "You are an educational assistant. When provided with a multiple-choice question and the correct answer, "
+                    "generate a detailed explanation that helps students understand the concept behind the question and why the correct answer is accurate. "
+                    "The explanation should be clear, concise, and educational using simple terms. Start the response with the correct answer. Take note the response can not be more than 300 words"
+                )
+            }
+            
+            question_message = {
+                "role": "user",
+                "content": (
+                    f"{question.question}\n"
+                    f"A) {question.option_A}\n"
+                    f"B) {question.option_B}\n"
+                    f"C) {question.option_C}\n"
+                    f"D) {question.option_D}\n"
+                    f"Ans) {question.answer}"
+                )
+            }
+            
+            messages = [system_message, question_message]
+            completion = client.chat.completions.create(
+                model="meta/llama3-70b-instruct",
+                messages=messages,
+                temperature=0.5,
+                top_p=1,
+                max_tokens=700,
+                stream=True
+            )
+            explanation =""
+            for chunk in completion:
+                if chunk.choices[0].delta.content is not None:
+                    explanation += chunk.choices[0].delta.content
+        
+        return JsonResponse({"status": True, "response":explanation})
+    # return explanation
+    
+    
+
+
+def generateExplanation(request,):
+    
+    if request.method == "POST":
+        id = request.POST.get("id")
+        explanation = request.POST.get("explanation")
+        question = Question.objects.get(id=id)
+        question.explanation = explanation
+        question.save()
+        
+        return JsonResponse({"message":True})
+    

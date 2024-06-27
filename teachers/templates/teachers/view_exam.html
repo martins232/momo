@@ -4,7 +4,22 @@
 <link rel="stylesheet" href="https://unpkg.com/bootstrap-table@1.22.2/dist/bootstrap-table.min.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
 
+<style>
+#additionalComments {
+    transition: height 0.2s;
+    overflow: hidden;
+}
+
+</style>
+
+
 {% endblock additional_head_css %}
+
+{% block additional_head_script %}
+<!-- <script src="https://cdn.tiny.cloud/1/r7z0yb5plbbo6nzqdonnxk26asodg49c3a0p0jk8d2rp6eg2/tinymce/7/tinymce.min.js" referrerpolicy="origin"></script> -->
+ <script src="/static/tinymce/tinymce.min.js"></script>
+ <script src="/static/django_tinymce/init_tinymce.js"></script>
+{% endblock additional_head_script %}
 
 {% block content %}
 <nav aria-label="breadcrumb" class="main-breadcrumb">
@@ -109,6 +124,8 @@
         <th data-field="question">Question</th>
         <th data-field="topics__name">Topic</th>
         <th data-field="status" data-formatter="statusFormatter" data-align="center">Assigned</th>
+        <th data-field="explaination" data-formatter="explanationButton" data-events="operateEvents">Action</th>
+       
         </tr>
     </thead>
 
@@ -183,6 +200,16 @@
         }
         
     }
+    function explanationButton(value, row, index){
+        
+        if (row.explanation){
+            return `<button class="expModal btn btn-light rounded-circle"><i class="fa-light fa-message-dots fa-sm "></></button>`
+        }else{
+            return `<button class="expModal btn btn-light rounded-circle"><i class="fa-light fa-message-plus fa-sm fw-bold"></></button>`
+        }
+                  
+        
+    }
     function counterFormatter(value, row, index){
         return `${index + 1}`
     }
@@ -232,7 +259,6 @@
 
     function addQuestionToExam(){
         url = location.origin + "/teacher/assign-question-to-exam/" + exam_id +"/"
-        console.log(url)
         $.ajax({
             type: "POST",
             url: url,
@@ -257,7 +283,6 @@
 
     function removeQuestionFromExam(){
         url = location.origin + "/teacher/remove-question-from-exam/" + exam_id +"/"
-        console.log(url)
         $.ajax({
             type: "POST",
             url: url,
@@ -319,6 +344,221 @@ function fadeAndSlide(element) {
     }, fadeDuration / 10);
   }
 // *****************************************************************************************************************
+
+
+
+function createAndShowModal(row, idx) {
+    // Create modal HTML structure
+    const modalHtml = `
+      <div class="modal fade" id="explanation" tabindex="-1" aria-labelledby="expalanation-Label" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+          <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="d-flex align-items-start">
+                    ${idx}.&emsp;<div>${row.question}</div>
+                </div>
+                <div class="ms-2 mt-2">
+                    <div class="d-flex align-items-start mb-1">
+                        <span class="fw-bold">A)</span>&emsp;<div>${row.option_A}</div>
+                    </div>
+                    <div class="d-flex align-items-start mb-1">
+                        <span class="fw-bold">B)</span>&emsp;<div>${row.option_B}</div>
+                    </div>
+                    <div class="d-flex align-items-start mb-1">
+                        <span class="fw-bold">C)</span>&emsp;<div>${row.option_C}</div>
+                    </div>
+                    <div class="d-flex align-items-start">
+                        <span class="fw-bold">D)</span>&emsp;<div>${row.option_D}</div>
+                    </div>
+                </div>
+                         
+                <div class="form-group mt-3">
+                    <label for="additionalComments">Explanation<span style="font-size: 12px;" class="text-danger fw-bold">(AI can make mistakes. Check important info.)</span></label><button title="Generate with A.I" id ="generateBtn" class="ms-1 mb-1 btn btn-outline-dark px-1 py-0"><i class="fa-solid fa-robot fa-xs"></i></button>
+                    
+                    <textarea class="form-control" id="additionalComments" rows="10" ></textarea>
+                </div>
+            </div>
+            <div class="modal-footer justify-content-center">
+                
+                <button disabled type="button" class="w-100 btn btn-outline-success" id="updateExplanation"><i class="fas fa-send"></i> Update Explanation</button>
+                        
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+    
+    // Append modal to body
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
+  
+    // Get modal element
+    const modalElement = document.getElementById("explanation");
+  
+    // Create Bootstrap modal instance
+    const bootstrapModal = new bootstrap.Modal(modalElement, {
+      backdrop: 'static'
+    });
+  
+    // Show modal
+    bootstrapModal.show();
+  
+    // Event listener to remove modal from DOM when hidden
+    modalElement.addEventListener('hidden.bs.modal', () => {
+         let editor = tinymce.get('additionalComments');
+         if (editor) {
+             editor.remove();
+         }
+      modalElement.remove();
+    });
+
+    let trimmedValue
+    tinymce.init({
+        selector: '#additionalComments',
+        menubar: false,
+        plugins: `advlist,autolink,lists,link,image,charmap,preview,anchor,
+        searchreplace,visualblocks,table ,
+        code,help,`,
+        "toolbar": 
+            `bold italic underline subscript superscript| alignleft aligncenter "
+            alignright alignjustify | bullist numlist outdent indent | charmap ` ,
+        "promotion": false,
+        setup: function (editor) {
+            // Add an event listener for the init event
+            editor.on('init', function (e) {
+                if (row.explanation) {
+                    row.explanation = row.explanation.split('\n\n').map(paragraph => `<p>${paragraph}`).join('');
+                    console.table(row.explanation)
+                    editor.setContent(row.explanation);
+                }
+                trimmedValue = editor.getContent({format:"text"}).trim();
+                if (trimmedValue.length > 0){
+                    $("#updateExplanation").prop("disabled", false)
+                }
+                
+            });
+            // Add an event listener for the input event
+            editor.on('keyup change', function (e) {
+                // You can add your custom logic here
+                trimmedValue = editor.getContent({format:"text"}).trim();               
+                if (trimmedValue.length > 0){
+                    $("#updateExplanation").prop("disabled", false)
+                }else{
+                    $("#updateExplanation").prop("disabled", true)
+                }
+               
+            
+            });
+        }
+    });
+
+    let generateBtn = $("#generateBtn")
+    let editor = tinymce.get("additionalComments")
+    
+    
+    //Adjust height of textarea
+    // function adjustTextareaHeight() {
+    //     const editorIframe = editor.iframeElement;
+    //     editorIframe.style.height = 'auto';
+    //     editorIframe.style.height = editor.contentDocument.body.scrollHeight + 'px';
+    // }
+
+    generateBtn.on("click", function() {
+        $("#generateBtn i").toggleClass("fa-robot fa-circle-notch fa-spin")
+        $("#updateExplanation").prop("disabled", true)
+        $.ajax({
+            type: "POST",
+            url: "{% url 'AI-explanation' %}",
+            data: {
+                "id": row.id,
+                "csrfmiddlewaretoken": "{{csrf_token}}"
+            },
+            success: function (success) {
+                $("#generateBtn i").toggleClass("fa-robot fa-circle-notch fa-spin");
+                 let content = success.response.split('\n\n').map(paragraph => `<p>${paragraph}</p>`).join('');
+                
+                // Clear any existing content
+                tinymce.get('additionalComments').setContent('');
+                
+                let editor = tinymce.get('additionalComments');
+                let index = 0;
+                let isTag = false;
+                let parsedContent = '';
+
+                // Parse the content character by character
+                function typeWriter() {
+                if (index < content.length) {
+                    let char = content.charAt(index);
+                    
+                    // Check if character is part of an HTML tag
+                    if (char === '<') {
+                        isTag = true;
+                    } else if (char === '>') {
+                        isTag = false;
+                    }
+                    
+                    // Append character to parsed content
+                    parsedContent += char;
+                    
+                    // If not inside a tag, insert the content into the editor
+                    if (!isTag) {
+                        editor.setContent(parsedContent);
+                    }
+
+                    index++;
+                    setTimeout(typeWriter, 5); // Adjust the speed by changing the timeout value
+                } else {
+                    // Enable the button after finishing
+                    $("#updateExplanation").prop("disabled", false);
+                }
+                }
+                typeWriter();
+            },
+            error: function (error) {
+                // Handle the error
+                console.error("Error:", error);
+            }
+            });
+
+        
+
+        
+    });
+
+}
+
+window.operateEvents = {
+	"click .expModal": function (e, value, row, index) {
+		let btn = $(e.currentTarget);
+        createAndShowModal(row, index+1)
+        
+        $("#updateExplanation").on("click", function(){
+            console.log(tinymce.get("additionalComments").getContent())
+            $.ajax({
+                type: "POST",
+                url: "{% url 'update-explanation' %}",
+                data: {"id": row.id,
+                "csrfmiddlewaretoken": "{{csrf_token}}" ,
+                "explanation": tinymce.get("additionalComments").getContent()},
+                beforeSend: function(){
+                    let modal = bootstrap.Modal.getInstance($("#explanation"))
+                    modal.hide()
+                },
+                success: function (success){
+                    $table.bootstrapTable('refresh')
+                    createToast("success", "Explanation added");
+
+                },
+                error: function(error){
+                    alert(JSON.stringify(error))
+                }
+            })
+        })
+    }
+}
+
 
 
 
