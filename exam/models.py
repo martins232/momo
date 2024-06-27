@@ -1,6 +1,4 @@
-from asyncio import constants
 from collections import defaultdict
-from turtle import mode
 from urllib import request
 from django.db import models
 from users. models import User, Grade
