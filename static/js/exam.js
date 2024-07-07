@@ -4,7 +4,6 @@ let ajax_data
 let see_score
 let elapsedTime
 
-
 let warning =3
 let misconduct = false
 
@@ -25,8 +24,16 @@ let resultData
 
 let isModalOpen = false;
 
+
+let countdown;
+let timeLeft
+let blurredFrame = false
+let screenWidth = window.outerWidth
+let screenheight = window.outerHeight
+
 //get exam data by making a promise
 async function getData() {
+	$(".spinner-container").toggleClass("d-none")
     try {
         let response = await fetch(url_data);
         if (!response.ok) {
@@ -35,30 +42,76 @@ async function getData() {
         let data = await response.json();
         return data;
     } catch (error) {
+		$(".spinner-container").toggleClass("d-none")
         throw new Error(`Network error: ${error.message}`);
     }
 }
 
+showExamInstructions()
 //handle promise
-getData().then((data)=>{
-		ajax_data = data.data;
-		time= data.time
-		see_score = data.see_score
-		fixed = new Date().getTime() + time*1000;
-		
-		examstatus = "active"
 
-		// Call startTimer initially to avoid delay in displaying the timer
+const fetchAndInitializeExam = () => {
+	if (check_storage_for_data){
+		getStoredData()
+	}else{
+		getData().then((data)=>{
+			$(".spinner-container").toggleClass("d-none")
+				ajax_data = data.data;
+				time= data.time
+				see_score = data.see_score
+				fixed = new Date().getTime() + time*1000;
+				
+				examstatus = "active"
+				// Set the interval to call startTimer every second
+				timer = setInterval(startTimer, 1000);
+				displayExam(0)
+				storeFixedData()
+				
+		}).catch((error) => {
+			connectivityErrorDisplay({"content":error}); // Handle any errors
+		});
+	}
+}
+
+
+function storeFixedData(){
+	localStorage.setItem("questions", JSON.stringify(ajax_data))
+	localStorage.setItem("selectedAnswers", JSON.stringify({}))
+	localStorage.setItem("meta", JSON.stringify({"fixed": fixed, "time":time, "see_score": see_score, "screenWidth": screenWidth, "screenheight":screenheight}))
+
+}
+function clearStoredData(){
+	localStorage.removeItem("questions")
+	localStorage.removeItem("selectedAnswers")
+	localStorage.removeItem("meta")
+	localStorage.removeItem("index")
+}
+
+function getStoredData(){
+	let stored_ajax_data  = localStorage.getItem("questions")
+	let stored_selectedAnswers = localStorage.getItem("selectedAnswers")
+	let stored_meta = localStorage.getItem("meta")
+	index = Number(localStorage.getItem("index"))
+	
+	if (stored_ajax_data != null & stored_selectedAnswers!= null & stored_meta!= null){
+		ajax_data = JSON.parse(stored_ajax_data);
+		stored_meta = JSON.parse(stored_meta)
+		time= stored_meta.time
+		fixed = stored_meta.fixed
+		see_score = stored_meta.see_score
+		screenWidth = stored_meta.screenWidth
+		screenheight =  stored_meta.screenheight
+		selectedAnswers = JSON.parse(stored_selectedAnswers)
 		
+
+		examstatus = "active"
 		// Set the interval to call startTimer every second
 		timer = setInterval(startTimer, 1000);
-
-		displayExam(0)
-	}).catch((error) => {
-		connectivityErrorDisplay({"content":error}); // Handle any errors
-	});
-
-
+		displayExam(index)
+	}else{
+		
+	}
+}
 
 function createModal({title="",content="",show_header=true, show_footer=false, icon=null}){
 	// Create modal structure
@@ -72,7 +125,7 @@ function createModal({title="",content="",show_header=true, show_footer=false, i
 			</div>`:
 			""}
 		<div class="modal-body text-center">
-			${icon? icon: `<i class="fas fa-exclamation-circle fa-3x text-warning mb-3"></i>`}
+			${icon? icon: ``}
 		  	<p>${content}</p>
 		</div>
 
@@ -109,13 +162,154 @@ function createModal({title="",content="",show_header=true, show_footer=false, i
   
 }
 
+
+
+function rules(){
+	return `
+		<div class="d-flex align-items-start">
+			<p class="fw-bold w-50 text-start">Assessment name</p>
+			<div class="ms-2 ">
+				<p class="text-start">${examDetails.examName}</p>
+			</div>
+		</div>
+		<div class="d-flex align-items-start">
+			<p class="fw-bold w-50 text-start">No of questions</p>
+			<div class="ms-2">
+				<p class="text-start">${examDetails.countQuestion}</p>
+			</div>
+		</div>
+		<div class="d-flex align-items-start">
+			<p class="fw-bold w-50 text-start">Test duration</p>
+			<div class="ms-2">
+				<p class="text-start">${examDetails.duration}</p>
+			</div>
+		</div>
+		<div class="d-flex align-items-start">
+			<p class="fw-bold w-50 text-start">Monitored</p>
+			<div class="ms-2">
+				<p class="text-start text-danger fw-bold">True</p>
+			</div>
+		</div>
+		<div class="d-flex align-items-start">
+			<p class="fw-bold w-50 text-start">Infringement</p>
+			<div class="ms-2">
+				<p class="text-start text-danger fw-bold">-</p>
+			</div>
+		</div>
+		${check_storage_for_data ?
+
+			`<ol class="text-start">
+				<li>Read all questions carefully and keep track of time using the on-screen timer.</li>
+				<li>Answer all questions before the time elapses; the system will auto-submit your session when time runs out.</li>
+				<li>Maintain academic integrity; cheating is strictly prohibited.</li>
+				<li>Do not leave or resize the browser window once the exam starts. Violations may lead to session termination.</li>
+				<li>If interrupted, return to the same browser window to resume the exam. Contact support if issues persist.</li>
+				<li>If terminated for malpractice, you will not be allowed a retake, if retakes are supported.</li>
+			</ol>`:""
+
+		}
+		
+			<div class="d-grid">
+				<button class="btn btn-outline-success" type="button" data-bs-dismiss="modal" id="startBtn">Start</button>
+			</div>
+	`
+
+}
+
+function showExamInstructions(){
+	let msg
+	if (check_storage_for_data){
+		msg = `<p class="text-muted text-start fw-bolder">Please read the following instructions before you commence</p>
+				<div id="instructionBody">
+					<p>You have have an unfinished session. Click the button below to continue</p>
+					<div class="d-grid gap-2">
+						<button class="btn btn-outline-success" type="button" id="next">Continue session</button>
+					</div>
+				</div>`
+	}else{	
+		msg = `
+				<p class="text-muted text-start fw-bolder">Please read the following instructions before you commence</p>
+				<div id="instructionBody">
+					<div class="d-flex align-items-start">
+						<i class="bi-lightbulb" style="font-size: 2rem; color: cornflowerblue;"></i>
+						<div class="ms-2 text-start">
+							<h3 class="fw-bold mb-0 fs-5 text-body-emphasis">Before You Begin</h3>
+							<ul>
+								<li>Ensure a strong and stable internet connection.</li>
+								<li>Use a compatible device (laptop/desktop/Android) with an updated browser.</li>
+								<li>Have permitted materials ready.</li>
+							</ul>
+						</div>
+					</div>
+					<div class="d-flex align-items-start">
+						<i class="bi-alarm" style="font-size: 2rem; color: cornflowerblue;"></i>
+						<div class="ms-2 text-start">
+							<h3 class="fw-bold mb-0 fs-5 text-body-emphasis">During the Exam</h3>
+							<ul>
+								<li>Read all questions carefully and keep track of time using the on-screen timer.</li>
+								<li>Answer all questions before the time elapses; the system will auto-submit your session when time runs out.</li>
+								<li>Maintain academic integrity; cheating is strictly prohibited.</li>
+								<li>Do not leave or resize the browser window once the exam starts. Violations may lead to session termination.</li>
+								<li>If interrupted, return to the same browser window to resume the exam. Contact support if issues persist.</li>
+								<li>If terminated for malpractice, you will not be allowed a retake, if retakes are supported.</li>
+							</ul>
+						</div>
+					</div>
+					<div class="form-check mb-2">
+						<input class="form-check-input" type="checkbox" value="" id="agreeCheck">
+						<label class="form-check-label text-start p-0 " for="agreeCheck">
+							I have read and agree to the instructions.
+						</label>
+					</div>
+					<div class="d-grid gap-2">
+						<button class="btn btn-outline-success" type="button" id="next" disabled>Next</button>
+					</div>
+				</div>	
+				
+		`
+	}
+	createModal({
+		content: msg, 
+		show_header: false, 
+		icon: ""
+	});
+
+	let next = $("#next")
+	$("#agreeCheck").on("change", function(){
+		next.prop("disabled", !this.checked)
+	})
+
+	next.on("click", function(){
+		msg = rules()
+		$("#instructionBody").html(msg)
+	})
+
+	$("#instructionBody").on("click", "#startBtn", function(){
+		// Set the interval to call startTimer every second
+		fetchAndInitializeExam()
+	})
+
+	
+}
+
+
+
 // Function to close the modal if it's open
-function closeModalAndCreateNew(content) {
-    let msg = `<h4 id="modalMsg">${content}</h4>`;
-    msg += `<div class="d-grid mt-2 gap-2 col-6 mx-auto">
-        ${see_score ? `<button class="btn btn-success" id="seeScore" type="button" disabled>Processing <i class="fas fa-spinner fa-spin"></i></button>` 
-        : `<button class="btn btn-success" type="button" onclick="window.close()">End Session</button>`}
-    </div>`;
+function closeModalAndCreateNew({content= content, closeBtn= false, icon=`<i class="text-success fas fa-check-circle fa-3x"></i>`, resize=false}) {
+    let msg ;
+    if (closeBtn){
+		icon = `<i class="text-warning fas fa-exclamation-triangle fa-3x"></i>`
+		msg = `<p id="modalMsg">${content}</p>`;
+		msg += `<p>You have <strong>${warning}</strong> warnings left.</p><div class="d-grid mt-2 gap-2 col-6 mx-auto">
+				${!resize? `<button class="btn btn-danger" id="closeCountdown" type="button" data-bs-dismiss="modal" onclick="clearNavIntervalViolation()">Close</button>` : `<button class="btn btn-danger" id="resizeBrowser" type="button" data-bs-dismiss="modal" onclick="resizewindow()">Resize</button>`}
+			</div>`;
+	}else{
+		msg = `<p id="modalMsg">${content}</p>`;
+		msg += `<div class="d-grid mt-2 gap-2 col-6 mx-auto">
+				${see_score ? `<button class="btn btn-success" id="seeScore" type="button" data-bs-dismiss="modal" disabled>Processing <i class="fas fa-spinner fa-spin"></i></button>` 
+				: `<button class="btn btn-success" type="button" onclick="window.close()">End Session</button>`}
+			</div>`;
+	}
 
     const handleModalHidden = (modalElement) => {
         const modal = bootstrap.Modal.getInstance(modalElement);
@@ -129,7 +323,7 @@ function closeModalAndCreateNew(content) {
         createModal({
             content: msg, 
             show_header: false, 
-            icon: `<i class="text-success fas fa-check-circle fa-3x"></i>`
+            icon: icon
         });
 
 		
@@ -150,7 +344,7 @@ function closeModalAndCreateNew(content) {
             createModal({
                 content: msg, 
                 show_header: false, 
-                icon: `<i class="text-success fas fa-check-circle fa-3x"></i>`
+                icon: icon
             });
 			
         }
@@ -158,7 +352,7 @@ function closeModalAndCreateNew(content) {
         createModal({
             content: msg, 
             show_header: false, 
-            icon: `<i class="text-success fas fa-check-circle fa-3x"></i>`
+            icon: icon
         });
 		
     }
@@ -173,14 +367,13 @@ function closeModalAndCreateNew(content) {
 }
 
 //check if score button is clicked?
-function seeScoreBtn(a){
+function seeScoreBtn(metrics){
 	// Add event listener for the seeScore button
 	const seeScoreButton = document.getElementById('seeScore');
 	if (seeScoreButton) {
 		seeScoreButton.addEventListener('click', () => {
-			$("#alertModal").modal("hide")
-			result(a)
-			// Add your logic for the seeScore button click here
+			result(metrics)
+			
 		});
 	}
 }
@@ -234,7 +427,9 @@ const displayExam = (i) => {
 
 	
 	`)
-	jumperBtns(".jumperbtn .row")
+	// jumperBtns(".jumperbtn .row")
+	$(".jumperbtn .md-screen").html(createJumperBtns())
+	localStorage.setItem("index", index)
 	
 }
 
@@ -289,8 +484,9 @@ function startTimer() {
 		}
 	}else{
 		$("#timer").html(`<h3 class="text-center text-danger">Session ended</h3>`);
+		clearInterval(countdown);
 		clearInterval(timer)
-		closeModalAndCreateNew("Time's up! Your responses have been auto-submitted.")
+		closeModalAndCreateNew({content:"Time's up! Your responses have been auto-submitted."})
 		submit()
 	}
 
@@ -299,18 +495,37 @@ function startTimer() {
 }
 
 //get jumper buttons for large screens
-const jumperBtns = (div_selector) => {
-	let jumper_div = $(div_selector)
-	btns = ""
-	for (let i = 0; i < ajax_data.length; i++) {
+
+const SmalljumperBtns =() =>{
+	let btns = createJumperBtns()
+	let btnStructure = `<div class="container jumperbtn ">
+					<div class="row">
+						${btns}
+					</div>
+					
+				</div>`
+	
+	createModal({title:"", content:btnStructure})
+
+	$(".jumper-button").on("click", function(){
+		$("#alertModal").modal("hide")
+	})
+	
+}
+function createJumperBtns(){
+	const totalButtons = ajax_data.length;
+	let btns = ""
+	for (let i = 0; i < totalButtons; i++) {
 		let answeredBtns = false
 		let min = Object.keys(ajax_data[i])
 		if (selectedAnswers[`${min[0]}`]) {
 			answeredBtns = true
 		}
-		btns += `<div style="min-width: 40px; max-width: 40px; cursor: pointer;"class="col p-2 border text-center ${i == index ? `active` : ""} ${answeredBtns ? `answered` : ""} " onclick="displayExam(${i})">${i + 1}</div>`
+		const btn = `<div class="col-auto p-0"><button class='btn btn-outline-secondary jumper-button text-center ${i == index ? "active" : ""} ${answeredBtns ? `answered` : ""}' onclick="displayExam(${i})">${i + 1}</button></div>`
+		btns += btn
 	}
-	jumper_div.html(`${btns}`)
+	return btns
+	
 }
 
 //add answers when an option is clicked
@@ -321,7 +536,7 @@ const addAnswer = () => {
 			selectedAnswers[`${question}`] = currentOption.value
 		}
 	})
-	// localStorage.setItem("selectedAnswers", JSON.stringify(selectedAnswers)) important
+	localStorage.setItem("selectedAnswers", JSON.stringify(selectedAnswers)) //important
 }
 
 const resetAnswer = () => {
@@ -332,6 +547,7 @@ const resetAnswer = () => {
 			delete (selectedAnswers[`${question}`])
 		}
 	})
+	localStorage.setItem("selectedAnswers", JSON.stringify(selectedAnswers))
 
 }
 
@@ -404,7 +620,7 @@ $(document).on("click",  "#submitBtn", function(event){
 		if (timer){
 			$("#timer").html(`<h3 class="text-center text-danger">Session ended</h3>`);
 			clearInterval(timer)
-			closeModalAndCreateNew("Exam submited successfully")
+			closeModalAndCreateNew({content:"Exam submited successfully"})
 			submit()
 			
 		}
@@ -440,14 +656,16 @@ let submit = () => {
 			selectedAnswers[question] = null
 		}
 	})
-	
+	if (countdown){
+		clearInterval(countdown);
+	}
 	examstatus="ended"
 	$.ajax({
 		type: "POST",
 		url: url_submit,
 		data: selectedAnswers,
 		success: function(success){
-
+			clearStoredData()
 			setTimeout(()=>{
 				resultData = success
 				let event = new CustomEvent('ajaxSuccess', { detail: success });
@@ -472,7 +690,7 @@ function formatTime(seconds) {
     }
 }
 
-const result = (a) =>{
+const result = (metrics) =>{
 	// const {pass, score, no_of_correct_answer, correctAnswers} = data
 	$("#majorContainer").addClass("reportContainer")
 	let newDiv = document.createElement("div"); 
@@ -507,19 +725,19 @@ const result = (a) =>{
 			<tbody>
 				<tr>
 					<td>Total number of answered questions</td>
-					<td>${a.no_of_correct_answer + a.no_of_wrong_answers}</td>
+					<td>${metrics.no_of_correct_answer + metrics.no_of_wrong_answers}</td>
 				</tr>
 				<tr>
 					<td>Number of <span class="text-success fw-bold">correct</span>  answers</td>
-					<td>${a.no_of_correct_answer}</td>
+					<td>${metrics.no_of_correct_answer}</td>
 				</tr>
 				<tr>
 					<td>Number of <span class="text-danger fw-bold">wrong</span> questions</td>
-					<td>${a.no_of_wrong_answers}</td>
+					<td>${metrics.no_of_wrong_answers}</td>
 				</tr>
 				<tr>
 					<td>Total number of <span class="fw-bold">unanswered</span>  questions</td>
-					<td>${a.no_of_unanswered}</td>
+					<td>${metrics.no_of_unanswered}</td>
 				</tr>
 				<tr>
 					<td>Time spent</td>
@@ -528,21 +746,21 @@ const result = (a) =>{
 				<tr>
 					<td>Score</td>
 					<td><div class="frac">
-								<span>${a.no_of_correct_answer}</span>
+								<span>${metrics.no_of_correct_answer}</span>
 								<span class="symbol">/</span>
-								<span class="bottom">${a.total_questions}</span>
+								<span class="bottom">${metrics.total_questions}</span>
 							</div>
 					</td>
 				</tr>
 				<tr>
 					<td>Percentage Score</td>
-					<td>${a.score}%</td>
+					<td>${metrics.score}%</td>
 				</tr>
 			</tbody>
 		</table>
 
 		<div class="report-card-footer mt-4">
-			<p><strong>Teacher's Remark:</strong> <span class="text-decoration-underline ${a.pass? 'text-success' :'text-danger'}">${a.pass?"Pass":"Fail"}</span></p>
+			<p><strong>Teacher's Remark:</strong> <span class="text-decoration-underline ${metrics.pass? 'text-success' :'text-danger'}">${metrics.pass?"Pass":"Fail"}</span></p>
 			<p class="text-muted">Corrections to this exam will be made available after the exam period ends as scheduled by the teacher.</p>
 		</div>
 
@@ -579,6 +797,119 @@ function getCookie(name) {
 // Get the CSRF token
 const csrftoken = getCookie('csrftoken');
 
+
+
+
+// document.addEventListener("visibilitychange", (event) => {
+// 	if (document.visibilityState === "hidden") {
+// 		// track minimized the browser
+// 		if (examstatus == "active") {
+// 			alert("Opened new tab")
+			
+// 		}
+
+// 	}
+// });
+
+
+
+
+ // Sound for the alarm
+// const alarmSound = new Audio('alarm.mp3'); // Replace with the actual path to your sound file
+
+window.addEventListener("blur", (event) =>{
+	if (examstatus == "active") {
+		
+		// Play alarm sound
+        // alarmSound.play();
+		if (countdown){
+			clearInterval(countdown);
+		}else{
+			timeLeft = 30;
+		}
+		closeModalAndCreateNew({content:`You have navigated away from the exam window. Please return within <span id='countdown' class='fw-bold'>${countdown? timeLeft : 30}</span> seconds to avoid penalties. Else you session will be terminated.<br> <span class="text-muted fw-bold">Click the button below to:</span>`, closeBtn:true})
+		
+
+		countdown = setInterval(function() {
+			//start countdown until all
+			timeLeft--;
+			blurredFrame = true
+			try {
+				document.getElementById('countdown').textContent = timeLeft;
+			} catch (error) {
+				
+			}
+
+			let closeCountdown = $("#closeCountdown")
+			if (closeCountdown) {
+				closeCountdown.on("click", function () {
+					clearInterval(countdown);
+					
+				})
+			}
+
+			if (timeLeft <= 0) {
+				misconduct = true
+				clearInterval(countdown);
+				clearInterval(timer)
+				submit()
+				closeModalAndCreateNew({content:`Exam submitted because of <span class="text-danger">Violation(s)</span>.You have been penalized for leaving the exam window even after warning. If exam supports retake, you will not be eligible. Contact support`})
+			}
+			
+		}, 1000);
+	}
+})
+
+
+
+let resizeTimeout= false;
+window.addEventListener('resize', () => {
+    
+	if (examstatus == "active") {
+		if(window.outerWidth != screenWidth){
+			if (resizeTimeout !== false){
+				clearTimeout(resizeTimeout);
+				blurredFrame = false
+			}
+			
+			resizeTimeout = setTimeout(() => {
+				if (blurredFrame == false){
+					closeModalAndCreateNew({content:`Please do not resize your browser during the exam.<br> <span class="text-muted fw-bold">Click the button below to:</span>`, closeBtn:true, resize:true})
+				}
+			}, 2000); // Adjust the timeout duration as needed
+		
+			
+		}
+		
+	}	
+});
+
+function resizewindow(){
+	window.resizeTo(screenWidth, screenheight)
+	window.moveTo(0, 0);
+	warningFunc()
+}
+
+function clearNavIntervalViolation(){
+	$("#closeCountdown").on("click", function () {
+		clearInterval(countdown);
+			
+	})
+	warningFunc()
+}
+
 const warningFunc = ()=>{
 	warning--
+
+	if (warning <0){
+		misconduct = true
+		clearInterval(countdown);
+		clearInterval(timer)
+		submit()
+		closeModalAndCreateNew({content:`You have been penalized for <span class="text-danger">Violation(s)</span> after multiple warnings. As a result, your exam has been terminated and submitted. If the exam supports retakes, you will not be eligible. Please contact support for further assistance.`})
+	}
+	
 }
+
+
+ 

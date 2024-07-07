@@ -9,6 +9,7 @@
         <link href="{% static "css/styles.css" %}" rel="stylesheet" />
         <link rel="stylesheet" href="{% static "css/exam.css" %}?bigddest=123">
         <script src="https://use.fontawesome.com/releases/v6.3.0/js/all.js" crossorigin="anonymous"></script>
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
     </head>
 
@@ -75,7 +76,7 @@
                 <div class="row">
                     <div class="col-xs-12  col-md-4 p-2 mx-auto">
                         <div class="container jumperbtn d-none d-md-block">
-                            <div class="row">
+                            <div class="row md-screen">
                             </div>
                             <!-- jumper buttons -->
                         </div>
@@ -88,121 +89,6 @@
                         </div>
                     </div>
 
-
-
-                </div>
-            </div>
-
-            <!--Modal for submit confirmation-->
-            <div class="modal" id="myModal">
-                <div class="modal-dialog">
-                    <div class="modal-content">
-
-                        <!-- Modal Header -->
-                        <div class="modal-header" style="margin: 0 auto;">
-                            <h4 class="modal-title text-center">Are you sure you want to Submit?</h4>
-                        </div>
-
-                        <!-- Modal body -->
-                        <div class="modal-body" id="modal-body">
-
-                        </div>
-                        <!-- Modal footer -->
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">No</button>
-                            <form action="" method="post">
-                                {% csrf_token %}
-                                <button type="submit" class="btn btn-success" id="confirmSubmit">Yes</button>
-                            </form>
-                        </div>
-
-                    </div>
-                </div>
-            </div>
-
-            <!--Modal for  smallscreens jumperbuttons-->
-            <div class="modal" id="jumperbuttons" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
-                <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5>Question navigation</h5>
-                        </div>
-
-                        <!-- Modal body -->
-                        <div class="modal-body" id="modal-body">
-                            <div class="col-sm-12">
-                                <div class="container">
-                                    <div class="row mx-auto">
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!--Modal for time up-->
-            <div class="modal mx-auto" id="ended" data-bs-backdrop="static" data-bs-keyboard="false"
-                tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
-                <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable ">
-                    <div class="modal-content">
-                        <!-- Modal body -->
-                        <div class="modal-header">
-                            <h2 id="modalMsg">Instructions</h2>
-                            <button type="button" class="btn-close d-none" data-bs-dismiss="modal" aria-label="Close"></button>
-                        </div>
-                        <div class="modal-body">
-                            <div class="row">
-                                <div class="col-5">
-                                    <p class="fw-bold">Test name:</p>
-                                </div>
-                                <div class="col-7">
-                                    <p>{{exam.name}}</p>
-                                </div>
-                            </div>
-
-                            <div class="row">
-                                <div class="col-5">
-                                    <p class="fw-bold">No of questions:</p>
-                                </div>
-                                <div class="col-7">
-                                    <p>{{exam.get_no_question}}</p>
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div class="col-5">
-                                    <p class="fw-bold">Test duration:</p>
-                                </div>
-                                <div class="col-7">
-                                    <p>{{exam.seconds_to_hms}}</p>
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div class="col-5">
-                                    <p class="fw-bold">Monitored:</p>
-                                </div>
-                                <div class="col-7">
-                                    <p>True <br>
-                                        Warning count: <span class="badge bg-danger warningCounterNotifier"></span></p>
-                                </div>
-                            </div>
-                            <ol>
-                                <li>You are to answer all questions before your time elapse, else the system will auto submit your session</li>
-                                <li>You are not allowed to leave this page once the timer begins.</li>
-                                <li>You are not allowed to resize the browser window once in the session.</li>
-                                <li><span class="badge bg-danger">Note</span> Every time you break rule nos. 2&3 above, you are one step closer to having your session terminated.</li>
-                                <li>If this test supports retake and your previous test was terminated as a consequence of malpractice you won't be a able to retake it again</li>
-                            </ol>
-
-                        
-                            
-                        </div>
-                        <!-- Modal footer -->
-                        <div class="modal-footer" style="margin: 0 auto;">
-                            <button type="button" class="btn btn-success" data-bs-dismiss="modal"
-                                onclick="getData()">Start</button>
-                        </div>
-                    </div>
                 </div>
             </div>
         </div>
@@ -220,9 +106,11 @@
                 examName: "{{ exam.name }}",
                 grade: "{{ exam.grade}}",
                 subject: "{{ exam.subject}}",
+                countQuestion: "{{exam.get_no_question }}",
+                duration: "{{exam.seconds_to_hms }}",
             };        
         </script>
-        <script src="{% static "js/exam.js" %}?page=12sst"></script>
+        <script src="{% static "js/exam.js" %}?page=12ssst"></script>
     </body>
 
 </html>

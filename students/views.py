@@ -102,9 +102,9 @@ def exams(request):
     
     """Exams that are ready and students are eligible to see and write"""
     time_now = timezone.now()
-    # exams = Exam.objects.filter(Q(start_date__lte=time_now, end_date__gt=time_now),
-    #                              ready=True, grade=request.user.student.grade).exclude(pk__in=Subquery(taken_exams_subquery)).order_by("end_date")
-    exams = Exam.objects.filter(Q(start_date__lte=time_now, end_date__gt=time_now),ready=True, grade=request.user.student.grade)
+    exams = Exam.objects.filter(Q(start_date__lte=time_now, end_date__gt=time_now),
+                                 ready=True, grade=request.user.student.grade).exclude(pk__in=Subquery(taken_exams_subquery)).order_by("end_date")
+    # exams = Exam.objects.filter(Q(start_date__lte=time_now, end_date__gt=time_now),ready=True, grade=request.user.student.grade)
     
     
     if request.method == "POST": #if the student clicks the start button for an in the available exam page
@@ -113,43 +113,43 @@ def exams(request):
         
         if Session.objects.filter(user=request.user, exam=id).exists(): #check if the user has written this test before
             
-            # -------------------------------------------------------------------
-            """delete everything inside here"""
-            request.session['id'] = id # add the exam.id to the session header
-            request.session['check_storage_for_data'] = 0 # tell Javascript whether to check storage
-            return JsonResponse({"message": True})
-            # -------------------------------------------------------------------
-            # student_session = Session.objects.get(user=request.user, exam=id)
-            # if student_session.attempts < 2 or student_session.completed == False: # check if the student completed this exam even in his last attempt or how many times the user write this test (this student is eligible)
-            #     if student_session.completed: # user wants to retake this test
-            #         #check if exam to be retaken supports retake
-            #         if exam.retake:
-            #             request.session['check_storage_for_data'] = 0 # tell Javascript whether to check storage
-            #             request.session['id'] = id # add the exam.id to the session header because student is eligible to write
-            #             return JsonResponse({"message": True}) 
-            #         else:
-            #             if request.session.get("check_storage_for_data", None) != None:
-            #                 if request.session['check_storage_for_data'] != None: 
-            #                     del request.session['check_storage_for_data'] 
-            #             if request.session.get("id", None) != None:
-            #                 if request.session['id'] != None:
-            #                     del request.session['id']
-            #             return JsonResponse({"message": False}) 
-            #     else: # user didn't finish the test
-            #         request.session['id'] = id # add the exam.id to the session header because student is eligible to write
-            #         request.session['check_storage_for_data'] = 1 # tell Javascript whether to check storage
-            #         return JsonResponse({"message": True})# True meaning you can open a new window
+            # # -------------------------------------------------------------------
+            # """delete everything inside here"""
+            # request.session['id'] = id # add the exam.id to the session header
+            # request.session['check_storage_for_data'] = 0 # tell Javascript whether to check storage
+            # return JsonResponse({"message": True})
+            # # -------------------------------------------------------------------
+            student_session = Session.objects.get(user=request.user, exam=id)
+            if student_session.attempts < 2 or student_session.completed == False: # check if the student completed this exam even in his last attempt or how many times the user write this test (this student is eligible)
+                if student_session.completed: # user wants to retake this test
+                    #check if exam to be retaken supports retake
+                    if exam.retake:
+                        request.session['check_storage_for_data'] = 0 # tell Javascript whether to check storage
+                        request.session['id'] = id # add the exam.id to the session header because student is eligible to write
+                        return JsonResponse({"message": True}) 
+                    else:
+                        if request.session.get("check_storage_for_data", None) != None:
+                            if request.session['check_storage_for_data'] != None: 
+                                del request.session['check_storage_for_data'] 
+                        if request.session.get("id", None) != None:
+                            if request.session['id'] != None:
+                                del request.session['id']
+                        return JsonResponse({"message": False}) 
+                else: # user didn't finish the test
+                    request.session['id'] = id # add the exam.id to the session header because student is eligible to write
+                    request.session['check_storage_for_data'] = 1 # tell Javascript whether to check storage
+                    return JsonResponse({"message": True})# True meaning you can open a new window
             
-            # else: #user has exceeded maximum attempts (this student is not eligible)
-            #     # delete session variables if it exist to prevent accessing exam
+            else: #user has exceeded maximum attempts (this student is not eligible)
+                # delete session variables if it exist to prevent accessing exam
                 
-            #     if request.session.get("check_storage_for_data", None) != None:
-            #         if request.session['check_storage_for_data'] != None: 
-            #             del request.session['check_storage_for_data'] 
-            #     if request.session.get("id", None) != None:
-            #         if request.session['id'] != None:
-            #             del request.session['id']
-            #     return JsonResponse({"message": False}) # False meaning you can't open a new window
+                if request.session.get("check_storage_for_data", None) != None:
+                    if request.session['check_storage_for_data'] != None: 
+                        del request.session['check_storage_for_data'] 
+                if request.session.get("id", None) != None:
+                    if request.session['id'] != None:
+                        del request.session['id']
+                return JsonResponse({"message": False}) # False meaning you can't open a new window
             
         else: #first time writers
             request.session['id'] = id # add the exam.id to the session header
@@ -210,10 +210,10 @@ def session_data(request, pk):
         for question in questions:
             prechoices[question["question"]] = [""]
             options = [ question["option_A"], question["option_B"], question["option_C"], question["option_D"] ]
-            zipper =dict(list( zip(['A', 'B', 'C', 'D'], options)))
-            answer_Abbrv =  question["answer"] # the answer in the database e.g "C"
+            # zipper =dict(list( zip(['A', 'B', 'C', 'D'], options)))
+            # answer_Abbrv =  question["answer"] # the answer in the database e.g "C"
             shuffle(options)
-            data_.append({question["question"]:options, "answer": zipper[answer_Abbrv]})
+            data_.append({question["question"]:options})
         shuffle(data_)
         data ={"data":data_, 
                 "time":exam.duration.total_seconds(),
@@ -226,7 +226,7 @@ def session_data(request, pk):
         session.elapsed_time = 0
         session.time_started = timezone.now()
         session.completed = False
-        # session.attempts = session.attempts +1
+        session.attempts = session.attempts +1
         session.save()
         
         return JsonResponse(data)
@@ -361,6 +361,7 @@ def  sessionCorrectionData(request, pk):
         question_and_options["options"] = [options]
         question_and_options["answer"] = question.answer
         question_and_options["choice"] = session.choices[str(question.id)][0]
+        question_and_options["explanation"] = question.explanation
         data.append(question_and_options)
     return JsonResponse({"data": data})
               
