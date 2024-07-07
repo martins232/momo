@@ -39,8 +39,24 @@
     }
  }
   
-  
+.jumper-button {
+max-width: 42px;
+min-width: 42px;
+height: 40px;
+margin: 1px;
+}
 
+.jumper-button:hover{
+    background-color: #d1e7dd;
+    color: white;
+    border-color: #d1e7dd;
+}
+
+
+#countdown {
+    color: red;
+    animation: heartbeat 1s infinite;
+}
 /* .jumperbtn .col, #jumperbuttons .cols{
     min-width: 40px;
     max-width: 40px;
@@ -243,3 +259,14 @@ input:checked + span {
 .frac span.symbol {
     display: none;
 }
+
+*:disabled {
+    cursor: not-allowed;
+    pointer-events: all !important;
+  }
+  li.disabled {
+    cursor: not-allowed;
+  }
+  li.disabled a {
+    pointer-events: none;
+  }

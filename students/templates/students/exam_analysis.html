@@ -1,6 +1,19 @@
 {% extends "main.html" %}
 {% load static %}
 
+{% block additional_head_css %}
+<style>
+  .custom-accordion .accordion-button {
+    background-color: #f8f9fa; /* Custom background color */
+    color: #000; /* Custom text color */
+}
+.custom-accordion .accordion-button:not(.collapsed) {
+    background-color: #e2e6ea; /* Custom background color when expanded */
+    color: #000; /* Custom text color */
+}
+</style>
+
+{% endblock additional_head_css %}
 
 {% block content %}
 <nav aria-label="breadcrumb" class="main-breadcrumb">
@@ -139,8 +152,9 @@
                     const questionHTML = `
                       <div class="question mt-3">
                         
-                        <div class="d-flex p-1 justify-content-between">
-                          <span class="w-100"> ${index + 1}). ${question.question} </span> ${mark_icon}
+                        <div class="d-flex p-1 align-items-start">
+                          <b>${index + 1}).</b> &nbsp;
+                          <div class="ms-2 w-100">${question.question} </div> ${mark_icon}
                         </div>
                         
                        
@@ -162,9 +176,23 @@
                               D: ${question.options[0].D} </span> 
                           </div>				
                           
-                        </div>
+                          <div class="accordion custom-accordion" id="expalnation-accordion-${index}">
+                              <div class="accordion-item">
+                                <p class="accordion-header" id="headingOne">
+                                  <button class="accordion-button fw-bold p-2" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne-${index}" aria-expanded="true" aria-controls="collapseOne">
+                                    Explanation
+                                  </button>
+                                </p>
+                                <div id="collapseOne-${index}" class="accordion-collapse collapse" aria-labelledby="headingOne" data-bs-parent="#expalnation-accordion-${index}">
+                                  <div class="accordion-body">
+                                    ${question.explanation ? question.explanation : "<p class='text-center'>No explanation at the moment</p>"}
+                                  </div>
+                                </div>
+                              </div></div>
+                          </div>
                   
-                      </div>
+                    </div>
+
                     `;
                     document.getElementById("question-container").innerHTML += questionHTML;
                     
