@@ -28,17 +28,17 @@
         </tr>
       </thead>
       <tbody>
-        {% for exam in exams %}
+        {% for item in exams %}
 
         <tr>
-          <td class="user-select-all" style="min-width: 150px;">{{exam.name}}</td>
-          <td>{{exam.subject}}</td>
-          <td>{{exam.duration }}</td>
-          <td class="text-center">{{exam.question_set.count }}</td>
-          <td>{{exam.start_date | date:"d/m/y"}}</td>
+          <td class="user-select-all" style="min-width: 150px;">{{item.exam.name}}</td>
+          <td>{{item.exam.subject}}</td>
+          <td>{{item.exam.duration }}</td>
+          <td class="text-center">{{item.exam.question_set.count }}</td>
+          <td>{{item.exam.start_date | date:"d/m/y"}}</td>
           
 
-          <td class="text-center"><button type="submit" class="btn btn-success btn-sm start" data-id="{{exam.id}}"><i class="fas fa-play"></i> <span class="d-none d-md-inline-block"> START EXAM</span>
+          <td class="text-center"><button type="submit" class="btn btn-success btn-sm start" data-id="{{item.exam.id}}"><i class="fas fa-play"></i> <span class="d-none d-md-inline-block"> {% if item.retake == True %}RETAKE EXAM {% elif item.retake == "incomplete" %} CONTINUE{% else %} START EXAM{% endif %}</span>
             </button></td>
         </tr>
         {% empty%}

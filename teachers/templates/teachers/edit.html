@@ -2,8 +2,9 @@
 {% load crispy_forms_tags %}
 
 {% block additional_head_css %}
-<!-- Include Tempus Dominus CSS -->
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 
 {% endblock additional_head_css %}
 
@@ -67,5 +68,14 @@
             $(this).val() + ` MINS ~ ${convertMinutesToHoursAndMinutes($(this).val())}`
             $("#hint_id_duration span").text(`${$(this).val() >= 60 ? convertMinutesToHoursAndMinutes($(this).val()): $(this).val()+ " Mins" }`)
         })
+
+
+        document.addEventListener('DOMContentLoaded', function() {
+            flatpickr(".flatpickr-date", {
+                wrap: true,
+                altInput: true,
+                
+            });
+        });
       </script>
 {% endblock js %}

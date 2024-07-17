@@ -109,7 +109,7 @@ function getStoredData(){
 		timer = setInterval(startTimer, 1000);
 		displayExam(index)
 	}else{
-		
+		alert("Couldn't get exam it")
 	}
 }
 
@@ -358,24 +358,30 @@ function closeModalAndCreateNew({content= content, closeBtn= false, icon=`<i cla
     }
 
 	document.addEventListener('ajaxSuccess', function(event) {
-		
+		//this event contains details of the exam
 		$("#seeScore").text("See score")
-		$("#seeScore").prop("disabled", false)
 		seeScoreBtn(event.detail)
+		$("#seeScore").prop("disabled", false)
+
+		// Dispatch the custom event to signal that the process is complete
+        document.dispatchEvent(new CustomEvent('closeModalAndCreateNewComplete'));
 	});
 
 }
 
 //check if score button is clicked?
 function seeScoreBtn(metrics){
-	// Add event listener for the seeScore button
-	const seeScoreButton = document.getElementById('seeScore');
-	if (seeScoreButton) {
-		seeScoreButton.addEventListener('click', () => {
-			result(metrics)
-			
-		});
-	}
+	// Add event listener for the custom event
+    document.addEventListener('closeModalAndCreateNewComplete', function() {
+        // Add event listener for the seeScore button
+        const seeScoreButton = document.getElementById('seeScore');
+        if (seeScoreButton) {
+            seeScoreButton.addEventListener('click', () => {
+                result(metrics);
+				
+            });
+        }
+    }, { once: true });
 }
 
 //display getData error if any
@@ -773,6 +779,10 @@ const result = (metrics) =>{
 	
 	newDiv.innerHTML = resultHtml
 	$("#majorContainer").html(newDiv)
+
+	if (metrics.pass){
+		makeConfetti()
+	}
 }
 
 
@@ -827,6 +837,7 @@ window.addEventListener("blur", (event) =>{
 		}else{
 			timeLeft = 30;
 		}
+		
 		closeModalAndCreateNew({content:`You have navigated away from the exam window. Please return within <span id='countdown' class='fw-bold'>${countdown? timeLeft : 30}</span> seconds to avoid penalties. Else you session will be terminated.<br> <span class="text-muted fw-bold">Click the button below to:</span>`, closeBtn:true})
 		
 
@@ -912,4 +923,31 @@ const warningFunc = ()=>{
 }
 
 
- 
+function makeConfetti(){
+	const majorContainer = document.getElementById("majorContainer")
+
+	// Retrieves the position and size of the button to calculate where the confetti should appear.
+	const rect = majorContainer.getBoundingClientRect();
+	// Calculates the horizontal (x) center of the button.
+	const x = (rect.left + rect.right) / 2;
+            
+	// Calculates the vertical (y) center of the button.
+	const y = (rect.top + rect.bottom) / 2;
+
+	// Configures the settings for the confetti effect.
+	const confettiSettings = {
+	  particleCount: 100, // Defines the number of confetti particles.
+	  spread: 70,         // Sets the spread angle of the confetti.
+	  // Specifies the origin point for the confetti effect based on the button's location.
+	  origin: { x: x / window.innerWidth, y: y / window.innerHeight }
+	};
+
+	// Triggers the confetti effect with the defined settings when the button is clicked.
+	confetti(confettiSettings);
+}
+
+window.onunload = function() {
+	if (window.opener && !window.opener.closed) {
+		window.opener.location.reload();
+	}
+};

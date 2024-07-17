@@ -56,5 +56,6 @@ urlpatterns = [
     
     path("AI-explanation", views.explanationWithAI, name="AI-explanation"),
     path("update-explanation", views.generateExplanation, name="update-explanation"),
-    path("change-students-password", views.changeStudentsPassword, name="change-students-password")
+    path("change-students-password", views.changeStudentsPassword, name="change-students-password"),
+    path("AI-exam-explanation", views.generateExamSummary, name="AI-exam-explanation"),
 ]
