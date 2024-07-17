@@ -16,6 +16,33 @@ from crispy_forms.layout import Layout, Div, Field, HTML
 from .group_fields import GroupedModelChoiceField
 from tinymce.widgets import TinyMCE
 
+from django.utils.safestring import mark_safe
+
+class CustomSplitDateTimeWidget(forms.SplitDateTimeWidget):
+    
+    def render(self, name, value, attrs=None, renderer=None):
+        if isinstance(value, datetime):
+            value = [value.date(), value.time()]
+        elif not value:
+            value = [None, None]
+        # Render the default SplitDateTimeWidget parts
+        date_html = self.widgets[0].render(name + '_0', value[0] if value else None, attrs, renderer)
+        time_html = self.widgets[1].render(name + '_1', value[1] if value else None, attrs, renderer)
+
+        # Add the buttons to the date field
+        date_html_with_buttons = f'''
+        <div class="flatpickr-date input-group">
+            {date_html}
+            <button class="input-button btn btn-outline-secondary" type="button" title="toggle" data-toggle  >
+                <i class="fas fa-calendar"></i>
+            </button>
+            
+        </div>
+        '''
+        
+        return mark_safe(date_html_with_buttons + time_html)
+
+
 
 class MyRangeField(forms.DateField):
     # slider for duration field
@@ -48,43 +75,44 @@ class ExamForm(forms.ModelForm):
         )
     start_date = forms.SplitDateTimeField(
         label='Start Date',
-        widget=forms.SplitDateTimeWidget(
-        date_attrs={
-            "style": "font-size:14px; cursor:pointer",
-            "type":"date",
-            # "onkeydown":"return false", # Javascript prevent typing
-            # "min": str(date.today())
-            }
-        ,
-       date_format='%Y-%m-%d',      
-        time_attrs={
-            'type':'time',
-            "style": "font-size:14px; cursor:pointer",
-            "class": "mt-3 w-50"      
+        widget=CustomSplitDateTimeWidget(
+            date_attrs={
+                "class": "flatpickr-input form-control",
+                "placeholder": "Select Date..",
+                "data-input": True,
+                "style": "font-size:14px; cursor:pointer"
             },
-        time_format='%H:%M',
-        ))
+            date_format='%Y-%m-%d',
+            time_attrs={
+                "class": "flatpickr-input form-control mt-3 w-50",
+                "type": "time",
+                "style": "font-size:14px; cursor:pointer"
+            },
+            time_format='%H:%M',
+        )
+    )
+  
     
     
     
     end_date = forms.SplitDateTimeField(
         label='End Date',
-        widget=forms.SplitDateTimeWidget(
-        date_attrs={
-            "style": "font-size:14px; cursor:pointer",
-            "type":"date",
-            # "onkeydown":"return false", # Javascript prevent typing
-            # "min": str(date.today() + timedelta(days=1)),
-            
+        widget=CustomSplitDateTimeWidget(
+            date_attrs={
+                "class": "flatpickr-input form-control",
+                "placeholder": "Select Date..",
+                "data-input": True,
+                "style": "font-size:14px; cursor:pointer"
             },
-       date_format='%Y-%m-%d',      
-        time_attrs={
-            'type':'time',
-            "style": "font-size:14px; cursor:pointer",
-            "class": "mt-3 w-50"
+            date_format='%Y-%m-%d',
+            time_attrs={
+                "class": "flatpickr-input form-control mt-3 w-50",
+                "type": "time",
+                "style": "font-size:14px; cursor:pointer",
             },
-        time_format='%H:%M',
-        ))
+            time_format='%H:%M',
+        )
+    )
     
     def __init__(self, request, *args, **kwargs):
         super().__init__(*args, **kwargs)

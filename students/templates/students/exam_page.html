@@ -7,7 +7,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Document</title>
         <link href="{% static "css/styles.css" %}" rel="stylesheet" />
-        <link rel="stylesheet" href="{% static "css/exam.css" %}?bigddest=123">
+        <link rel="stylesheet" href="{% static "css/exam.css" %}?biggest=123">
         <script src="https://use.fontawesome.com/releases/v6.3.0/js/all.js" crossorigin="anonymous"></script>
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
@@ -96,6 +96,7 @@
         <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.2/rollups/aes.js" integrity="sha256-/H4YS+7aYb9kJ5OKhFYPUjSJdrtV6AeyJOtTkw6X72o=" crossorigin="anonymous"></script>
+        <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.js"></script>
         <script>
             const check_storage_for_data = Boolean({{request.session.check_storage_for_data}})
             const examDataUrl = "{% url "exam-data" pk=exam.id %}";
@@ -110,7 +111,7 @@
                 duration: "{{exam.seconds_to_hms }}",
             };        
         </script>
-        <script src="{% static "js/exam.js" %}?page=12ssst"></script>
+        <script src="{% static "js/exam.js" %}?page=12st"></script>
     </body>
 
 </html>

@@ -17,7 +17,7 @@ from django.db.models.signals import post_save, pre_delete
 from django.dispatch import receiver
 
 from django.http.response import JsonResponse
-from django.db.models import Count, Avg
+from django.db.models import Count, Avg, StdDev
 from django.utils.html import strip_tags
 
 from django.http import HttpResponse
@@ -459,7 +459,7 @@ def questionData(request):
          # for the sake of other subjects that would use this JSON data
         subject_list = Subject.objects.filter(teacher=request.user) # used in the all_question page to filter all questions by a particular teacher 
         length = Question.objects.filter(subject__in=subject_list).count() #get all the questions by the logged in teacher
-        questions = Question.objects.filter(subject__in=subject_list).filter(Q(subject__name__icontains=search) | Q(topics__name__icontains=search) | Q(question__icontains=search)).order_by("-created").annotate(exam__name = ArrayAgg("exam__name", distinct=True)).values("id", "question","topics__id", "topics__name","option_A", "option_B","option_C","option_D", "answer","subject", "subject__name", "exam__name")
+        questions = Question.objects.filter(subject__in=subject_list).filter(Q(subject__name__icontains=search) | Q(topics__name__icontains=search) | Q(question__icontains=search)).order_by("-created").annotate(exam__name = ArrayAgg("exam__name", distinct=True)).values("id", "question","topics__id", "topics__name","option_A", "option_B","option_C","option_D", "answer","subject","explanation", "subject__name", "exam__name")
     
     
         
@@ -1068,7 +1068,7 @@ def explanationWithAI(request):
     
 
 
-def generateExplanation(request,):
+def generateExplanation(request):
     
     if request.method == "POST":
         id = request.POST.get("id")
@@ -1078,4 +1078,31 @@ def generateExplanation(request,):
         question.save()
         
         return JsonResponse({"message":True})
-    
+
+def generateExamSummary(request):
+    if request.method == "POST":
+        exam = Exam.objects.get(id = request.POST.get("id"))
+        sessions = Session.objects.filter(exam=exam)
+        average_score = sessions.aggregate(Avg('score'))['score__avg']
+        average_elapsed_time = sessions.aggregate(Avg('elapsed_time'))['elapsed_time__avg']
+        pass_rate = sessions.filter(score__gte=exam.pass_mark).count() / sessions.count() * 100
+        # Collecting detailed choices data
+        choices_data = [session.choices for session in sessions]
+        
+        # Analyzing performance by question
+        question_performance = {}
+        for choices in choices_data:
+            for question_id, answer_data in choices.items():
+                if question_id not in question_performance:
+                    question_performance[question_id] = {'correct': 0, 'total': 0}
+                if answer_data[1]['status'] == 'correct':
+                    question_performance[question_id]['correct'] += 1
+                question_performance[question_id]['total'] += 1
+        
+        # Calculate difficulty for each question
+        question_difficulty = {
+            question_id: (data['correct'] / data['total']) * 100
+            for question_id, data in question_performance.items()
+        }
+        print(question_performance)
+    return JsonResponse({"summary": "Yes"})

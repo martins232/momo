@@ -32,6 +32,7 @@ function clearForm(){
 	$("#question-data textarea[name=option_B]").val()
 	$("#question-data textarea[name=option_C]").val()
 	$("#question-data textarea[name=option_D]").val()
+	$("#question-data input[name=explanation]").val()
 	$("#question-data input[name=answer]").prop( "checked", false )
 	
 	$("#question-data .invalid-feedback").remove();
@@ -65,6 +66,7 @@ window.operateEvents = {
 		$("#question-data textarea[name=option_B]").val(row.option_B)
 		$("#question-data textarea[name=option_C]").val(row.option_C)
 		$("#question-data textarea[name=option_D]").val(row.option_D)
+		$("#question-data input[name=explanation]").val(row.explanation)
 		$(`#question-data input[value=${row.answer}]`).prop( "checked", true )
 		// $("#question-data textarea[name=question]").val(row.question)
 		tinymce.activeEditor.setContent(row.question)

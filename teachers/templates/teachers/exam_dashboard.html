@@ -37,12 +37,36 @@
 		font-size: 0.8em;
 		vertical-align: sub;
 	  }
+	  #aiExamSummary .modal-content{
+		min-height: 400px;
+	  }
+	  .custom-loader {
+			width:50px;
+			height:50px;
+			border-radius:50%;
+			padding:1px;
+			background:conic-gradient(#0000 10%,#766DF4) content-box;
+			-webkit-mask:
+				repeating-conic-gradient(#0000 0deg,#000 1deg 20deg,#0000 21deg 36deg),
+				radial-gradient(farthest-side,#0000 calc(100% - 9px),#000 calc(100% - 8px));
+			-webkit-mask-composite: destination-in;
+			mask-composite: intersect;
+			animation:s4 1s infinite steps(15);
+			}
+		@keyframes s4 {to{transform: rotate(1turn)}}
+
+		
 
 </style>
 {% endblock additional_head_css %}
 
 {% block content %}
 
+<div class="d-grid gap-2 mb-3">
+	<button type="button" class="btn btn-success" onclick="createModal()">
+        <i class="fas fa-robot fa-lg"></i> Get AI Summary
+    </button>
+</div>
 
 <div class="accordion mb-2" id="accordionExample">
 	<div class="accordion-item">
@@ -169,9 +193,9 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js"></script>
 
 
+
 <script defer>
 	
-
 	
 
 	 // Initialize tooltips with HTML content enabled
@@ -394,6 +418,63 @@
 		}
 
 		
+	function createModal(){
+
+		$.ajax({
+			type: "POST", 
+			url: '{% url "AI-exam-explanation" %}',
+			data: {"csrfmiddlewaretoken":"{{ csrf_token }}","id": "{{exam.id}}"},
+			success: function(success){
+
+				alert("Yes")
+			},
+			error: function(error){
+				alert("No")
+			}
+		})
+		let modalHTML = `
+			<div class="modal" tabindex="-1"  id="aiExamSummary" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+				<div class="modal-dialog modal-dialog-scrollable modal-dialog-centered modal-lg">
+					<div class="modal-content">
+						<div class="modal-header">
+							<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+						</div>
+						<div class="modal-body">
+							<div class="custom-loader"></div><h2>Generating... this might take a few seconds</h2>
+						</div>
+					</div>
+				</div>
+			</div>
+		`
+
+		// Append modal to body
+		document.body.insertAdjacentHTML('beforeend', modalHTML);
+
+		// Initialize modal
+		 const modalElement = document.getElementById('aiExamSummary');
+		 const modal = new bootstrap.Modal(modalElement);
+	   
+		// Show the modal
+		 modal.show();
+
+
+		// Event listener to remove the modal from the DOM after it's closed
+		modalElement.addEventListener('hidden.bs.modal', () => {
+			modalElement.remove();
+		});
+
 		
+		
+		
+	}
+
+
+
+
+
+	
+
+
+
 </script>
 {% endblock js %}

@@ -92,12 +92,15 @@ def editStudentProfileImage(request, pk):
 @student
 @login_required
 def exams(request):
-    # Subquery to get the exam IDs that have been taken by the current user, ho many attempts and if the exam supports retake
+    # Subquery to get the exam IDs that have been taken by the current user, how many attempts and if the exam supports retake
     taken_exams_subquery = Session.objects.filter(Q(attempts__gte=2) | Q(attempts=1, exam__retake=False),
-        user=request.user,
+        user=request.user, completed=True,
         exam=OuterRef('pk'),
         
     ).values('exam')
+    
+    open_session = Session.objects.filter(user=request.user).values_list("exam__id", "completed")
+    open_session = {exam_id: completed for exam_id, completed in open_session}
     
     
     """Exams that are ready and students are eligible to see and write"""
@@ -106,6 +109,14 @@ def exams(request):
                                  ready=True, grade=request.user.student.grade).exclude(pk__in=Subquery(taken_exams_subquery)).order_by("end_date")
     # exams = Exam.objects.filter(Q(start_date__lte=time_now, end_date__gt=time_now),ready=True, grade=request.user.student.grade)
     
+    new_exam = []
+    for exam in exams:
+        new_exam.append({
+            "exam": exam,
+            "retake": False if exam.id not in open_session else True if open_session[exam.id] else "incomplete"
+        })
+    
+    print(new_exam)
     
     if request.method == "POST": #if the student clicks the start button for an in the available exam page
         id = request.POST.get("exam")
@@ -155,9 +166,10 @@ def exams(request):
             request.session['id'] = id # add the exam.id to the session header
             request.session['check_storage_for_data'] = 0 # tell Javascript whether to check storage
             return JsonResponse({"message": True})
-     
+    
+    
     context ={
-        "exams": exams
+        "exams": new_exam
     }
     return render(request, "students/available_exam.html", context)
 
@@ -321,9 +333,8 @@ def session_save(request, pk):
 @student
 @login_required  
 def examResult(request):
-    exams = Exam.objects.filter(end_date__lt=timezone.now(), grade=request.user.student.grade).order_by("end_date")
-    
-    sessions = Session.objects.filter(Q(exam__end_date__lt=timezone.now(), exam__grade=request.user.student.grade), user = request.user)
+    exams = Exam.objects.filter(end_date__lt=timezone.now(), deleted=False, grade=request.user.student.grade,).order_by("end_date")
+    sessions = Session.objects.filter(Q(exam__end_date__lt=timezone.now(),  exam__grade=request.user.student.grade), user = request.user)
     
     context={
         "exams":exams, 

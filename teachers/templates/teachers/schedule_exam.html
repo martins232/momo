@@ -2,7 +2,9 @@
 {% load crispy_forms_tags %}
 
 {% block additional_head_css %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <style>
     .table .dropdown {
         position: static; /* Ensures the dropdown is positioned correctly */
@@ -407,6 +409,16 @@ function showDocxModalForTemplate(title, content) {
 
 }
 
+document.addEventListener('DOMContentLoaded', function() {
+    
+    flatpickr(".flatpickr-date", {
+        wrap: true,
+        altInput: true,
+        minDate: "today",
+        maxDate: new Date().fp_incr(14), // 14 days from now
+        
+    });
+});
 
 </script>
 

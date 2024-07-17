@@ -113,6 +113,7 @@ class Exam(models.Model):
             sessions = self.session_set.exists()
             
             if (sessions):
+                self.name = f"{self.name} (Archived {timezone.now().strftime('%Y-%m-%d %H:%M:%S')})"
                 self.deleted = True
                 self.save()
             else:

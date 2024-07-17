@@ -60,6 +60,7 @@ INSTALLED_APPS = [
     "crispy_bootstrap5",
     "django_cleanup",
     "tinymce",
+    "tempus_dominus",
     # 'mailer',
     
     
