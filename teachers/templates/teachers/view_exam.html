@@ -425,12 +425,13 @@ function createAndShowModal(row, idx) {
             `bold italic underline subscript superscript| alignleft aligncenter "
             alignright alignjustify | bullist numlist outdent indent | charmap ` ,
         "promotion": false,
+        forced_root_block: false,
         setup: function (editor) {
             // Add an event listener for the init event
             editor.on('init', function (e) {
                 if (row.explanation) {
-                    row.explanation = row.explanation.split('\n\n').map(paragraph => `<p>${paragraph}`).join('');
-                    console.table(row.explanation)
+                    //row.explanation = row.explanation.split('\n\n').map(paragraph => `<p>${paragraph}`).join('');
+                    //row.explanation = row.explanation.replace(/<p>(&nbsp;|\s)*<\/p>/g, '');
                     editor.setContent(row.explanation);
                 }
                 trimmedValue = editor.getContent({format:"text"}).trim();
@@ -477,8 +478,9 @@ function createAndShowModal(row, idx) {
             },
             success: function (success) {
                 $("#generateBtn i").toggleClass("fa-robot fa-circle-notch fa-spin");
-                 let content = success.response.split('\n\n').map(paragraph => `<p>${paragraph}</p>`).join('');
+                 //let content = success.response.split('\n\n').map(paragraph => `<p>${paragraph}</p>`).join('');
                 
+                 let content = success.response
                 // Clear any existing content
                 tinymce.get('additionalComments').setContent('');
                 

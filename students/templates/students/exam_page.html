@@ -7,7 +7,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Document</title>
         <link href="{% static "css/styles.css" %}" rel="stylesheet" />
-        <link rel="stylesheet" href="{% static "css/exam.css" %}?biggest=123">
+        <link rel="stylesheet" href="{% static "css/exam.css" %}?biggest=123555">
         <script src="https://use.fontawesome.com/releases/v6.3.0/js/all.js" crossorigin="anonymous"></script>
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
@@ -109,9 +109,10 @@
                 subject: "{{ exam.subject}}",
                 countQuestion: "{{exam.get_no_question }}",
                 duration: "{{exam.seconds_to_hms }}",
+                pass_grade: "{{exam.pass_mark}}",
             };        
         </script>
-        <script src="{% static "js/exam.js" %}?page=12st"></script>
+        <script src="{% static "js/exam.js" %}?page=12ssst"></script>
     </body>
 
 </html>

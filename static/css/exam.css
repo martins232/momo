@@ -76,6 +76,11 @@ body {
     user-select: none;
 }
 
+@media (max-width: 768px) {
+    body {
+        font-size: 12px; /* Adjust font size for phones */
+    }
+  }
 
 /* .container {
     margin: 10px auto 30px;
@@ -216,6 +221,11 @@ input:checked + span {
     background-color: #ffffff;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     text-align: center;
+}
+.cheating-background {
+    background-image: url("../images/cheated.png");
+    background-repeat: no-repeat;
+    background-position: center;
 }
 .report-card-header h1 {
     color: #007bff;

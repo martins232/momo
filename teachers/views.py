@@ -1,4 +1,5 @@
 import json
+import pprint
 import re
 from urllib import response
 from django.shortcuts import render, redirect, get_object_or_404
@@ -6,7 +7,7 @@ import exam
 from users.models import Student, User, Teacher, Grade
 from main . decorators import teacher
 from teachers. forms import UserUpdateForm,TeacherUpdateForm, ChangeProfilePicture, TopicForm
-from django.contrib.auth.decorators import login_required
+# from django.contrib.auth.decorators import login_required
 from exam.forms import ExamForm, QuestionForm
 from django.contrib import messages
 from exam .models import Exam, Question, Session
@@ -40,9 +41,14 @@ from django.contrib.postgres.aggregates import ArrayAgg
 from django.template.loader import render_to_string
 from django.views.decorators.cache import cache_page
 from openai import OpenAI
+from collections import defaultdict
+import google.generativeai as genai   
+import markdown
+genai.configure(api_key="AIzaSyCoc6rtdzgRLlOv1GOpYohbEIORIsrWvhE")
+
 
 # Create your views here.
-@login_required(login_url="login")
+# @login_required(login_url="login")
 def userProfile(request):
     user = User.objects.get(username = request.user.username)
     subjects = Subject.objects.filter(teacher=user)
@@ -53,7 +59,7 @@ def userProfile(request):
     }
     return render(request, "teachers/profile.html", context)
 @teacher
-@login_required(login_url="login")
+# @login_required(login_url="login")
 def editProfile(request, pk):
     user = User.objects.get(id =pk)
     p_form = UserUpdateForm(request, instance = user,)
@@ -79,7 +85,7 @@ def editProfile(request, pk):
     }
     return render(request, "teachers/edit_profile.html", context)
 @teacher
-@login_required(login_url="login")
+# @login_required(login_url="login")
 def editProfileImage(request, pk):
     
     teacher = Teacher.objects.get(id=pk)
@@ -93,8 +99,24 @@ def editProfileImage(request, pk):
         "form":form
     }
     return render(request, "teachers/image.html", context)
+
+def dashboard(request):
+    now = timezone.now()
+    exams = Exam.objects.filter(teacher=request.user, deleted= False)
+    grades = Grade.objects.values("grade")
+    
+    
+    context = {
+        "total_exam": exams.count(),
+        "active": exams.filter(start_date__lt=now, end_date__gt=now).count(),
+        "pending": exams.filter(start_date__gt=now).count(),
+        "ended": exams.filter(end_date__lt=now).count(),
+        "grades": grades
+    }
+    
+    return render(request, "teachers/dashboard.html", context)
 @teacher
-@login_required(login_url="login")
+# @login_required(login_url="login")
 def scheduledExam(request):
     #form to create exam
     form = ExamForm(request, request.POST or None)
@@ -143,7 +165,7 @@ def scheduledExam(request):
     return render(request, "teachers/schedule_exam.html", context)
 
 @teacher
-@login_required(login_url="login")
+# @login_required(login_url="login")
 def closedExam(request):
     """Exams that have been completed"""
     # grades = Grade.objects.filter(exam__end_date__lt=timezone.now(), exam__teacher=request.user).distinct()
@@ -163,7 +185,7 @@ def closedExam(request):
 @receiver(post_save, sender=Subject)
 def set_exam_teacher_null(sender, instance, **kwargs):
     """
-    This function is used to transfer subsject, exams and question from one teacher to another
+    This function is used to transfer subject, exams and question from one teacher to another
     """
     # instance is the subject object that was deleted
     # get the exams that are related to this subject
@@ -179,7 +201,7 @@ def set_exam_teacher_null(sender, instance, **kwargs):
         #     print(question)
         
 @teacher
-@login_required(login_url="login")
+# @login_required(login_url="login")
 def deleteExam(request):
     if is_ajax(request=request):
         id = request.POST.get("id")
@@ -192,7 +214,7 @@ def deleteExam(request):
         
     
 @teacher
-@login_required(login_url="login")
+# @login_required(login_url="login")
 def editExam(request, pk):
     exam = get_object_or_404(Exam, id=pk)
     if request.user != exam.teacher:
@@ -218,7 +240,7 @@ def editExam(request, pk):
     
 
 @teacher 
-@login_required(login_url="login")
+# @login_required(login_url="login")
 def deleteQuestion(request, pk):
     question = get_object_or_404(Question, id=pk)
     if request.user != question.exam.teacher:
@@ -264,6 +286,7 @@ def sessionDashboard(request, pk):
     misconduct = Session.objects.filter(exam = exam, misconduct=True).count()
     completed = Session.objects.filter(exam = exam, completed=True).count()
     passed = Session.objects.filter(exam = exam,score__gte=exam.pass_mark, completed=True).count()
+    
     
     try:
         avg_score = Session.objects.filter(exam=exam, completed=True).aggregate(score=Avg("score"))["score"]
@@ -348,7 +371,7 @@ def studentPerformance(request, pk):
 def examDashboardData(request, pk):
     exam = Exam.objects.get(id = pk)
     sessions = Session.objects.filter(exam= exam).select_related('user')
-    questions = exam.get_all_question
+    questions = exam.get_all_question.order_by("id")
     topics_count, questions_without_topic = exam.topic_count()
    
     data = []
@@ -390,6 +413,7 @@ def examDashboardData(request, pk):
             topics_count[question.topics.name]["no_questions"] += 1
                 
         data.append({
+            "id":question.id,
             "question": question.question, 
             "answer": options[question.answer],
             "correct": correct_count, 
@@ -472,7 +496,7 @@ def questionData(request):
     
     
     
-    if search: # when seaching fields using the search input
+    if search: # when searching fields using the search input
         length =  questions.count()
         
     
@@ -631,7 +655,7 @@ def deleteTopic(request):
 
 #-------------------------------------------------------------
 @teacher
-@login_required(login_url="login")
+# @login_required(login_url="login")
 def allQuestions(request):
     
     
@@ -839,7 +863,7 @@ def prepareDocxTemplateForExam(request):
             run.font.size = Pt(20)
 
         # Add level 3 heading
-        level3_heading = doc.add_paragraph("Warning: Dodistort the structure of this template")
+        level3_heading = doc.add_paragraph("Warning: Do not alter the structure of this template")
         level3_heading.alignment = WD_ALIGN_PARAGRAPH.LEFT
         for run in level3_heading.runs:
             run.font.color.rgb = RGBColor(255, 0, 0)  # Set the color to red
@@ -1023,52 +1047,32 @@ def explanationWithAI(request):
         question = Question.objects.get(id=id)
         
         if question:
-            client = OpenAI(
-                base_url = "https://integrate.api.nvidia.com/v1",
-                api_key = "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"
-            )
-            system_message = {
-                "role": "system",
-                "content": (
-                    "You are an educational assistant. When provided with a multiple-choice question and the correct answer, "
-                    "generate a detailed explanation that helps students understand the concept behind the question and why the correct answer is accurate. "
-                    "The explanation should be clear, concise, and educational using simple terms. Start the response with the correct answer. Take note the response can not be more than 300 words"
-                )
-            }
+            system_message = """
+                    You are an educational assistant. When provided with a multiple-choice question and the correct answer, generate a detailed explanation that helps students understand the concept behind the question and why the correct answer is accurate. The explanation should be clear, concise, and educational using simple terms. Start the response with the correct answer.
+
+                    If you determine that the provided correct answer is incorrect, notify the teacher by stating, "The provided answer is incorrect," and then proceed to give the correct answer along with the explanation.
+                    
+                    """
             
-            question_message = {
-                "role": "user",
-                "content": (
-                    f"{question.question}\n"
-                    f"A) {question.option_A}\n"
-                    f"B) {question.option_B}\n"
-                    f"C) {question.option_C}\n"
-                    f"D) {question.option_D}\n"
-                    f"Ans) {question.answer}"
-                )
-            }
+            model = genai.GenerativeModel('gemini-1.5-pro-latest', system_instruction=system_message)
             
-            messages = [system_message, question_message]
-            completion = client.chat.completions.create(
-                model="meta/llama3-70b-instruct",
-                messages=messages,
-                temperature=0.5,
-                top_p=1,
-                max_tokens=700,
-                stream=True
-            )
-            explanation =""
-            for chunk in completion:
-                if chunk.choices[0].delta.content is not None:
-                    explanation += chunk.choices[0].delta.content
-        
-        return JsonResponse({"status": True, "response":explanation})
+            data = f"""
+                {question.question}\n
+                A) {question.option_A}\n
+                B) {question.option_B}\n
+                C) {question.option_C}\n
+                D) {question.option_D}\n
+                Ans) {question.answer}"""
+            response = model.generate_content(data)
+            html = markdown.markdown(response.text)
+
+        return JsonResponse({"status": True, "response":html})
     # return explanation
     
     
 
 
-def generateExplanation(request):
+def SavegenerateExplanation(request):
     
     if request.method == "POST":
         id = request.POST.get("id")
@@ -1080,12 +1084,101 @@ def generateExplanation(request):
         return JsonResponse({"message":True})
 
 def generateExamSummary(request):
+ 
+    model = genai.GenerativeModel('gemini-1.5-pro-latest', 
+            system_instruction=
+                    """
+                    
+                    **System Instruction:**
+
+                    You are an expert data analyst. Your task is to analyze the exam data provided as a Python dictionary. Your response should be clear, elaborate, and easily understood by a teacher. Use the provided example report as a guide, and feel free to add any important analysis you think may be necessary. Ensure your response is helpful for the teacher, using clear and simple language. Provide explanations where necessary and avoid technical jargon. Note that you are not to expose the way the data is organized to the teacher.
+
+
+                    **Example Report: Chemistry (CS 101) Exam Report - For Grade 1**
+                    **For : [name of Teacher]
+                    1. **Overall Performance Summary**
+                    - Provide an overview of the class's performance, including average scores, highest and lowest scores, average time taken to complete the exam. and any other relevant statistics and identify any notable observations if there is. Determine factors influencing the pass rate by examining potential causes.
+
+                    2. **Score Distribution**
+                    - Analyze the score distribution and also check if there is correlation between score and number of attempt. Describe how the scores are spread out across the group, identifying notable patterns or observations. Calculate and interpret key descriptive statistics including mean, median, mode, standard deviation, and range. Identify and analyze outliers. Compare the distribution to relevant benchmarks or standards. Explore potential relationships between the score distribution and other variables. Determine the shape of the distribution (normal, skewed, bimodal, etc.) and calculate percentiles to understand performance levels. Provide insights for the teacher into the implications of the score distribution for overall performance and suggest potential actions to address identified disparities. 
+                        Here is an example:
+                        The distribution of scores in your class is quite spread out, with a standard deviation of 30.11. This indicates a significant variation in student performance.
+
+                        * Mean (Average): [value] - Represents the average score achieved by the class.
+                        * Median: [value] - Represents the middle score when all scores are arranged in order.
+                        * Mode: [value] - The most frequent score achieved by students.
+                        * Range: [lowest score - highest score]- Highlights the difference between the lowest and highest scores.
+                        The score distribution appears to be moderately skewed, with a few low scores potentially pulling the average down.
+
+                        * Implications and Actions:
+
+                            - Address the needs of students who are struggling. Consider providing additional support or individualized instruction to help them catch up.
+                            - Challenge high-achieving students. Offer them extension activities or opportunities to deepen their understanding.
+
+                    3. **Difficulty Distribution**
+                    - Analyze question performance data to determine question difficulty and overall assessment reliability. Using the questions difficulty indices for each question that i have already calculated for you, Note that the higher the indices the easier the question. classify these questions into difficulty levels (easy, medium, difficult) based on established thresholds of your discretion. Note that higher difficulty indices indicate easier questions. Identify questions that deviate significantly from the target difficulty level. Analyze the distribution of question difficulties to assess the overall balance of the assessment. Provide recommendations for improving question quality and overall assessment reliability.
+                    
+                        Here is an example for an exam:
+                        Based on the provided difficulty indices:
+
+                        - Easy Questions (Index above 80%): Questions 208, 211, 216, 242, and 246 seem to be easy as a high percentage of students answered them correctly.
+                        - Medium Difficulty Questions (Index between 50% - 80%): A large portion of the questions fell within this range, including questions like 207, 212, 214, 217, 219, 220, and others.
+                        - Difficult Questions (Index below 50%): Questions 225, 234, 235, 237, and 241 appear to be more challenging, as indicated by their lower difficulty indices.
+                        The exam seems to have a good balance of difficulty levels, which is important for a comprehensive assessment. However, you could consider reviewing the difficult questions to identify if there were any specific concepts causing trouble for many students or if there were any issues with the clarity of those questions.
+
+                    4. **Topic Performance**
+                    - Evaluate how students performed on different topics covered in the exam. Identify areas where students excelled and areas needing improvement and provide teachers on foundational concepts students must know to excel in these topics that student didn't do well.
+                    
+                        Here is an example for a chemistry exam:
+                        A preliminary analysis suggests potential variations in student performance across different topics. While a detailed breakdown requires further information on individual student scores for each question, the following observations can be made:
+
+                        * Topics with potential areas of weakness include "Environmental Chemistry", "Chemical Kinetics", "Redox Reactions", and      "States of Matter". These topics had a lower proportion of correct answers compared to others.
+                        * Foundational concepts to focus on within these challenging topics include:
+                        - Environmental Chemistry: Understanding the impact of chemicals on the environment and how chemical reactions affect pollution.
+                        - Chemical Kinetics: Grasping the factors influencing reaction rates, such as temperature and catalysts.
+                        - Redox Reactions: Identifying oxidation and reduction processes, and balancing redox equations.
+                        - States of Matter: Understanding the properties of different states of matter and the factors influencing phase changes.
+                        it was observed that some topics where categorized as "No topic". Do well to categorize these questions in the topic analysis section. Providing students with additional support and resources on these specific topics may be beneficial.
+
+                    5. **Correlation Between Time Spent and Performance**
+                    - Investigate if there is a relationship between the time students spent on the exam and their performance. 
+                    
+                    Here is an example when there is no correlation:
+                    A preliminary analysis reveals that time spent on the exam does not guarantee high scores. Notably, some students with shorter completion times achieved high scores, while others who spent more time still struggled.
+                    This discrepancy hints at the influence of additional factors, such as mastery of the subject matter, effective test-taking approaches, guessing accuracy or anxiety levels, which can outweigh the impact of time spent on the exam.
+
+                    6. **Potential Instances of Misconduct**
+                    - Look for any irregularities or patterns that might suggest cheating or other forms of misconduct.
+
+                    7. **Recommendations**
+                    - Write recommendation for the teacher based on your exam report. Identify areas of strength and weakness, and suggest specific strategies for improving student performance. Consider both short-term and long-term recommendations, and provide actionable advice for enhancing instruction, addressing knowledge gaps, and promoting student success.
+
+                    
+                    
+                
+    """)  
+                    # 8. **Overall Summary and Next Steps**
+                    # - Conclude with a summary of the key findings and propose next steps for the teacher.
     if request.method == "POST":
         exam = Exam.objects.get(id = request.POST.get("id"))
         sessions = Session.objects.filter(exam=exam)
+         # Get all questions for the given exam
+        questions = Question.objects.filter(exam=exam)
+        
+        # Create a dictionary to store questions by topic
+        questions_by_topic = defaultdict(list)
+        
+        # Iterate through the questions and organize them by topic
+        for question in questions:
+            topic_name = question.topics.name if question.topics else "No Topic"
+            questions_by_topic[topic_name].append(question.id)
+        
         average_score = sessions.aggregate(Avg('score'))['score__avg']
         average_elapsed_time = sessions.aggregate(Avg('elapsed_time'))['elapsed_time__avg']
+        std_dev_score = sessions.aggregate(StdDev('score'))['score__stddev']
         pass_rate = sessions.filter(score__gte=exam.pass_mark).count() / sessions.count() * 100
+         # Collecting data for score distribution
+        scores = list(sessions.values('attempts', 'score'))
         # Collecting detailed choices data
         choices_data = [session.choices for session in sessions]
         
@@ -1094,15 +1187,49 @@ def generateExamSummary(request):
         for choices in choices_data:
             for question_id, answer_data in choices.items():
                 if question_id not in question_performance:
-                    question_performance[question_id] = {'correct': 0, 'total': 0}
+                    question_performance[question_id] = {'correct': 0, "incorrect": 0, "unanswered":0, 'total': 0}
                 if answer_data[1]['status'] == 'correct':
                     question_performance[question_id]['correct'] += 1
+                elif answer_data[1]['status'] == 'incorrect':
+                    question_performance[question_id]['incorrect'] += 1
+                elif answer_data[1]['status'] == 'unanswered':
+                    question_performance[question_id]['unanswered'] += 1
                 question_performance[question_id]['total'] += 1
         
         # Calculate difficulty for each question
         question_difficulty = {
-            question_id: (data['correct'] / data['total']) * 100
+            question_id: round(data['correct'] / (data["correct"] + data["incorrect"]), 2) * 100
             for question_id, data in question_performance.items()
         }
-        print(question_performance)
-    return JsonResponse({"summary": "Yes"})
+        # Time vs. Performance and elapsed time analysis
+        time_vs_performance = list(sessions.values('elapsed_time', 'score'))
+        
+        misconduct_count = sessions.filter(misconduct=True).count()
+        data = {
+            "exam_name":exam.name,
+            "exam_class(grade)":exam.grade.grade,
+            "subject": exam.subject.name,
+            "teacher": exam.teacher.first_name,
+            'overall_performance': {
+                "pass_mark": exam.pass_mark,
+                'average score of the whole class': round(average_score,2),
+                'std dev score': std_dev_score,
+                'pass rate': pass_rate,
+                "exam duration": exam.seconds_to_hms,
+                "average_elapsed_time_in_seconds(you are to convert this to the format of exam duration)":round(average_elapsed_time,2),
+                'scores': scores, 
+            },
+            "question performance": question_performance,
+            'question difficulty indices(%)': question_difficulty,
+            "topics and numbers of question it has": dict(questions_by_topic),
+            'time of each student spent vs performance': time_vs_performance,
+            'elapsed times of students in seconds': [tp['elapsed_time'] for tp in time_vs_performance],
+            'misconduct_count': misconduct_count,
+        }
+        
+        # pprint.pp(data)
+        
+        response = model.generate_content(f"{data}")
+        html = markdown.markdown(response.text)
+        
+    return JsonResponse({"summary": html})
