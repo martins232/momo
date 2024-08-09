@@ -18,7 +18,7 @@ class UserFactory(factory.django.DjangoModelFactory):
     first_name = factory.LazyFunction(fake.first_name)
     last_name = factory.LazyFunction(fake.last_name)
     # username = factory.LazyAttribute(lambda obj: '%s' % obj.first_name.lower())
-    username = factory.Sequence(lambda n: 'user%d' % n+1)
+    username = factory.Sequence(lambda n: 'user%d' % (n + 1))
     is_student = True
     password = factory.django.Password('pw')
     
@@ -78,8 +78,13 @@ class QuestionFactory(factory.django.DjangoModelFactory):
             self.question += ' -------- the answer is [%s]' % self.option_C
         else:
             self.question += ' -------- the answer is [%s]' % self.option_D    
+
+
 # question_obj = QuestionFactory.build()
 
+
+#create student
+# StudeFactory.create_batch()
 # # Create and save a question object with random data
 # question = QuestionFactory.create()
 

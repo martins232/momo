@@ -4,7 +4,14 @@
 {% block additional_head_css %}
 <link rel="stylesheet" href="https://unpkg.com/bootstrap-table@1.22.1/dist/bootstrap-table.min.css">
 <style>
-	
+	#ranking th:nth-child(4), 	#ranking td:nth-child(4) {
+	  max-width: 100px; /* Adjust the value as needed */
+	  max-width: 100px;
+	  overflow: hidden;
+	  text-overflow: ellipsis;
+	  white-space: nowrap;
+	  text-align: center;
+	}
 	#nav_status  .nav-link{
 		min-width: 150px;
 	} 
@@ -28,34 +35,52 @@
 	.fraction {
 		display: inline-block;
 		vertical-align: middle;
-	  }
-	  .fraction sup {
+	}
+	.fraction sup {
 		font-size: 0.8em;
 		vertical-align: super;
-	  }
-	  .fraction sub {
+	}
+	.fraction sub {
 		font-size: 0.8em;
 		vertical-align: sub;
-	  }
-	  #aiExamSummary .modal-content{
+	}
+	#aiExamSummary .modal-content{
 		min-height: 400px;
-	  }
-	  .custom-loader {
-			width:50px;
-			height:50px;
-			border-radius:50%;
-			padding:1px;
-			background:conic-gradient(#0000 10%,#766DF4) content-box;
-			-webkit-mask:
-				repeating-conic-gradient(#0000 0deg,#000 1deg 20deg,#0000 21deg 36deg),
-				radial-gradient(farthest-side,#0000 calc(100% - 9px),#000 calc(100% - 8px));
-			-webkit-mask-composite: destination-in;
-			mask-composite: intersect;
-			animation:s4 1s infinite steps(15);
-			}
-		@keyframes s4 {to{transform: rotate(1turn)}}
+	}
+	.custom-loader {
+		width:50px;
+		height:50px;
+		border-radius:50%;
+		padding:1px;
+		background:conic-gradient(#0000 10%,#766DF4) content-box;
+		-webkit-mask:
+			repeating-conic-gradient(#0000 0deg,#000 1deg 20deg,#0000 21deg 36deg),
+			radial-gradient(farthest-side,#0000 calc(100% - 9px),#000 calc(100% - 8px));
+		-webkit-mask-composite: destination-in;
+		mask-composite: intersect;
+		animation:s4 1s infinite steps(15);
+		}
+	@keyframes s4 {to{transform: rotate(1turn)}}
 
+	.progress-bar-container {
+		position: relative;
 		
+	}
+	.progress {
+		height: 20px; 
+	}
+
+	.progress-bar {
+		line-height: 20px; 										
+	}
+	.progress-bar-text {
+		position: absolute;
+		left: 50%;
+		transform: translateX(-50%);
+		width: 100%;
+		text-align: center;
+		color: #fff; /* Adjust the color based on your needs */
+	}
 
 </style>
 {% endblock additional_head_css %}
@@ -78,12 +103,13 @@
 	  <div id="collapseOne" class="accordion-collapse collapse show"  data-bs-parent="#accordionExample">
 		<div class="accordion-body">
 			<div class="table-responsive">
-				<table class="table table-sm table-hover ">
+				<table class="table table-sm table-hover " id="ranking">
 					<thead>
 						<tr>
 							<th></th>
 							<th>Name of student</th>
 							<th>Score</th>
+							<th>Misconduct</th>
 						</tr>
 					</thead>
                     <tbody>
@@ -92,6 +118,7 @@
                             <td>{{forloop.counter}}</td>
                             <td><a href="{% url "student-performance" exam.id %}?student={{session.user.get_full_name}}&id={{session.user.id}}" target="_blank" rel=noopener>{{session.user.get_full_name}}</a></td>
                             <td>{{session.score}}</td>
+                            <td class="text-center">{% if session.misconduct %}<i class="fas fa-exclamation-triangle text-danger"></i>{% endif %}</td>
                         </tr>
                         {% endfor %}
                     </tbody>
@@ -145,10 +172,11 @@
 			<thead>
 				
 				<tr>
+					<th data-field="id">Question ID</th>
 					<th data-field="question" data-cell-style="questionCellStyle">Question </th>
 					<th data-field="pattern" data-formatter="patternFormatter" data-align="center">Answer Pattern</th>
 					<th data-field="details" data-formatter="detailsFormatter" data-align="center">Details</th>
-					<th data-field="difficulty" data-formatter="difficultyFormatter" data-align="center">Difficulty</th>
+					<th data-field="difficulty" data-formatter="difficultyFormatter" data-align="center">Difficulty <i class="ms-1 fas fa-question-circle custom-tooltip" data-bs-toggle="tooltip" data-bs-placement="top" title="Difficulty = <span class='fraction'><sup>(No. of correct × 100)</sup> / <sub>(No. attempted)</sub></span>" data-bs-html="true"></i></th>
 				</tr>
 			</thead>
 		</table>
@@ -191,6 +219,7 @@
 {% block js %}
 <script src="https://unpkg.com/bootstrap-table@1.22.1/dist/bootstrap-table.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.2/html2pdf.bundle.min.js"></script>
 
 
 
@@ -241,19 +270,25 @@
 			let color = ""
 			difficulty_width = Math.round( row.incorrect * 100 / (row.correct + row.incorrect))
 			
-			if (difficulty_width > 50){
-				if (difficulty_width<90){
-					color = "warning"
-				}else{
-					color = "danger"
-				}
-			}else{
+			if (difficulty_width <=40){
 				color = "success"
+			}else{
+				if (difficulty_width>= 71){
+					color = "danger"
+				}else{
+					color = "warning"
+				}
 			}
-			return `<div class="progress border border-${color}">
-								<div class="progress-bar bg-${color} ${color== "success" ? "text-dark" : "text-dark"} fw-bold overflow-visible" style="width:${difficulty_width}%">${difficulty_width}% </div>
-								
-							</div>`
+			return `
+					<div class="progress-bar-container">
+    <div class="progress border border-${color}">
+        <div class="progress-bar bg-${color} " style="width: ${difficulty_width}%;" role="progressbar" aria-valuenow="${difficulty_width}" aria-valuemin="0" aria-valuemax="100"></div>
+        <div class="progress-bar-text text-dark">
+            ${difficulty_width}%
+        </div>
+    </div>
+</div>
+					`
 		}
 
 		// function to group students as correct, incorrect and unanswered
@@ -279,9 +314,10 @@
 			for (let keys in x){
 				
 
-				question_option += `<div class="d-flex p-1 justify-content-between">
-					<span class=${y? keys == y ? "correct":"":""}> ${keys} </span> ${x[keys]}
-					</div>`
+				question_option += `<div class="d-flex justify-content-between align-items-center">
+									<span class="${keys === y ? 'correct' : ''} me-3">${keys}</span>
+									<b class="fs-4">${x[keys]}</b>
+								</div>`
 			}
 			question_option += "</div>"
 			return question_option
@@ -425,13 +461,14 @@
 			url: '{% url "AI-exam-explanation" %}',
 			data: {"csrfmiddlewaretoken":"{{ csrf_token }}","id": "{{exam.id}}"},
 			success: function(success){
-
-				alert("Yes")
+				$("#aiExamSummary .modal-body").html(success.summary)
+				$("#pdfBtn").attr("disabled", false)
+				
 			},
 			error: function(error){
-				alert("No")
+				alert("Ooops... Something happened")
 			}
-		})
+		}) 
 		let modalHTML = `
 			<div class="modal" tabindex="-1"  id="aiExamSummary" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
 				<div class="modal-dialog modal-dialog-scrollable modal-dialog-centered modal-lg">
@@ -442,6 +479,10 @@
 						<div class="modal-body">
 							<div class="custom-loader"></div><h2>Generating... this might take a few seconds</h2>
 						</div>
+						<div class="modal-footer d-grid">
+							<button class="w-100 btn btn-success" onclick="generatePDF()" id="pdfBtn" disabled>Generate PDF</button>
+						</div>
+						
 					</div>
 				</div>
 			</div>
@@ -470,7 +511,27 @@
 
 
 
+	function generatePDF() {
+		// let accordionBodyContent = document.querySelector('#collapseThree .accordion-body').innerHTML;
+		const aiexplanationHTML = document.querySelector("#aiExamSummary .modal-body").innerHTML
+		const opt = {
+            margin:       1,
+            filename:     'Report-file.pdf',
+            image:        { type: 'jpeg', quality: 0.98 },
+            html2canvas:  { scale: 2 },
+            jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' },
+            pagebreak:    { mode: ['avoid-all', 'css', 'legacy'] }
+        };
+		html2pdf().from(aiexplanationHTML).set(opt).toPdf().get('pdf').then(function (pdf) {
+            var totalPages = pdf.internal.getNumberOfPages();
 
+            for (i = 1; i <= totalPages; i++) {
+                pdf.setPage(i);
+                pdf.setFontSize(10);
+                pdf.text('Page ' + i + ' of ' + totalPages, pdf.internal.pageSize.getWidth() - 10, pdf.internal.pageSize.getHeight() - 10);
+            }
+        }).save();
+	  }							
 
 	
 

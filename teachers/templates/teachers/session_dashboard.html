@@ -83,7 +83,7 @@
                             </div>
                         </div>
                         <div class="card-footer d-flex align-items-center justify-content-between">
-                            <a class="small text-white stretched-link" href="#table">View Details</a>
+                            <a class="small text-white stretched-link" href="#table" onclick="summaryCompleted()">View Details</a>
                             <div class="small text-white">
                                 <i class="fas fa-angle-right"></i>
                             </div>
@@ -204,7 +204,7 @@
   data-pagination="true"
   data-show-button-icons="true"
   data-show-columns="false"
-
+  data-page-size = "100"
   data-show-toggle="true"
   
   data-resizable="true" 
@@ -284,25 +284,21 @@
 
         $.get(url).then(function (res) {
             passMark = res.pass_mark
-            var data = res.rows
-            var submitted = 0
-            var passed = 0
-            var score = 0
-            var avg = 0
-            var fail = 0
-            for (let i=0 ; i<data.length; i++){
-                let d = data[i]
-                if (d.completed === true){
-                    submitted++
-                    score = score + d.score
-                    avg = (score/submitted).toFixed(1)
-                    d.score> passMark ? passed++ : fail++
-                }
-            }
-            $('#submitted').html(submitted)
-            $('#passed').html(passed) 
-            $('#average').html(avg)
-            $('#fail').html(fail)
+            let  data = res.rows
+            let completed = data.filter((student) => {
+                return student.completed 
+              });
+            let passed = completed.filter((student) => {
+                 return student.score >= passMark
+            })
+            let average = completed.reduce((acc, student) => acc + student.score, 0) / completed.length;
+
+            
+            console.log(average)
+            $('#submitted').text(completed.length)
+            $('#passed').text(passed.length) 
+            $('#average').text(average.toFixed(1))
+            $('#fail').text(completed.length-passed.length)
 
             if (timer){
                 clearInterval(timer)

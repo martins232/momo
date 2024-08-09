@@ -54,6 +54,7 @@ INSTALLED_APPS = [
     "teachers",
     "students",
     "exam",
+    "api",
     
     
     "crispy_forms",
@@ -61,6 +62,7 @@ INSTALLED_APPS = [
     "django_cleanup",
     "tinymce",
     "tempus_dominus",
+    "rest_framework",
     # 'mailer',
     
     
@@ -79,6 +81,9 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    
+    
+    "main.customMiddleware.LoginRequiredMiddleware"
 ]
 
 ROOT_URLCONF = 'main.urls'

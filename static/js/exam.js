@@ -30,6 +30,7 @@ let timeLeft
 let blurredFrame = false
 let screenWidth = window.outerWidth
 let screenheight = window.outerHeight
+let initialInnerScreen = window.innerWidth
 
 //get exam data by making a promise
 async function getData() {
@@ -173,9 +174,9 @@ function rules(){
 			</div>
 		</div>
 		<div class="d-flex align-items-start">
-			<p class="fw-bold w-50 text-start">No of questions</p>
+			<p class="fw-bold w-50 text-start">Grade to pass</p>
 			<div class="ms-2">
-				<p class="text-start">${examDetails.countQuestion}</p>
+				<p class="text-start">${((examDetails.pass_grade/100) * examDetails.countQuestion).toFixed()} out of ${examDetails.countQuestion} (${examDetails.pass_grade}%)</p>
 			</div>
 		</div>
 		<div class="d-flex align-items-start">
@@ -473,7 +474,7 @@ function startTimer() {
 	let seconds = Math.floor((distance % (1000 * 60)) / 1000);
 
 
-	// Display the result in the element with id="demo"
+	
 	if (distance>0){
 		document.getElementById("timer").innerHTML =
 		`<p  class="d-none d-md-block">Time remaining:</p>
@@ -702,7 +703,7 @@ const result = (metrics) =>{
 	let newDiv = document.createElement("div"); 
 	
 	let resultHtml = `
-	<div class="report-card p-4">
+	<div class="report-card p-4 ${misconduct? "cheating-background": ""}">
 		<div class="report-card-header mb-4">
 			<h1>Student Report Card</h1>
 			<p><strong>Exam Name</strong> ${examDetails.examName}</p>
@@ -779,6 +780,7 @@ const result = (metrics) =>{
 	
 	newDiv.innerHTML = resultHtml
 	$("#majorContainer").html(newDiv)
+	
 
 	if (metrics.pass){
 		makeConfetti()
@@ -828,8 +830,7 @@ const csrftoken = getCookie('csrftoken');
 // const alarmSound = new Audio('alarm.mp3'); // Replace with the actual path to your sound file
 
 window.addEventListener("blur", (event) =>{
-	if (examstatus == "active") {
-		
+	if (examstatus == "active" ) {
 		// Play alarm sound
         // alarmSound.play();
 		if (countdown){
@@ -854,6 +855,8 @@ window.addEventListener("blur", (event) =>{
 			let closeCountdown = $("#closeCountdown")
 			if (closeCountdown) {
 				closeCountdown.on("click", function () {
+					console.log(initialInnerScreen)
+					console.log(window.innerWidth)
 					clearInterval(countdown);
 					
 				})
@@ -876,7 +879,7 @@ window.addEventListener("blur", (event) =>{
 let resizeTimeout= false;
 window.addEventListener('resize', () => {
     
-	if (examstatus == "active") {
+	if (examstatus == "active" ) {
 		if(window.outerWidth != screenWidth){
 			if (resizeTimeout !== false){
 				clearTimeout(resizeTimeout);

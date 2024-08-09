@@ -69,3 +69,16 @@ function createToast(color, message,delay=5000, icon ="fa-circle-check") {
     const toast = new bootstrap.Toast(toastElement);
     toast.show();
   }
+
+
+  // Function to update the status
+function updateOnlineStatus() {
+    if (!navigator.onLine) {
+       createToast("warning", "You are offline. Please check your connection", delay=10000, icon ="fa-plug")
+        // Perform actions when online
+    } 
+}
+
+window.addEventListener('offline', updateOnlineStatus);
+
+updateOnlineStatus()

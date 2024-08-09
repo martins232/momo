@@ -20,7 +20,7 @@
 
 {% block content %}
 
-<nav aria-label="breadcrumb" class="main-breadcrumb">
+    <nav aria-label="breadcrumb" class="main-breadcrumb">
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a href="javascript:void(0)">Home</a></li>
             <li class="breadcrumb-item"><a href="javascript:void(0)">Teacher</a></li>
@@ -114,7 +114,7 @@
                                         <li><a class="dropdown-item" href="{% url "edit-exam" exam.id %}"> <i class="fas fa-pen"></i> Edit exam</a></li>
                                         <li><a class="dropdown-item" href="{% url "session-dashboard" exam.id %}"> <i class="fas fa-tv"></i> Monitor exam</a></li>
                                         <li><a class="dropdown-item" href="{% url "view-exam" exam.id %}"> <i class="fas fa-eye"></i> View exam</a></li>
-                                        <li><a role="button" class="dropdown-item" data-id="{{exam.id}}" onclick="showDocxModalForTemplate('{{exam.name}}', 'This is the content of the modal.')"><i class="fas fa-file-word text-primary"></i> Add question from Docx</a></li>
+                                        <li><a role="button" class="dropdown-item" data-id="{{exam.id}}" onclick="showDocxModalForTemplate('{{exam.name}}', 'This is the content of the modal.')"><i class="fas fa-file-word text-primary"></i> Import question from Docx</a></li>
                                         
                                         <li><a role="button" class="dropdown-item deleteBtn" data-id="{{exam.id}}" data-bs-toggle="modal" data-bs-target="#delete"><i class="fas fa-trash-alt text-danger"></i> Discard exam</a></li>
                                     </ul>
@@ -413,9 +413,9 @@ document.addEventListener('DOMContentLoaded', function() {
     
     flatpickr(".flatpickr-date", {
         wrap: true,
-        altInput: true,
+        //altInput: true,
         minDate: "today",
-        maxDate: new Date().fp_incr(14), // 14 days from now
+        {% comment %} maxDate: new Date().fp_incr(14), // 14 days from now {% endcomment %}
         
     });
 });

@@ -10,6 +10,12 @@
   /* Add any other styling for your spinner */
 }
 
+/* Media query for phones (max-width of 768px) */
+@media (max-width: 768px) {
+  body {
+      font-size: 12px; /* Adjust font size for phones */
+  }
+}
 
 .custom-loader {  
   position: absolute;
@@ -71,4 +77,28 @@ li.disabled a {
   color: #a94442;
   background-color: #f2dede;
   border-color: #ebccd1;
+}
+
+.stat-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 15px;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+.stat-card .icon {
+  font-size: 2rem;
+}
+.stat-card .details {
+  text-align: right;
+}
+.stat-card .value {
+  /* font-size: 1.5rem; */
+  font-weight: bold;
+}
+.stat-card .label {
+  font-size: 0.9rem;
+  color: #888;
 }

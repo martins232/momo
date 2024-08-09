@@ -20,7 +20,7 @@ class UserUpdateForm(forms.ModelForm):
     validators=[RegexValidator(r"^[a-zA-Z0-9.+-_]+@[a-zA-Z0-9.+-_]+\.[a-zA-Z]*$", message="Enter a valid email address")], 
     widget=forms.TextInput(attrs={
         "placeholder":"Email Address",
-        "style": "font-size : 13px; text-transform: lowercase;",
+        "style": "text-transform: lowercase;",
         # "autocomplete": "off" -----already done in supr func
             }
         )

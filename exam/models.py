@@ -75,7 +75,7 @@ class Exam(models.Model):
         minutes = int((duration % 3600) // 60)
         seconds = int(duration % 60)
         
-        return f"{str(hours) + 'hr' if hours > 0 else ''}{'s' if hours>1 else ''} {str(minutes) + 'min ' if minutes > 0 else ''} {str(seconds) + 'sec(s)' if seconds > 0 else ''}"
+        return f"{str(hours) + 'hr' if hours > 0 else ''}{'s' if hours>1 else ''} {str(minutes) + 'min ' if minutes > 0 else ''} {str(seconds) + 'sec(s)' if seconds > 0 else ''}".strip()
     
     def duration_to_minutes(self):
         duration = self.duration.seconds

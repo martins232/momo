@@ -29,7 +29,7 @@ from django.contrib.auth.hashers import make_password
 
 # Create your views here.
 @student
-@login_required
+# @login_required
 def profile(request):
     user = User.objects.get(username = request.user.username)
     changePassword = studentPasswordReset(request.user, request.POST or None)
@@ -51,7 +51,7 @@ def profile(request):
     return render(request, "students/profile.html", context)
 
 @student
-@login_required
+# @login_required
 def editProfile(request, pk):
     user = User.objects.get(id=pk)
     p_form = UserUpdateForm(request, instance = user)
@@ -74,7 +74,7 @@ def editProfile(request, pk):
     return render(request, "students/edit_profile.html", context)
 
 @student
-@login_required
+# @login_required
 def editStudentProfileImage(request, pk):
     student = Student.objects.get(id=pk)
     form = ChangeProfilePicture(instance=student)
@@ -90,7 +90,7 @@ def editStudentProfileImage(request, pk):
     return render(request, "teachers/image.html", context)
 
 @student
-@login_required
+# @login_required
 def exams(request):
     # Subquery to get the exam IDs that have been taken by the current user, how many attempts and if the exam supports retake
     taken_exams_subquery = Session.objects.filter(Q(attempts__gte=2) | Q(attempts=1, exam__retake=False),
@@ -116,7 +116,7 @@ def exams(request):
             "retake": False if exam.id not in open_session else True if open_session[exam.id] else "incomplete"
         })
     
-    print(new_exam)
+    # print(new_exam)
     
     if request.method == "POST": #if the student clicks the start button for an in the available exam page
         id = request.POST.get("exam")
@@ -174,7 +174,7 @@ def exams(request):
     return render(request, "students/available_exam.html", context)
 
 @student
-@login_required
+# @login_required
 def session(request):  #this is the exam page
     id = request.session.get('id')  #-------------------- bug -------------------- if student hard refreshes the page, the exam will be lost
     check_storage_for_data = request.session.get('check_storage_for_data')  #-------------------- bug -------------------- if student hard refreshes the page, the exam will be lost
@@ -331,7 +331,7 @@ def session_save(request, pk):
 
 
 @student
-@login_required  
+# @login_required  
 def examResult(request):
     exams = Exam.objects.filter(end_date__lt=timezone.now(), deleted=False, grade=request.user.student.grade,).order_by("end_date")
     sessions = Session.objects.filter(Q(exam__end_date__lt=timezone.now(),  exam__grade=request.user.student.grade), user = request.user)
