@@ -152,7 +152,7 @@
         },
       events: function(fetchInfo, successCallback, failureCallback) {
         $.ajax({
-          url: '/api/exams-event', // Replace with your endpoint
+          url: '{% url "exam-list" %}', // Replace with your endpoint
           dataType: 'json',
           success: function(data) {
             successCallback(data);
