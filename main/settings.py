@@ -199,13 +199,16 @@ MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 TINYMCE_DEFAULT_CONFIG= {
     
     "menubar": False,
-    "plugins": "advlist,autolink,lists,link,image,charmap,preview,anchor,"
+    "plugins": "advlist,autolink,lists,link,image,charmap,preview,anchor,code"
     "searchreplace,visualblocks,code,fullscreen,insertdatetime,media,table ,"
-    "code,help,wordcount",
+    "code, codesample ,help,wordcount",
     "toolbar_mode":"floating",
+    "codesample_languages": [
+        { "text": 'Python', "value": 'python' },
+    ],
     "toolbar": 
         "bold italic underline fontsize subscript superscript| alignleft aligncenter "
-        "alignright alignjustify | bullist numlist outdent indent  |table | charmap " ,
+        "alignright alignjustify | bullist numlist outdent indent  |table code codesample | charmap " ,
     "promotion": False,
     
     
