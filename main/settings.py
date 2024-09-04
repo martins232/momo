@@ -53,8 +53,10 @@ INSTALLED_APPS = [
     "users",
     "teachers",
     "students",
+    "custom_admin",
     "exam",
     "api",
+    "school",
     
     
     "crispy_forms",

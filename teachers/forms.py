@@ -1,7 +1,8 @@
 import email
 from django import forms
 from django.core.validators import RegexValidator
-from teachers.models import Topic, Subject
+from teachers.models import Topic
+from school.models import Subject
 from users  . models import User, Teacher
 from  django.core.files.base import File
 

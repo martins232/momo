@@ -1,8 +1,10 @@
 from collections import defaultdict
 from urllib import request
 from django.db import models
-from users. models import User, Grade
-from teachers. models import Subject, Topic
+from requests import session
+from users. models import User
+from school.models import Grade, Subject, AcademicYear, Term
+from teachers. models import Topic
 from django.utils import timezone
 from django.db.models import UniqueConstraint,Q
 
@@ -208,3 +210,38 @@ class Session(models.Model):
 #     question = models.ForeignKey(Question, on_delete=models.CASCADE)
 #     choice = models.CharField(max_length=255)
 #     status = models.CharField(max_length=10)  # e.g., "correct", "incorrect", "unanswered"
+
+
+class StudentResult(models.Model):
+    academic_year = models.ForeignKey(AcademicYear, on_delete=models.CASCADE)
+    term = models.ForeignKey(Term, on_delete=models.CASCADE)
+    student = models.ForeignKey(User, on_delete=models.CASCADE)
+    subject = models.ForeignKey(Subject, on_delete=models.CASCADE)
+    grade = models.ForeignKey(Grade, on_delete=models.CASCADE)
+
+    # Continuous Assessment Fields
+    first_cat = models.FloatField(blank=True, null=True)  # The '1st CAT' column
+    second_cat = models.FloatField(blank=True, null=True)  # The '2nd CAT' column
+
+    # Test Fields
+    first_test = models.FloatField(blank=True, null=True)  # The '1st Test' column
+    second_test = models.FloatField(blank=True, null=True)  # The '2nd Test' column
+
+    # Exam Field
+    exam_score = models.FloatField(blank=True, null=True)  # The 'Exam' column
+
+    # Computed Fields (can be calculated in your views or forms)
+    total_score = models.FloatField(blank=True, null=True)  # The 'Total' column
+    remark = models.CharField(max_length=255, blank=True, null=True)  # The 'Remark' column
+    position = models.PositiveIntegerField(blank=True, null=True)  # The 'Position' column
+
+    def __str__(self):
+        return "Yes"   
+
+    def save(self, *args, **kwargs):
+        self.total_score = sum(filter(None, [
+            self.first_cat, self.second_cat,
+            self.first_test, self.second_test,
+            self.exam_score
+        ]))
+        super().save(*args, **kwargs)

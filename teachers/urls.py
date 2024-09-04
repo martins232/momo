@@ -59,4 +59,6 @@ urlpatterns = [
     path("update-explanation", views.SavegenerateExplanation, name="update-explanation"),
     path("change-students-password", views.changeStudentsPassword, name="change-students-password"),
     path("AI-exam-explanation", views.generateExamSummary, name="AI-exam-explanation"),
+
+    path("assessment/<str:pk>/", views.assessment, name="assessment")
 ]

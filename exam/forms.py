@@ -6,7 +6,7 @@ from django import forms
 
 from main.decorators import teacher
 from .models import Exam, Question
-from users.models import Grade
+from school.models import Grade
 from datetime import date, timedelta, datetime
 from django.core.exceptions import ValidationError
 from teachers.models import Topic

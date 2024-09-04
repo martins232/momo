@@ -1,5 +1,5 @@
 from django.contrib import admin
-from . models import Subject, Topic
+from school.models import Subject
 from django.utils.html import format_html
 
 

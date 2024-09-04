@@ -9,9 +9,9 @@
             <!--Normal sidebar-->
             <!--<a class="nav-link" href="{% url "home" %}"><div class="sb-nav-link-icon"><i class="fas fa-tachometer-alt"></i></div>Dashboard</a> -->
             <a class="nav-link" href="{% url "dashboard" %}"><div class="sb-nav-link-icon"><i class="fas fa-tachometer-alt"></i></div>Dashboard</a>
-            <a class="nav-link" href="{% url "all-topics" %}"><div class="sb-nav-link-icon"><i class="fas fa-tachometer-alt"></i></div>Add topics</a>
-            <a class="nav-link" href="{% url "profile" %}"><div class="sb-nav-link-icon"><i class="fas fa-user-tie"></i></div>Profile</a>
-            <a class="nav-link" href="{% url "all-questions" %}"><div class="sb-nav-link-icon"><i class="fas fa-folder-open"></i></div>All questions</a>
+            <a class="nav-link" href="{% url "all-topics" %}"><div class="sb-nav-link-icon"><i class="fas fa-lightbulb"></i></div>Add topics</a>
+            <a class="nav-link" href="{% url "profile" %}"><div class="sb-nav-link-icon"><i class="fas fa-cog"></i></div>My profile</a>
+            
             <!--end of Normal sidebar-->
 
             <div class="sb-sidenav-menu-heading">EXAM</div>
@@ -19,29 +19,29 @@
             
              <!--Normal sidebar-->
             {% comment %} <a class="nav-link" href="{% url "view-all-questions" %}"><div class="sb-nav-link-icon"><i class="fas fa-folder-open"></i></div>Questions</a> {% endcomment %}
-            <a class="nav-link" href="{% url "scheduled-exam" %}"><div class="sb-nav-link-icon"><i class="fas fa-book-open"></i></div>Scheduled Exam</a>
-            <a class="nav-link" href="{% url "closed-exam" %}"><div class="sb-nav-link-icon"><i class="fas fa-book-open"></i></div>Closed Exams</a>
+            <a class="nav-link" href="{% url "all-questions" %}"><div class="sb-nav-link-icon"><i class="fas fa-database"></i></div>All questions</a>
+            <a class="nav-link" href="{% url "scheduled-exam" %}"><div class="sb-nav-link-icon"><i class="fas fa-hourglass-half"></i></div>Scheduled Exam</a>
+            <a class="nav-link" href="{% url "closed-exam" %}"><div class="sb-nav-link-icon"><i class="fas fa-check-double"></i></div>Closed Exams</a>
 
-            {% comment %} <a class="nav-link" href="{% url "session-dashboard" %}"><div class="sb-nav-link-icon"><i class="fas fa-folder-open"></i></div>Analysis</a> {% endcomment %}
-              <!--end of Normal sidebar-->
-
-
-
+            
+            <div class="sb-sidenav-menu-heading">STUDENT</div>
+            <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapseLayouts" aria-expanded="false" aria-controls="collapseLayouts">
+                <div class="sb-nav-link-icon"><i class="fas fa-clipboard-list"></i></div>
+                Students Scoresheet
+                <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
+            </a>
+            <div class="collapse" id="collapseLayouts" aria-labelledby="headingOne" data-bs-parent="#sidenavAccordion">
+                <nav class="sb-sidenav-menu-nested nav">
+                    {% for subject in request.user.subject_set.all %}
+                        <a class="nav-link" href="{% url "assessment" subject.id %}">{{subject.name}}</a>
+                    {% endfor %}
+                    
+                    
+                </nav>
+            </div>
+            <a class="nav-link" href="{% url "change-students-password" %}"><div class="sb-nav-link-icon"><i class="fas fa-lock-open"></i></div> Reset password</a>
+            
            
-            
-             
-
-            
-            
-            <!--end of Two layer collapsible-->
-
-
-            <div class="sb-sidenav-menu-heading">Password Request</div>
-            <a class="nav-link" href="{% url "change-students-password" %}"><div class="sb-nav-link-icon"><i class="fas fa-book-open"></i></div> Students</a>
-            <!--<a class="nav-link" href="charts.html">
-                <div class="sb-nav-link-icon"><i class="fas fa-chart-area"></i></div>
-                Charts
-            </a> -->
            
             
         </div>

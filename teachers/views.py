@@ -3,15 +3,15 @@ import pprint
 import re
 from urllib import response
 from django.shortcuts import render, redirect, get_object_or_404
-import exam
-from users.models import Student, User, Teacher, Grade
+from users.models import Student, User, Teacher
+from school.models import AcademicYear, Grade, Subject, Term
 from main . decorators import teacher
 from teachers. forms import UserUpdateForm,TeacherUpdateForm, ChangeProfilePicture, TopicForm
 # from django.contrib.auth.decorators import login_required
 from exam.forms import ExamForm, QuestionForm
 from django.contrib import messages
-from exam .models import Exam, Question, Session
-from teachers.models import Subject, Topic
+from exam .models import Exam, Question, Session, StudentResult
+from teachers.models import Topic
 from django.core.exceptions import ObjectDoesNotExist,PermissionDenied
 from django.db.models import Q
 from django.db.models.signals import post_save, pre_delete
@@ -36,14 +36,15 @@ from django.core.exceptions import ValidationError
 from django.utils import timezone
 from django.contrib.postgres.aggregates import ArrayAgg
 
-
-
 from django.template.loader import render_to_string
 from django.views.decorators.cache import cache_page
 from openai import OpenAI
 from collections import defaultdict
 import google.generativeai as genai   
 import markdown
+
+from django.db.models import Window, F
+from django.db.models.functions import Rank
 genai.configure(api_key="AIzaSyCoc6rtdzgRLlOv1GOpYohbEIORIsrWvhE")
 
 
@@ -1233,3 +1234,43 @@ def generateExamSummary(request):
         html = markdown.markdown(response.text)
         
     return JsonResponse({"summary": html})
+
+
+def assessment(request, pk, teacher=None):
+    """function to get classes a teacher can teach against filteration"""
+    try:
+        subject = Subject.objects.get(teacher=request.user, id=pk)
+    except:
+        return redirect("login")
+
+    active_academic_year= AcademicYear.objects.get(is_current=True)
+    now = timezone.now()
+    term = Term.objects.get(start_date__lt =now, end_date__gt=now)
+    grades = subject.grade.all() #grades a teacher is teaching
+    context = {"grades" :grades,
+               "academic_year": active_academic_year,
+               "subject":subject,
+               "term": term
+               }
+    return render(request, "teachers/assessment.html", context)
+
+
+
+def calculate_positions(grade, academic_year, subject, term):
+    # Filter the results you need to rank
+    results = StudentResult.objects.filter(
+        grade=grade,
+        academic_year=academic_year,
+        term = term,
+        subject=subject
+    ).annotate(
+        rank=Window(
+            expression=Rank(),
+            order_by=F('total_score').desc()
+        )
+    )
+
+    # Update the position field with the calculated rank
+    for result in results:
+        result.position = result.rank
+        result.save()

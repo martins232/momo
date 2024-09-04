@@ -1,0 +1,575 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{subject}} {{academic_year}} scoresheet</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/fontawesome-6-pro@6.4.0/css/all.min.css" rel="stylesheet">
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="{% static "css/mystyles.css" %}">
+    <style>
+        body{
+            padding: 30px ;
+        }
+
+        .table-responsive {
+            overflow-x: auto;
+            white-space: nowrap;
+            height: 90vh; /* Adjust the height as needed */
+        }
+
+        .table-fixed-column {
+            position: relative;
+        }
+
+        .table-fixed-column thead tr:first-child th:first-child,{% comment "" %}select the NAME cell{% endcomment %}
+        .table-fixed-column tbody td:first-child, {% comment "" %}select the NAME data cell{% endcomment %}
+        .table-fixed-column tfoot td:first-child 
+        {
+            /*This controls the name column */
+            text-align: left;
+            position: sticky;
+            left: 0;
+            background-color: #f7f7f7;
+            z-index: 15;
+        }
+
+       
+
+        .table-fixed-column thead {
+            text-align:center;
+            position: sticky;
+            top: 0;
+            z-index: 17; /* Ensures the header is above the body */
+        }
+        .table-fixed-column tbody tr{
+            text-align: center;
+        }
+
+        .table-fixed-column tfoot tr{
+            text-align: center;
+            font-weight: bold;
+        }
+         
+        .fa-sort{
+            cursor: pointer;
+        }
+        
+    </style>
+</head>
+<body>
+<div class="d-flex justify-content-between align-items-center gap-2">
+    <a class="btn btn-secondary btn-sm btn-lg d-flex align-items-center" onclick="window.history.back()">
+        <i class="fas fa-arrow-left me-1"></i>
+        <span class="d-none d-md-inline"> Go back to dashboard</span>
+    </a>
+    <p class="text-muted">Subject <span class="fw-bold">{{subject.name}}</span> Session: <span class="fw-bold">{{academic_year}} ({{term}})</span></p>
+</div>
+<hr>
+<!-- Button to trigger progress calculation -->
+<button id="calculate-progress" class="btn btn-outline-secondary mb-1">Calculate Progress</button>
+
+<!-- Display progress percentage -->
+<div id="progress-display"></div>
+
+<!-- Optional: Progress bar (e.g., Bootstrap) -->
+<div class="progress mb-2">
+    <div id="progress-bar" class="progress-bar" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">0%</div>
+</div>
+<div class="row g-2 justify-content-start justify-content-md-end align-items-center">
+    <div class="col-auto">
+        <select class="form-select w-auto" id="grade-selector" >
+            <option selected disabled>Select class </option>
+            {% for grade in grades %}
+            
+                <option value="{{grade.grade}}">{{grade.name}}</option>
+            {% endfor %}
+        </select>
+        
+    </div><!--//col-->
+    <div class="col-auto">
+        
+        <select class="form-select w-auto" id="column-selector" disabled>
+            <option selected disabled>Select assessment field </option>
+            <option value="1">1st CAT </option>
+            <option value="2">2nd CAT</option>
+            <option value="3">1st Test</option>
+            <option value="4">2nd Test</option>
+            <option value="5">Exam</option>
+            <option value="all">All</option>
+        </select>
+
+    </div>
+    <div class="col-auto">						    
+        <a class="btn btn-outline-secondary" id="save">
+            Save
+        </a>
+    </div>
+</div><!--//row-->
+<div class="mt-4">
+    <div class="table-responsive table-fixed-column">
+        <table class="table table-bordered" id="student-result-table">
+            <colgroup>
+                <col>
+                <col span="2">
+                <col span="2">
+                <col>
+                <col>
+                <col>
+                <col>
+            </colgroup>
+            <thead>
+                <tr>
+                    <th rowspan="2" onclick="sortTable(0)">Students <i class="fas fa-sort"></i></th>
+                    <th colspan="2">ASSIGNMENT</th>
+                    <th colspan="2">Test</th>
+                    <th rowspan="2">EXAM <span class="text-muted">(60)</span></th>
+                    <th rowspan="2">TOTAL</th>
+                    <th rowspan="2">REMARK</th>
+                    <th rowspan="2" onclick="sortTable(8)">POSITION <i class="fas fa-sort"></i></th>
+                </tr>
+                <tr>
+                    <th>1<sup>st</sup> ASS <span class="text-muted">(5)</span></th>
+                    <th>2<sup>nd</sup> Ass <span class="text-muted">(5)</span></th>
+                    <th>1<sup>st</sup> TEST <span class="text-muted">(15)</span></th>
+                    <th>2<sup>nd</sup> TEST <span class="text-muted">(15)</span></th>
+                </tr>
+            </thead>
+            <tbody>
+             
+                <!-- Add more rows as needed -->
+            </tbody>
+            <tfoot>
+                <tr>
+                    <td></td>
+                    <td id="first-cat-progress">-</td>
+                    <td id="second-cat-progress">-</td>
+                    <td id="first-test-progress">-</td>
+                    <td id="second-test-progress">-</td>
+                    <td id="exam-score-progress">-</td>
+                    <td colspan="3"></td> <!-- Adjust colspan based on your table -->
+                </tr>
+            </tfoot>
+        </table>
+
+    </div>
+</div>
+
+<!-- Bootstrap 5 JS (optional) -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    let isFormDirty = false;
+    const columnSelector = document.getElementById('column-selector');
+        columnSelector.addEventListener('change', function() {
+        // Get the selected column index from the dropdown
+        const selectedColumn = this.value;
+
+        // Get all rows in the table body
+        const rows = document.querySelectorAll('tbody tr');
+
+        // Loop through each row and update the cells
+        rows.forEach(row => {
+            // Remove contenteditable from all cells
+            row.querySelectorAll('td').forEach(td => {
+                td.removeAttribute('contenteditable');
+            });
+
+            if (selectedColumn === "all") {
+                // If 'All' is selected, make all relevant cells contenteditable with appropriate max values
+                makeColumnEditable(1, 5);  // 1st CAT column, max 5
+                makeColumnEditable(2, 5);  // 2nd CAT column, max 5
+                makeColumnEditable(3, 15); // 1st Test column, max 15
+                makeColumnEditable(4, 15); // 2nd Test column, max 15
+                makeColumnEditable(5, 60); // Exam column, max 60
+            } else {
+                // Make only the selected column cells contenteditable with the appropriate max value
+                switch(parseFloat(selectedColumn)) {
+                    case 1:
+                    case 2:
+                        makeColumnEditable(parseFloat(selectedColumn), 5);  // 1st CAT and 2nd CAT, max 5
+                        break;
+                    case 3:
+                    case 4:
+                        makeColumnEditable(parseFloat(selectedColumn), 15); // 1st Test and 2nd Test, max 15
+                        break;
+                    case 5:
+                        makeColumnEditable(parseFloat(selectedColumn), 60); // Exam, max 60
+                        break;
+                }
+            }
+        });
+        rows[0].querySelector('[contenteditable="true"]').focus();
+    });
+
+    function makeColumnEditable(colIndex, maxValue) {
+        const rows = document.querySelectorAll('tbody tr');
+    
+        rows.forEach(row => {
+            const cell = row.querySelector(`td:nth-child(${colIndex + 1})`);
+            cell.setAttribute('contenteditable', 'true');
+            const debouncedRestrictToNumbers = debounce(function (event) {
+                restrictToNumbers.call(cell, event, maxValue);
+            }, 500); // 500ms debounce time
+    
+            cell.addEventListener('input', debouncedRestrictToNumbers);
+            cell.addEventListener('keydown', moveToNextCell);
+        });
+    }
+    
+    function restrictToNumbers(event, maxValue) {
+        // Get the current caret position
+        const selection = window.getSelection();
+        const range = selection.getRangeAt(0);
+        const startOffset = range.startOffset;
+    
+        // Filter out non-numeric characters except for the decimal point
+        let filteredValue = this.innerText.replace(/[^0-9.]/g, '');
+    
+        // Convert the filtered value to a float
+        let numericValue = parseFloat(filteredValue);
+    
+        // Ensure the value does not exceed the maximum value
+        if (!isNaN(numericValue)) {
+            numericValue = Math.min(numericValue, maxValue);
+        } else {
+            numericValue = '';  // Reset to empty if invalid
+        }
+    
+        // Update the cell content
+        this.innerText = numericValue;
+    
+        // Restore the caret position
+        try {
+            const newPosition = Math.min(startOffset, numericValue.toString().length);
+            range.setStart(this.childNodes[0], newPosition);
+            range.setEnd(this.childNodes[0], newPosition);
+            selection.removeAllRanges();
+            selection.addRange(range);
+        } catch (error) {
+            // Handle errors gracefully
+        }
+    }
+    
+    // Utility function to debounce
+    function debounce(func, wait) {
+        let timeout;
+        return function (...args) {
+            clearTimeout(timeout);
+            timeout = setTimeout(() => func.apply(this, args), wait);
+        };
+    }
+    
+    
+
+    function moveToNextCell(event) {
+        const currentCell = event.target;
+        const currentRow = currentCell.parentElement;
+        const cellIndex = Array.from(currentRow.children).indexOf(currentCell);
+    
+        if (event.key === 'Enter' || event.key === "ArrowDown") {
+            event.preventDefault();
+            const nextRow = currentRow.nextElementSibling;
+            if (nextRow) {
+                const nextCell = nextRow.children[cellIndex];
+                if (nextCell) {
+                    nextCell.focus();
+                    document.execCommand('selectAll', false, null);
+                }
+            }
+        }
+    
+        if (event.key === 'ArrowUp') {
+            event.preventDefault();
+            const previousRow = currentRow.previousElementSibling;
+            if (previousRow) {
+                const previousCell = previousRow.children[cellIndex];
+                if (previousCell) {
+                    previousCell.focus();
+                    document.execCommand('selectAll', false, null);
+                }
+            }
+        }
+    
+        const allowedIndexes = [1, 2, 3, 4, 5];
+        if (event.key === 'ArrowRight' || event.key === 'Tab') {
+            event.preventDefault();
+            
+            let nextCellIndex = allowedIndexes.find(index => index > cellIndex);
+            
+            if (nextCellIndex !== undefined) {
+                const nextCell = currentRow.children[nextCellIndex];
+                if (nextCell) {
+                    nextCell.focus();
+                    document.execCommand('selectAll', false, null); // Highlight all content in the next cell
+                }
+            }
+        }
+    
+        if (event.key === 'ArrowLeft') {
+            event.preventDefault();
+    
+            let previousCellIndex = [...allowedIndexes].reverse().find(index => index < cellIndex);
+    
+            if (previousCellIndex !== undefined) {
+                const previousCell = currentRow.children[previousCellIndex];
+                if (previousCell) {
+                    previousCell.focus();
+                    document.execCommand('selectAll', false, null); // Highlight all content in the previous cell
+                }
+            }
+        }
+    
+    }
+
+    const grade= document.getElementById('grade-selector')
+    grade.addEventListener('change', function() {
+        columnSelector.disabled = false;
+        loadStudentResults(this.value);
+
+    })
+
+    async function loadStudentResults(x) {
+        const tableBody = document.querySelector('#student-result-table tbody');
+        try {
+            const response = await fetch(`{% url "assessment-data" %}?grade=${x}&academic-year={{academic_year.id}}&subject={{subject.pk}}`);
+            const data = await response.json();
+            // Clear the table body before appending new rows
+            tableBody.innerHTML = '';
+
+            data.sort((a, b) => a.student.localeCompare(b.student)); 
+
+            const totalRecords = data.length;
+            let firstCatFilled = 0, secondCatFilled = 0, firstTestFilled = 0, secondTestFilled = 0, examScoreFilled = 0;
+
+            data.forEach(result => {
+                const row = document.createElement('tr');
+
+                //set id for rows
+                row.dataset.id= result.id   //not all students may have an id at this point
+                row.dataset.student_exist= result.student_exists ? 1 : 0  //not all students may have an id at this point
+
+                // Store the numeric position as a data attribute for sorting purposes
+                const positionNumeric = result.position || "";
+                const positionOrdinal = positionNumeric ? getOrdinal(positionNumeric) : "";
+                
+                // Populate the row with the fetched data
+                row.innerHTML = `
+                    <td>${result.student}</td>
+                    <td>${result.first_cat ? result.first_cat : ""}</td>
+                    <td>${result.second_cat ? result.second_cat : ""}</td>
+                    <td>${result.first_test ? result.first_test : ""}</td>
+                    <td>${result.second_test ? result.second_test: ""}</td>
+                    <td>${result.exam_score ? result.exam_score: ""}</td>
+                    <td>${result.total_score ? result.total_score: ""}</td>
+                    <td>-</td>
+                    <td data-position-numeric="${positionNumeric}">${positionOrdinal}</td>
+                `;
+
+                // Append the row to the table body
+                tableBody.appendChild(row);
+                
+                // Increment the count of filled fields
+                if (result.first_cat) firstCatFilled++;
+                if (result.second_cat) secondCatFilled++;
+                if (result.first_test) firstTestFilled++;
+                if (result.second_test) secondTestFilled++;
+                if (result.exam_score) examScoreFilled++;
+                calculateProgress()
+
+
+            });
+            // Update the footer with the progress
+            document.getElementById('first-cat-progress').textContent = `${firstCatFilled}/${totalRecords}`;
+            document.getElementById('second-cat-progress').textContent = `${secondCatFilled}/${totalRecords}`;
+            document.getElementById('first-test-progress').textContent = `${firstTestFilled}/${totalRecords}`;
+            document.getElementById('second-test-progress').textContent = `${secondTestFilled}/${totalRecords}`;
+            document.getElementById('exam-score-progress').textContent = `${examScoreFilled}/${totalRecords}`;
+        } catch (error) {
+            console.error('Error fetching student results:', error);
+        }
+    }
+
+    document.getElementById("save").addEventListener("click", function(){
+        saveStudentResults();
+        
+
+    })
+
+
+    async function saveStudentResults() {
+        const tableRows = document.querySelectorAll('#student-result-table tbody tr');
+        const updatedResults = [];
+    
+        tableRows.forEach(row => {
+            const student = row.querySelector('td:nth-child(1)').textContent; // Assuming first column is student name
+            const firstCat = row.querySelector('td:nth-child(2)').textContent;
+            const secondCat = row.querySelector('td:nth-child(3)').textContent;
+            const firstTest = row.querySelector('td:nth-child(4)').textContent;
+            const secondTest = row.querySelector('td:nth-child(5)').textContent;
+            const examScore = row.querySelector('td:nth-child(6)').textContent;
+    
+            updatedResults.push({
+                id : row.dataset.id === "undefined" ? null : row.dataset.id,
+                student_exist : row.dataset.student_exist==1? true : false,
+                student: student,
+                first_cat: firstCat ? parseFloat(firstCat, 10) : null ,
+                second_cat: secondCat ? parseFloat(secondCat, 10) : null,
+                first_test: firstTest ? parseFloat(firstTest, 10) : null,
+                second_test: secondTest ? parseFloat(secondTest, 10) : null,
+                exam_score: examScore ? parseFloat(examScore, 10) : null
+            });
+        });
+    
+       
+        console.log(updatedResults)
+        $.ajax({
+            url: '{% url "save_assessment_data" %}',
+            type: 'POST',
+            data: JSON.stringify({
+                academic_year: {{academic_year.id}},
+                term: {{term.id}},
+                subject: {{subject.id}},
+                grade: grade.value,
+                result: updatedResults
+            }),
+            contentType: 'application/json', // This line is crucial
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            success: function(sucess) {
+                isFormDirty = false;
+                alert("Alert created");
+            },
+            error: function(xhr, status, error) {
+                console.error('Failed to save:', status, error);
+            }
+        });
+        
+        
+    }
+
+    
+
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                // Does this cookie string begin with the name we want?
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }    
+
+
+    function calculateProgress() {
+        // Get all rows in the table body
+        const rows = document.querySelectorAll('#student-result-table tbody tr');
+
+        let totalRequiredFields = 0;
+        let filledFields = 0;
+
+        rows.forEach(row => {
+            // Select each field that should be filled
+            const firstCat = row.querySelector('td:nth-child(2)').textContent.trim();
+            const secondCat = row.querySelector('td:nth-child(3)').textContent.trim();
+            const firstTest = row.querySelector('td:nth-child(4)').textContent.trim();
+            const secondTest = row.querySelector('td:nth-child(5)').textContent.trim();
+            const examScore = row.querySelector('td:nth-child(6)').textContent.trim();
+
+            // Total required fields per student (5 in this case)
+            totalRequiredFields += 5;
+
+            // Count filled fields
+            if (firstCat !== "") filledFields++;
+            if (secondCat !== "") filledFields++;
+            if (firstTest !== "") filledFields++;
+            if (secondTest !== "") filledFields++;
+            if (examScore !== "") filledFields++;
+        });
+
+        // Calculate the completion percentage
+        const completionPercentage = (filledFields / totalRequiredFields) * 100;
+
+        // Display the progress
+        const progressDisplay = document.getElementById('progress-display');
+        progressDisplay.textContent = `Completion: ${completionPercentage.toFixed(2)}%`;
+
+        // Optional: Update a progress bar or other UI elements
+        const progressBar = document.getElementById('progress-bar');
+        if (progressBar) {
+            progressBar.style.width = `${completionPercentage}%`;
+            progressBar.textContent = `${completionPercentage.toFixed(2)}%`;
+        }
+    }
+
+    const calculateProgressButton = document.getElementById('calculate-progress');
+    calculateProgressButton.addEventListener('click', calculateProgress);
+
+
+    // Monitor changes in contenteditable cells
+    document.querySelectorAll('td[contenteditable="true"]').forEach(cell => {
+        cell.addEventListener('input', () => {
+            isFormDirty = true;
+        });
+    });
+
+    let sortDirection = 1;
+    function sortTable(columnIndex) {
+        const table = document.getElementById('student-result-table').querySelector('tbody');
+        const rowsArray = Array.from(table.rows);
+    
+        sortDirection *= -1;
+    
+        rowsArray.sort((rowA, rowB) => {
+            const cellA = rowA.cells[columnIndex].innerText.trim();
+            const cellB = rowB.cells[columnIndex].innerText.trim();
+    
+            let valA, valB;
+            if (columnIndex === 8) { // assuming the position column is at index 8
+                valA = parseFloat(rowA.cells[columnIndex].dataset.positionNumeric) || 0;
+                valB = parseFloat(rowB.cells[columnIndex].dataset.positionNumeric) || 0;
+            } else {
+                valA = isNaN(cellA) ? cellA : parseFloat(cellA);
+                valB = isNaN(cellB) ? cellB : parseFloat(cellB);
+            }
+    
+            if (valA < valB) {
+                return -1 * sortDirection;
+            } else if (valA > valB) {
+                return 1 * sortDirection;
+            } else {
+                return 0;
+            }
+        });
+    
+        rowsArray.forEach(row => table.appendChild(row));
+    }
+
+    function getOrdinal(n) {
+        const s = ["th", "st", "nd", "rd"];
+        const v = n % 100;
+        return n + (s[(v - 20) % 10] || s[v] || s[0]);
+    }
+
+    
+
+    // Warn the user before leaving the page
+    window.addEventListener('beforeunload', (event) => {
+        prompt("Are you sure ")
+        {% comment %} if (isFormDirty) {
+            event.preventDefault();
+            event.returnValue = ''; // Modern browsers require returnValue to be set
+        } {% endcomment %}
+    });
+</script>
+</body>
+</html>

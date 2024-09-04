@@ -2,6 +2,7 @@ from pyexpat import model
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from datetime import date
+from school.models import Grade
 
 
 
@@ -12,15 +13,7 @@ STATUS_CHOICE = (
     ("Approved", "Approved"),
     ("Rejected", "Rejected")
 )
-class Grade(models.Model):
-    grade = models.IntegerField()
-    
-    
-    class Meta:
-        ordering = ["grade"]
-    
-    def __str__(self):
-        return f"Grade {str(self.grade)}"
+
 
 class User(AbstractUser):
     is_student = models.BooleanField(null=True)
@@ -35,6 +28,9 @@ class User(AbstractUser):
     def clean(self):
         self.first_name = self.first_name.capitalize()
         self.last_name = self.last_name.capitalize()
+
+    def get_full_name(self) :
+        return self.last_name.capitalize() + " " + self.first_name.capitalize()
         
 class Student(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)

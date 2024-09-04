@@ -3,8 +3,9 @@ import factory.fuzzy
 import faker
 from .models import Question, Exam
 from users.models import User, Student
-from teachers . models import Subject, Grade
+from school.models import Grade, Subject
 from  datetime import timedelta, datetime
+import re
 
 fake = faker.Faker()
 grade = Grade.objects.get(grade=1)
@@ -18,9 +19,24 @@ class UserFactory(factory.django.DjangoModelFactory):
     first_name = factory.LazyFunction(fake.first_name)
     last_name = factory.LazyFunction(fake.last_name)
     # username = factory.LazyAttribute(lambda obj: '%s' % obj.first_name.lower())
-    username = factory.Sequence(lambda n: 'user%d' % (n + 1))
+    username = factory.Sequence(lambda n: 'user%d' % (UserFactory.get_next_n_value()))
     is_student = True
     password = factory.django.Password('pw')
+
+    @classmethod
+    def get_next_n_value(self):
+        # Find the highest `n` value among existing usernames
+        users_with_pattern = User.objects.filter(username__regex=r'^user\d+$')
+        if users_with_pattern.exists():
+            # Extract the numeric part of the username and find the maximum value
+            max_n = max(
+                int(re.search(r'\d+$', user.username).group())
+                for user in users_with_pattern
+            )
+            return max_n + 1
+        else:
+            # If no matching users exist, start with 1
+            return 1
     
 class StudentFactory(factory.django.DjangoModelFactory):
     class Meta:
@@ -85,6 +101,7 @@ class QuestionFactory(factory.django.DjangoModelFactory):
 
 #create student
 # StudeFactory.create_batch()
+
 # # Create and save a question object with random data
 # question = QuestionFactory.create()
 

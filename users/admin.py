@@ -1,7 +1,8 @@
 from django.contrib import admin
 from django.http import HttpRequest
 from django.http.response import HttpResponse
-from . models import User, Student, Teacher, Grade
+from . models import User, Student, Teacher
+from school.models import Grade
 from django.shortcuts import redirect
 from . forms import StudentRequestForm
 from django.utils.html import format_html
@@ -142,7 +143,7 @@ class TeacherAdmin(admin.ModelAdmin):
             obj.user.save()
         pending_teachers.update(status="Approved")
         self.message_user(request, "Teacher(s) approved. Assign subject to teacher", level=messages.SUCCESS)
-        return redirect("/admin/teachers/subject/")
+        return redirect("/admin/school/subject/")
         
         # if len(emails)>0:
         #     send_mail(
@@ -204,4 +205,3 @@ class MyUserAdmin(DjangoUserAdmin):
 
 admin.site.register(Student, StudentAdmin)
 admin.site.register(Teacher, TeacherAdmin)
-admin.site.register(Grade)
