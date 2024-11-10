@@ -12,6 +12,12 @@ STATUS_CHOICE = (
     ("Approved", "Approved"),
     ("Rejected", "Rejected")
 )
+ROLE_CHOICES = (
+        ('student', 'Student'),
+        ('staff', 'Staff'),
+        ('parent', 'Parent'),
+        ('admin', 'Admin'),
+    )
 class Grade(models.Model):
     grade = models.IntegerField()
     
