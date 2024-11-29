@@ -67,6 +67,7 @@ def editProfile(request, pk):
     
     
     
+    
     if request.method == "POST":
         p_form = UserUpdateForm(request, request.POST, instance = user)
         t_form = TeacherUpdateForm(request, request.POST, instance= user.teacher)
