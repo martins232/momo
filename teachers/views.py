@@ -44,7 +44,7 @@ from openai import OpenAI
 from collections import defaultdict
 import google.generativeai as genai   
 import markdown
-genai.configure(api_key="AIzaSyCoc6rtdzgRLlOv1GOpYohbEIORIsrWvhE")
+genai.configure(api_key="AIzaSyCDQ0gaeZ8_vY0rCcD8CUTnv40n2tz81ZY")
 
 
 # Create your views here.
@@ -889,6 +889,7 @@ def bulk_create_questions(subject_id, exam_ids, data):
     '''After all validations has been made bulk create a template docx file'''
     questions = []
     errors = []
+    
     for item in data:
         question_instance = Question(
             subject=subject_id,
@@ -898,7 +899,9 @@ def bulk_create_questions(subject_id, exam_ids, data):
             option_C=item[1][2],
             option_D=item[1][3],
             answer=item[1][4].upper()
+            
         )
+        print(item)
         try:
             # Validate each instance
             question_instance.full_clean()
